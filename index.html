@@ -18758,15 +18758,6 @@ function App() {
                     });
                   }})
 
-                /* 労働時間クリアボタン */
-                , ne.workTime && (
-                  React.createElement('button', { onClick: ()=>{ vibe(50); setNe(p=>({...p,workTime:""})); }, style: {
-                    background:T.card_bg, border:T.card_border2,
-                    borderRadius:6, padding:"5px", color:T.fld_label, fontSize:11, cursor:"pointer" }}, "労働時間をクリア"
-
-                  )
-                )
-
                 /* 前年度→今年度移行確認ダイアログ */
                 , showSwitchConfirm && (
                   React.createElement('div', { style: {
