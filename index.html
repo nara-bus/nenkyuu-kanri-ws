@@ -17362,7 +17362,7 @@ const THEMES = {
     headerBg: "rgba(241,245,249,0.92)",
     scrollerFade: "rgba(241,245,249,0.85)",
     inputVal: "#0077ff",
-    badgePurple: "#7c00ff",
+    badgePurple: "#9333ea",
     tabActiveColor: "#7c00ff",
     // cards
     card_bg: "rgba(0,0,0,0.05)", card_border: "1px solid rgba(0,0,0,0.11)",
@@ -17640,7 +17640,7 @@ function NumpadModal({ title, mode="hm", initH=0, initM=0, initNum="", maxNum=99
     fontWeight:700, fontSize:20, letterSpacing:"0.05em",
     background: focus===f ? "rgba(99,102,241,0.35)" : T===THEMES.dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
     border: focus===f ? "2px solid rgba(99,102,241,0.7)" : T===THEMES.dark ? "2px solid transparent" : "2px solid rgba(0,0,0,0.18)",
-    color: focus===f ? T.np_actColor : T.np_btnColor,
+    color: (focus===f && T!==THEMES.dark) ? T.np_actColor : T.np_btnColor,
     transition:"all 0.15s",
   });
 
@@ -18581,7 +18581,7 @@ function App() {
                 borderRadius:12, padding:"12px 8px",
                 display:"flex", flexDirection:"column", alignItems:"center",
               }}
-                , React.createElement('div', { style: { fontSize:12, color:T.card_label, marginBottom:8 }}, "残日数")
+                , React.createElement('div', { style: { fontSize:12, color:T.card_label, marginBottom:8 }}, "残時間日数換算")
                 , React.createElement('div', { style: { flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:3 }}
                   , React.createElement('span', { style: { fontSize:22, fontWeight:700, color:"#00c853", lineHeight:1 }}
                     , remWhole, "日"
@@ -18610,7 +18610,7 @@ function App() {
                 )
               )
               , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1011}}
-                , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:4 }}, dayJudge===0 ? (prevRem>=0 ? "前年度分使い切りまでの時間" : "今年度分使い切りまでの時間") : (dayJudge-1)+"日に切り替わるまでの時間")
+                , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:4 }}, dayJudge===0 ? (prevRem>=0 ? "前年度分使い切りまでの時間" : "今年度分使い切りまでの時間") : (dayJudge-1)+"日に切替までの時間")
                 , React.createElement('div', { style: { fontSize:26, fontWeight:700, color:"#00c853" }}
                   , mmHHMM(dayJudge===0 ? activeMin : switchMin)
                 )
@@ -18869,7 +18869,7 @@ function App() {
                           borderRadius:8, color:T.re_editColor, width:32, height:32, cursor:"pointer", fontSize:14 }}, "✏")
                         , React.createElement('button', { onClick: ()=>{ vibe(50); setDeleteConfirmId(e.id); }, style: {
                           background:"rgba(248,113,113,0.1)", border:"1px solid rgba(248,113,113,0.2)",
-                          borderRadius:8, color:"#f87171", width:32, height:32, cursor:"pointer", fontSize:14 }}, "✕")
+                          borderRadius:8, color:"#f87171", width:32, height:32, cursor:"pointer", fontSize:14 }}, "🗑")
                       )
                       , React.createElement('button', { onClick: ()=>{ vibe(50); setEntries(p=>p.map(x=>x.id===e.id?{...x,submitted:!x.submitted}:x)); }, style: {
                         background: e.submitted?(isDark?"rgba(52,211,153,0.15)":"rgba(52,211,153,0.28)"):"rgba(248,113,113,0.12)",
@@ -19039,17 +19039,17 @@ function App() {
               {
                 icon:"📱", title:"はじめに",
                 color:"#6366f1",
-                body:"このアプリは、年次有給休暇（年休）の残り時間を管理するツールです。\n使用した年休を記録するだけで、残日数・消費ペースを自動で計算します。\nデータはこの端末に自動保存されるので、次回開いたときもそのまま続きから使えます。\nタブは画面下のボタンをタップするか、左右にスワイプして切り替えられます。\n画面右上の ☀️ / 🌙 ボタンでライト・ダークテーマを切り替えられます。",
+                body:"このアプリは、年次有給休暇（年休）の残り時間を管理するツールです。\n使用した年休を記録するだけで、残時間日数換算・消費ペースを自動で計算します。\nデータはこの端末に自動保存されるので、次回開いたときもそのまま続きから使えます。\nタブは画面下のボタンをタップするか、左右にスワイプして切り替えられます。\n画面右上の ☀️ / 🌙 ボタンでライト・ダークテーマを切り替えられます。",
               },
               {
                 icon:"✨", title:"最初にやること",
                 color:T.inputVal,
-                body:"アプリを初めて開くと、4つの入力欄がぼんやり光ります。\n光っている欄を全部タップして数値を入力してください。\n全部タップし終わると、他のタブや機能が使えるようになります。\n（使い方タブはいつでも見られます）",
+                body:"アプリを初めて開くと、4つの入力欄がぼんやり光ります。\n光っている欄を全部タップして数値を入力してください。\n全部入力し終わると、他のタブや機能が使えるようになります。\n（使い方タブはいつでも見られます）",
                 items:[
                   {label:"前年度の年休所得時間", desc:"前の年度から持ち越した年休の所得時間を入力します。枠をタップするとテンキーが開きます。"},
                   {label:"今年度の年休所得時間", desc:"今年度に新しく付与された年休の所得時間を入力します。枠をタップするとテンキーが開きます。"},
                   {label:"1日の所定労働時間", desc:"1日の勤務時間を入力します。枠をタップするとテンキーが開きます。早見表の計算にも使われます。"},
-                  {label:"目標残日数", desc:"年休の更新日までに残しておきたい日数を − ・ ＋ ボタンで設定します。タップすると光りが消えます。"},
+                  {label:"目標残日数", desc:"年休の更新日までに残しておきたい日数を − ・ ＋ ボタンで設定します。設定すると光りが消えます。"},
                 ],
               },
               {
@@ -19060,9 +19060,10 @@ function App() {
                   {label:"前年度・今年度の入力枠", desc:"現在消費中の年度の枠が明るく表示されます。年休は前年度分から先に消費され、使い切ると自動で今年度分に切り替わります。"},
                   {label:"消費時間", desc:"使用記録に登録した年休の合計時間です。"},
                   {label:"年休残時間", desc:"現在残っている年休の時間です。「前年度」または「今年度」のバッジでどちらを消費中か確認できます。"},
-                  {label:"残日数", desc:"残り時間をもとに、何日分の年休が残っているかを表示します。"},
+                  {label:"残時間日数換算", desc:"残り時間をもとに、何日分の年休が残っているかを表示します。"},
                   {label:"日数判定", desc:"残り時間から算出した、現在の年休残日数の判定値です。"},
-                  {label:"〇〇日に切り替わるまでの時間", desc:"あと何時間使うと残日数の判定が1日減るかを示します。消化ペースの目安にしてください。"},
+                  {label:"〇〇日に切替までの時間", desc:"あと何時間使うと残日数の判定が1日減るかを示します。消化ペースの目安にしてください。"},
+                  {label:"目標残日数設定", desc:"− ・ ＋ ボタンで目標残日数を変更できます。"},
                   {label:"基準時間との差", desc:"目標日数をキープするのに必要な時間と、現在の残り時間との差です。マイナスになると枠が赤く変わります。"},
                   {label:"最大ここまで休める！", desc:"現在の残り時間で最大何時間まで年休を取れるかの目安です。"},
                 ],
@@ -19074,12 +19075,13 @@ function App() {
                 items:[
                   {label:"＋ 年休使用日を追加", desc:"ボタンをタップすると入力欄が開きます。使用日・番号・労働時間の3項目を入力すると「追加する」ボタンが押せるようになります。"},
                   {label:"使用日", desc:"タップすると日付入力が開きます。日付を選ぶと曜日が自動で入ります。"},
+                  {label:"ダイヤ区分", desc:"A・B・C・D・WS・高速から選択します。"},
                   {label:"番号", desc:"ダイヤの番号をテンキーで入力します。"},
                   {label:"労働時間", desc:"その日に実際に働いた時間をテンキーで入力します。上限は15時間00分です。"},
                   {label:"前年度→今年度の移行確認", desc:"入力により前年度分が不足する場合、確認ダイアログが表示されます。「承諾」で今年度分への自動移行を確定し、「拒否」で入力をやり直せます。"},
                   {label:"届出済 / 未提出", desc:"年休届の提出状況を管理できます。タップするたびに切り替わります。届出済は緑色、未提出は赤色で表示されます。"},
-                  {label:"✏ 編集 / ✕ 削除", desc:"登録済みの記録を修正・削除できます。✕ をタップすると確認ダイアログが表示されます。「削除する」で削除、「キャンセル」で取り消せます。"},
-                  {label:"🗑 全削除", desc:"すべての使用記録を一括削除します。タップすると「⚠ 全件削除しますか？」の確認が表示されます。「削除する」で全件削除、「キャンセル」で取り消せます。"},
+                  {label:"✏ 編集 / 🗑 削除", desc:"登録済みの記録を修正・削除できます。🗑 をタップすると確認ダイアログが表示されます。「削除する」で削除、「キャンセル」で取り消せます。"},
+                  {label:"🗑 全削除", desc:"すべての使用記録を一括削除します。タップすると確認ダイアログが表示されます。「削除する」で全件削除、「キャンセル」で取り消せます。"},
                 ],
               },
               {
@@ -19090,6 +19092,7 @@ function App() {
                   {label:"🎯 目標（緑枠）", desc:"設定した目標残日数の行です。"},
                   {label:"📍 判定（青 / ピンク枠）", desc:"現在の残り時間から算出した残日数の行です。目標以上なら青、目標を下回るとピンクで表示されます。"},
                   {label:"⭐ 目標＝判定（黄枠）", desc:"目標日数と判定日数が一致している状態です。"},
+                  {label:"基準時間・日数判定時間", desc:"各行の基準時間と日数判定時間が表示されます。現在の残り時間がどの範囲にあるかを確認できます。"},
                 ],
               },
               {
