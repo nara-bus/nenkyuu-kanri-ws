@@ -17301,11 +17301,14 @@ const dowType = (d, holidays) => {
   const w=new Date(d).getDay();
   return w===0||(holidays||FALLBACK_HOLIDAYS).has(d)?"hol": w===6?"sat":"wd";
 };
-const dowBadge = (d, holidays) => {
+const dowBadge = (d, holidays, T) => {
   const t=dowType(d, holidays);
+  const isLight = T && typeof THEMES !== 'undefined' && T===THEMES.light;
+  const weekdayColor = isLight ? "#7c3aed" : "#a5b4fc";
+  const weekdayBg    = isLight ? "rgba(124,0,255,0.12)" : "rgba(99,102,241,0.2)";
   return t==="hol"?{bg:"rgba(248,113,113,0.2)",c:"#f87171"}
         :t==="sat"?{bg:"rgba(96,165,250,0.2)", c:"#60a5fa"}
-        :           {bg:"rgba(99,102,241,0.2)", c:"#a5b4fc"};
+        :           {bg:weekdayBg, c:weekdayColor};
 };
 
 
@@ -17316,7 +17319,7 @@ const THEMES = {
     selectBg: "#f8fafc",
     selectColor: "#1e293b",
     tabAnimFrom: "#94a3b8",
-    tabAnimTo: "#4f46e5",
+    tabAnimTo: "#7c00ff",
     tabBorderTo: "#4f46e5",
     themeColor: "#f8fafc",
     bgColor: "#f8fafc",
@@ -17326,7 +17329,7 @@ const THEMES = {
     np_bg: "linear-gradient(135deg,#ffffff,#f8fafc)", np_border: "1px solid rgba(0,0,0,0.09)",
     np_title: "#4f46e5",
     np_colon: "#64748b",
-    np_btnBg: "rgba(0,0,0,0.05)", np_btnColor: "#000000",
+    np_btnBg: "rgba(0,0,0,0.08)", np_btnColor: "#000000",
     np_actColor: "#000000",
     np_clrBg: "rgba(0,0,0,0.05)", np_clrBorder: "1px solid rgba(0,0,0,0.09)", np_clrColor: "#64748b",
     // field
@@ -17350,12 +17353,17 @@ const THEMES = {
     ne_title: "#4f46e5",
     ne_label: "#64748b",
     ne_cancelBg: "rgba(0,0,0,0.06)", ne_cancelBorder: "1px solid rgba(0,0,0,0.09)", ne_cancelColor: "#64748b",
+    addBtnBg: "linear-gradient(135deg,#2563eb,#7c3aed)",
     // main screen
     main_bg: "linear-gradient(135deg,#f8fafc 0%,#f1f5f9 50%,#f8fafc 100%)",
     main_color: "#1e293b",
     main_headerBorder: "1px solid rgba(0,0,0,0.09)",
     main_subLabel: "#64748b",
+    headerBg: "rgba(241,245,249,0.92)",
+    scrollerFade: "rgba(241,245,249,0.85)",
     inputVal: "#0077ff",
+    badgePurple: "#7c00ff",
+    tabActiveColor: "#7c00ff",
     // cards
     card_bg: "rgba(0,0,0,0.05)", card_border: "1px solid rgba(0,0,0,0.11)",
     card_label: "#334155",
@@ -17454,11 +17462,16 @@ const THEMES = {
     ne_title: "#a5b4fc",
     ne_label: "#94a3b8",
     ne_cancelBg: "rgba(255,255,255,0.08)", ne_cancelBorder: "1px solid rgba(255,255,255,0.15)", ne_cancelColor: "#94a3b8",
+    addBtnBg: "linear-gradient(135deg,#6366f1,#8b5cf6)",
     main_bg: "linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%)",
     main_color: "#e2e8f0",
     main_headerBorder: "1px solid rgba(99,102,241,0.3)",
     main_subLabel: "#94a3b8",
+    headerBg: "rgba(15,23,42,0.85)",
+    scrollerFade: "rgba(15,23,42,0.85)",
     inputVal: "#55ccff",
+    badgePurple: "#a5b4fc",
+    tabActiveColor: "#a5b4fc",
     card_bg: "rgba(255,255,255,0.05)", card_border: "1px solid rgba(99,102,241,0.3)",
     card_label: "#cbd5e1",
     card_label2: "#cbd5e1",
@@ -17625,8 +17638,8 @@ function NumpadModal({ title, mode="hm", initH=0, initM=0, initNum="", maxNum=99
   const focusStyle = f => ({
     flex:1, textAlign:"center", padding:"10px 8px", borderRadius:8, cursor:"pointer",
     fontWeight:700, fontSize:20, letterSpacing:"0.05em",
-    background: focus===f ? "rgba(99,102,241,0.35)" : "rgba(255,255,255,0.06)",
-    border: focus===f ? "2px solid rgba(99,102,241,0.7)" : "2px solid transparent",
+    background: focus===f ? "rgba(99,102,241,0.35)" : T===THEMES.dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+    border: focus===f ? "2px solid rgba(99,102,241,0.7)" : T===THEMES.dark ? "2px solid transparent" : "2px solid rgba(0,0,0,0.18)",
     color: focus===f ? T.np_actColor : T.np_btnColor,
     transition:"all 0.15s",
   });
@@ -17685,10 +17698,10 @@ function NumpadModal({ title, mode="hm", initH=0, initM=0, initNum="", maxNum=99
                 style: {
                   ...nkBase,
                   height:52,
-                  background: isAct ? "rgba(248,113,113,0.15)" : "rgba(255,255,255,0.07)",
+                  background: isAct ? "rgba(248,113,113,0.15)" : (T===THEMES.light ? "rgba(0,0,0,0.09)" : T.np_btnBg),
                   color: isAct ? "#f87171" : T.np_btnColor,
                   fontSize: k==="⌫" ? 18 : 20,
-                  border: isAct ? "1px solid rgba(248,113,113,0.25)" : "1px solid rgba(255,255,255,0.1)",
+                  border: isAct ? "1px solid rgba(248,113,113,0.25)" : T.np_clrBorder,
                 }}
                 , k
               )
@@ -17717,7 +17730,7 @@ function NumpadModal({ title, mode="hm", initH=0, initM=0, initNum="", maxNum=99
 
 // ─── テンキー表示ボックス（タップで開く） ─────────────────
 // variant: "hm" | "num"
-function NumpadField({ label, value, placeholder, onTap, accent=false }) {
+function NumpadField({ label, value, placeholder, onTap, accent=false, T=THEMES.light }) {
   return (
     React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 240}}
       , label && React.createElement('div', { style: { fontSize:10, color:T.fld_label, marginBottom:3 }}, label)
@@ -17728,7 +17741,7 @@ function NumpadField({ label, value, placeholder, onTap, accent=false }) {
         fontSize: accent ? 20 : 14,
         display:"flex", alignItems:"center", justifyContent:"space-between",
         padding: accent ? "10px 14px" : "9px 10px",
-        background: accent ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.07)",
+        background: accent ? "rgba(99,102,241,0.15)" : T.IS_bg,
         border: accent ? T.fld_border_accent : T.fld_border_normal,
       }}
         , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 252}}, value || placeholder)
@@ -17741,7 +17754,7 @@ function NumpadField({ label, value, placeholder, onTap, accent=false }) {
 // ─── ドラム式ピッカーモーダル（年休所得時間用） ─────────
 // 時間: 百の位(0-1) 十の位(0-9) 一の位(0-9)  最大199
 // 分  : 十の位(0-5) 一の位(0-9)              最大59
-function DrumPickerModal({ initH=153, initM=0, onConfirm, onClose }) {
+function DrumPickerModal({ initH=153, initM=0, onConfirm, onClose, T=THEMES.light }) {
   // 各桁を分解
   const clampH = h => Math.min(199, Math.max(0, h));
   const initDigits = h => {
@@ -17807,7 +17820,7 @@ function DrumPickerModal({ initH=153, initM=0, onConfirm, onClose }) {
                   const val   = col.digits[di];
 
                   return (
-                    React.createElement(DrumColumn, {
+                    React.createElement(DrumColumn, { T:T,
                       key: di,
                       items: items,
                       value: val,
@@ -17841,7 +17854,7 @@ function DrumPickerModal({ initH=153, initM=0, onConfirm, onClose }) {
 }
 
 // ─── ドラムの1カラム ──────────────────────────────────────
-function DrumColumn({ items, value, onChange }) {
+function DrumColumn({ items, value, onChange, T=THEMES.light }) {
   const ITEM_H = 44;
   const VISIBLE = 5;
   const containerH = ITEM_H * VISIBLE;
@@ -17913,13 +17926,13 @@ function DrumColumn({ items, value, onChange }) {
       /* 上グラデ */
       , React.createElement('div', { style: {
         position:"absolute", top:0, left:0, right:0, height:ITEM_H*2,
-        background:"linear-gradient(to bottom,rgba(15,23,42,0.85),transparent)",
+        background:"linear-gradient(to bottom,"+T.scrollerFade+",transparent)",
         pointerEvents:"none", zIndex:3,
       }})
       /* 下グラデ */
       , React.createElement('div', { style: {
         position:"absolute", bottom:0, left:0, right:0, height:ITEM_H*2,
-        background:"linear-gradient(to top,rgba(15,23,42,0.85),transparent)",
+        background:"linear-gradient(to top,"+T.scrollerFade+",transparent)",
         pointerEvents:"none", zIndex:3,
       }})
       /* スクロールリスト */
@@ -17952,11 +17965,11 @@ function DrumColumn({ items, value, onChange }) {
 }
 
 // ─── インライン編集フォーム ────────────────────────────────
-function EditForm({ entry, workPerDay, holidays, onSave, onCancel }) {
+function EditForm({ entry, workPerDay, holidays, onSave, onCancel, T=THEMES.light }) {
   const [draft, setDraft] = useState({...entry});
   const [pad, setPad]     = useState(null); // {field, ...props}
   const set = (k,v) => setDraft(p=>({...p,[k]:v,...(k==="date"?{dow:fillDow(v)}:{})}));
-  const badge = dowBadge(draft.date, holidays);
+  const badge = dowBadge(draft.date, holidays, T);
 
   const openWorkTime = () => {
     const cur = parseHM(draft.workTime);
@@ -18003,11 +18016,11 @@ function EditForm({ entry, workPerDay, holidays, onSave, onCancel }) {
             , DTYPES.map(d=>React.createElement('option', { key: d}, d))
           )
         )
-        , React.createElement(NumpadField, { label: "番号", value: draft.diamondNo, placeholder: "未入力",
+        , React.createElement(NumpadField, { T:T, label: "番号", value: draft.diamondNo, placeholder: "未入力",
           onTap: openNo})
       )
 
-      , React.createElement(NumpadField, { label: "労働時間", value: draft.workTime, placeholder: "タップして入力",
+      , React.createElement(NumpadField, { T:T, label: "労働時間", value: draft.workTime, placeholder: "タップして入力",
         onTap: openWorkTime})
 
       , React.createElement('div', { style: { display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}
@@ -18355,14 +18368,14 @@ function App() {
       }})
       , React.createElement('span', { key: 'icon-'+id+(animatingTab===id?'-on':'-off'), style: {
         fontSize:20, lineHeight:1, display:'block', position:"relative",
-        color: animatingTab===id ? "#a5b4fc" : "#475569",
+        color: animatingTab===id ? T.tabActiveColor : "#475569",
         animation: animatingTab===id ? 'tab-bounce 1.0s ease-out, tab-color-fadein 1.5s ease-in-out' : 'none',
       }}, TAB_ICONS[id])
       , React.createElement('span', { key: 'lbl-'+id+(animatingTab===id?'-on':'-off'), style: {
         fontSize:12, fontWeight: animatingTab===id ? 700 : 400,
         borderTop: animatingTab===id ? "2px solid #6366f1" : "2px solid transparent",
         paddingTop:3, width:"100%", textAlign:"center", position:"relative",
-        color: animatingTab===id ? "#a5b4fc" : "#475569",
+        color: animatingTab===id ? T.tabActiveColor : "#475569",
         animation: animatingTab===id ? 'tab-color-fadein 1.5s ease-in-out, tab-border-fadein 1.5s ease-in-out' : 'none',
       }}, lbl)
     )
@@ -18381,7 +18394,7 @@ function App() {
 
       /* ─── Header ─── */
       , React.createElement('div', { style: {
-        background:"rgba(15,23,42,0.85)", backdropFilter:"blur(12px)",
+        background:T.headerBg, backdropFilter:"blur(12px)",
         borderBottom:T.main_headerBorder,
         padding:"12px 16px", position:"sticky", top:0, zIndex:100,
       }}
@@ -18392,8 +18405,8 @@ function App() {
               borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:17,
             }}, "🗓")
             , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 820}}
-              , React.createElement('div', { style: { fontSize:17, fontWeight:700, letterSpacing:"0.05em", color:"#e2e8f0" }}, "年休管理")
-              , React.createElement('div', { style: { fontSize:10, color:"#e2e8f0" }}, "Annual Leave Calculator"  )
+              , React.createElement('div', { style: { fontSize:17, fontWeight:700, letterSpacing:"0.05em", color:isDark?"#e2e8f0":"#1e293b" }}, "年休管理")
+              , React.createElement('div', { style: { fontSize:10, color:isDark?"#e2e8f0":"#475569" }}, "Annual Leave Calculator"  )
             )
             , React.createElement('button', {
                 onClick: ()=>{ vibe(30); toggleTheme(); },
@@ -18416,9 +18429,9 @@ function App() {
               color:"#ffa000", fontSize:12, fontWeight:600, cursor:"pointer",
             }}, "⬇ 出力" )
             , React.createElement('label', { onClick: e=>{ if(!allPulseOff && tab!=='help'){ e.preventDefault(); showBlockToast(); return; } vibe(50); }, title: "JSONからインポート", style: {
-              background:"rgba(0,255,128,0.12)", border:"1px solid rgba(0,255,128,0.7)",
+              background: isDark?"rgba(0,255,128,0.12)":"rgba(52,211,153,0.28)", border:"1px solid "+(isDark?"rgba(0,255,128,0.7)":"rgba(52,211,153,0.75)"),
               borderRadius:8, padding:"6px 10px",
-              color:"#00ff80", fontSize:12, fontWeight:600, cursor:"pointer", whiteSpace:"nowrap",
+              color: isDark?"#00ff80":"#047857", fontSize:12, fontWeight:600, cursor:"pointer", whiteSpace:"nowrap",
             }}, "⬆ 読込"
 
               , React.createElement('input', { type: "file", accept: ".json", onChange: e=>{ if(!allPulseOff && tab!=='help'){ showBlockToast(); e.target.value=''; return; } importData(e); }, style: {display:"none"}})
@@ -18557,8 +18570,8 @@ function App() {
                 , React.createElement('div', { style: {
                   marginTop:6, fontSize:12, fontWeight:700,
                   padding:"2px 8px", borderRadius:10,
-                  background: prevRem>=0 ? "rgba(99,102,241,0.25)" : "rgba(52,211,153,0.2)",
-                  color:       prevRem>=0 ? "#a5b4fc"               : "#34d399",
+                  background: prevRem>=0 ? "rgba(99,102,241,0.25)" : (isDark?"rgba(52,211,153,0.2)":"rgba(52,211,153,0.28)"),
+                  color:       prevRem>=0 ? T.badgePurple           : (isDark?"#34d399":"#047857"),
                 }}, prevRem>=0 ? "前年度" : "今年度")
               )
 
@@ -18623,14 +18636,14 @@ function App() {
               )
               , hd && (
                 React.createElement('div', { style: { marginTop:12, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}
-                  , React.createElement('div', { style: { background:T.card_bg, border:`1px solid ${vsTgt>=0?T.goal_diffBorder_ok:"rgba(248,113,113,0.6)"}`, borderRadius:12, padding:"8px 10px" }}
+                  , React.createElement('div', { style: { background:T.card_bg, border:"1px solid "+(vsTgt>=0?T.goal_diffBorder_ok:"rgba(248,113,113,0.6)"), borderRadius:12, padding:"8px 10px" }}
                     , React.createElement('div', { style: { fontSize:13, color:T.goal_diffLabel }}, "基準時間との差")
                     , React.createElement('div', { style: { fontSize:22, fontWeight:700, color:"#00c853" }}
                       , vsTgt>=0?"+":"-", mmHHMM(Math.abs(vsTgt))
                     )
                     , React.createElement('div', { style: { fontSize:12, color:T.hay_baseLabel }}, "基準: " , mmHHMM(tRemMin))
                   )
-                  , React.createElement('div', { style: { background:T.card_bg, border:`1px solid ${vsMax>=0?T.goal_diffBorder_ok:"rgba(248,113,113,0.6)"}`, borderRadius:12, padding:"8px 10px" }}
+                  , React.createElement('div', { style: { background:T.card_bg, border:"1px solid "+(vsMax>=0?T.goal_diffBorder_ok:"rgba(248,113,113,0.6)"), borderRadius:12, padding:"8px 10px" }}
                     , React.createElement('div', { style: { fontSize:13, color:T.goal_diffLabel }}, "最大ここまで休める！")
                     , React.createElement('div', { style: { fontSize:22, fontWeight:700, color:"#ff69b4" }}
                       , vsMax>=0?"+":"-", mmHHMM(Math.abs(vsMax))
@@ -18686,7 +18699,7 @@ function App() {
                     , React.createElement('div', { style: { position:"relative" }}
                       , React.createElement('input', { type: "date", value: ne.date,
                         onChange: e=>setNe(p=>({...p,date:e.target.value,dow:fillDow(e.target.value)})),
-                        style: { ...IS(T), color: ne.date ? "#e2e8f0" : "transparent", caretColor:"#e2e8f0" }})
+                        style: { ...IS(T), color: ne.date ? T.IS_color : "transparent", caretColor:T.IS_color }})
                       , !ne.date && React.createElement('div', {
                           style: {
                             position:"absolute", top:0, left:0, right:0, bottom:0,
@@ -18698,7 +18711,7 @@ function App() {
                   )
                   , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1122}}
                     , React.createElement('div', { style: { fontSize:11, color:T.ne_label, marginBottom:3 }}, "曜日")
-                    , React.createElement('div', { style: { ...IS(T), textAlign:"center", color:ne.date?dowBadge(ne.date,holidays).c:"#94a3b8",
+                    , React.createElement('div', { style: { ...IS(T), textAlign:"center", color:ne.date?dowBadge(ne.date, holidays, T).c:"#94a3b8",
                       fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center" }}
                       , ne.dow||"−"
                     )
@@ -18712,14 +18725,14 @@ function App() {
                       , DTYPES.map(d=>React.createElement('option', { key: d}, d))
                     )
                   )
-                  , React.createElement(NumpadField, { label: "番号", value: ne.diamondNo, placeholder: "タップして入力",
+                  , React.createElement(NumpadField, { T:T, label: "番号", value: ne.diamondNo, placeholder: "タップして入力",
                     onTap: ()=>openPad({
                       title:"番号を入力", mode:"num", initNum:ne.diamondNo,
                       onConfirm:v=>{ setNe(p=>({...p,diamondNo:v===0?"":String(v)})); closePad(); },
                     })})
                 )
 
-                , React.createElement(NumpadField, { label: "労働時間", value: ne.workTime, placeholder: "タップして入力",
+                , React.createElement(NumpadField, { T:T, label: "労働時間", value: ne.workTime, placeholder: "タップして入力",
                   onTap: ()=>{
                     const c=parseHM(ne.workTime);
                     openPad({
@@ -18812,8 +18825,8 @@ function App() {
                         )
                       )
                       , React.createElement('button', { onClick: ()=>{ if(!(noFields||willMinus||overWork||showSwitchConfirm)) vibe(50); addEntry(); }, disabled: noFields || willMinus || overWork || showSwitchConfirm, style: {
-                        background: (noFields||willMinus||overWork||showSwitchConfirm) ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
-                        border:"none", borderRadius:8, padding:"11px", color: (noFields||willMinus||overWork||showSwitchConfirm) ? "#475569" : "#fff",
+                        background: (noFields||willMinus||overWork||showSwitchConfirm) ? T.ne_cancelBg : T.addBtnBg,
+                        border:(noFields||willMinus||overWork||showSwitchConfirm) ? T.ne_cancelBorder : "none", borderRadius:8, padding:"11px", color: (noFields||willMinus||overWork||showSwitchConfirm) ? T.ne_cancelColor : "#fff",
                         fontSize:14, fontWeight:600, cursor:(noFields||willMinus||overWork||showSwitchConfirm)?"not-allowed":"pointer" }}, "追加する")
                     )
                   );
@@ -18831,7 +18844,7 @@ function App() {
             )
 
             , entries.map(e=>{
-              const badge=dowBadge(e.date, holidays);
+              const badge=dowBadge(e.date, holidays, T);
               const isEd=editId===e.id;
               return (
                 React.createElement('div', { key: e.id, style: {
@@ -18868,15 +18881,15 @@ function App() {
                           borderRadius:8, color:"#f87171", width:32, height:32, cursor:"pointer", fontSize:14 }}, "✕")
                       )
                       , React.createElement('button', { onClick: ()=>{ vibe(50); setEntries(p=>p.map(x=>x.id===e.id?{...x,submitted:!x.submitted}:x)); }, style: {
-                        background: e.submitted?"rgba(52,211,153,0.15)":"rgba(248,113,113,0.12)",
-                        border: `1px solid ${e.submitted?"rgba(52,211,153,0.4)":"rgba(248,113,113,0.35)"}`,
-                        borderRadius:8, color: e.submitted?"#34d399":"#f87171",
+                        background: e.submitted?(isDark?"rgba(52,211,153,0.15)":"rgba(52,211,153,0.28)"):"rgba(248,113,113,0.12)",
+                        border: "1px solid "+(e.submitted?(isDark?"rgba(52,211,153,0.4)":"rgba(52,211,153,0.75)"):"rgba(248,113,113,0.35)"),
+                        borderRadius:8, color: e.submitted?(isDark?"#34d399":"#047857"):"#f87171",
                         fontSize:11, fontWeight:700, cursor:"pointer",
                         padding:"3px 6px", whiteSpace:"nowrap",
                       }}, e.submitted?"届出済":"未提出")
                     )
                   )
-                  , isEd && React.createElement(EditForm, { entry: e, workPerDay: wpd, holidays: holidays, onSave: saveEdit, onCancel: ()=>setEditId(null)})
+                  , isEd && React.createElement(EditForm, { T:T, entry: e, workPerDay: wpd, holidays: holidays, onSave: saveEdit, onCancel: ()=>setEditId(null)})
                 )
               );
             })
@@ -18898,17 +18911,17 @@ function App() {
             , React.createElement('div', { style: {
               display:"flex", alignItems:"center", justifyContent:"space-between",
               background: prevRem>=0 ? T.hay_prevBg : "rgba(52,211,153,0.1)",
-              border: `1px solid ${prevRem>=0 ? T.hay_prevBorder : "rgba(52,211,153,0.35)"}`,
+              border: "1px solid "+(prevRem>=0 ? T.hay_prevBorder : "rgba(52,211,153,0.35)"),
               borderRadius:10, padding:"7px 12px",
             }}
               , React.createElement('div', { style: { display:"flex", alignItems:"center", gap:8 }}
                 , React.createElement('span', { style: {
                   fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:10,
-                  background: prevRem>=0 ? T.hay_badgeBg : "rgba(52,211,153,0.25)",
-                  color: prevRem>=0 ? T.hay_badgeColor : "#34d399",
+                  background: prevRem>=0 ? T.hay_badgeBg : (isDark?"rgba(52,211,153,0.25)":"rgba(52,211,153,0.28)"),
+                  color: prevRem>=0 ? T.hay_badgeColor : (isDark?"#34d399":"#047857"),
                 }}, prevRem>=0 ? "前年度消費中" : "今年度消費中")
                 , React.createElement('span', { style: { fontSize:11, color:T.hay_remLabel }}, "年休残")
-                , React.createElement('span', { style: { fontSize:13, fontWeight:700, color: prevRem>=0 ? T.hay_remColor_normal : "#34d399" }}
+                , React.createElement('span', { style: { fontSize:13, fontWeight:700, color: prevRem>=0 ? T.hay_remColor_normal : (isDark?"#34d399":"#047857") }}
                   , mmHHMM(remMin)
                 )
               )
@@ -19035,7 +19048,7 @@ function App() {
               {
                 icon:"📱", title:"はじめに",
                 color:"#6366f1",
-                body:"このアプリは、年次有給休暇（年休）の残り時間を管理するツールです。\n使用した年休を記録するだけで、残日数・消費ペースを自動で計算します。\nデータはこの端末に自動保存されるので、次回開いたときもそのまま続きから使えます。\nタブは画面下のボタンをタップするか、左右にスワイプして切り替えられます。",
+                body:"このアプリは、年次有給休暇（年休）の残り時間を管理するツールです。\n使用した年休を記録するだけで、残日数・消費ペースを自動で計算します。\nデータはこの端末に自動保存されるので、次回開いたときもそのまま続きから使えます。\nタブは画面下のボタンをタップするか、左右にスワイプして切り替えられます。\n画面右上の ☀️ / 🌙 ボタンでライト・ダークテーマを切り替えられます。",
               },
               {
                 icon:"✨", title:"最初にやること",
@@ -19045,7 +19058,7 @@ function App() {
                   {label:"前年度の年休所得時間", desc:"前の年度から持ち越した年休の所得時間を入力します。枠をタップするとテンキーが開きます。"},
                   {label:"今年度の年休所得時間", desc:"今年度に新しく付与された年休の所得時間を入力します。枠をタップするとテンキーが開きます。"},
                   {label:"1日の所定労働時間", desc:"1日の勤務時間を入力します。枠をタップするとテンキーが開きます。早見表の計算にも使われます。"},
-                  {label:"目標残日数", desc:"年休の更新日までに残しておきたい日数を − ・ ＋ で設定します。"},
+                  {label:"目標残日数", desc:"年休の更新日までに残しておきたい日数を − ・ ＋ ボタンで設定します。タップすると光りが消えます。"},
                 ],
               },
               {
@@ -19068,11 +19081,12 @@ function App() {
                 color:"#06b6d4",
                 body:"「使用記録」タブで年休を使った日の記録を登録します。",
                 items:[
-                  {label:"＋ 年休使用日を追加", desc:"ボタンをタップすると入力欄が開きます。使用日・ダイヤ区分・番号・労働時間をすべて入力すると追加できます。"},
-                  {label:"使用日", desc:"タップするとカレンダーが開きます。日付を選ぶと曜日が自動で入ります。"},
-                  {label:"労働時間", desc:"その日に実際に働いた時間を入力します。上限は15時間00分です。"},
-                  {label:"前年度→今年度の移行確認", desc:"入力した時間によって前年度分が不足する場合、確認ダイアログが表示されます。「承諾」で今年度分への移行を確定、「拒否」で入力をやり直せます。"},
-                  {label:"届出済 / 未提出", desc:"年休届の提出状況を管理できます。タップするたびに切り替わります。"},
+                  {label:"＋ 年休使用日を追加", desc:"ボタンをタップすると入力欄が開きます。使用日・番号・労働時間の3項目を入力すると「追加する」ボタンが押せるようになります。"},
+                  {label:"使用日", desc:"タップすると日付入力が開きます。日付を選ぶと曜日が自動で入ります。"},
+                  {label:"番号", desc:"ダイヤの番号をテンキーで入力します。"},
+                  {label:"労働時間", desc:"その日に実際に働いた時間をテンキーで入力します。上限は15時間00分です。"},
+                  {label:"前年度→今年度の移行確認", desc:"入力により前年度分が不足する場合、確認ダイアログが表示されます。「承諾」で今年度分への自動移行を確定し、「拒否」で入力をやり直せます。"},
+                  {label:"届出済 / 未提出", desc:"年休届の提出状況を管理できます。タップするたびに切り替わります。届出済は緑色、未提出は赤色で表示されます。"},
                   {label:"✏ 編集 / ✕ 削除", desc:"登録済みの記録を修正・削除できます。✕ をタップすると確認ダイアログが表示されます。「削除する」で削除、「キャンセル」で取り消せます。"},
                   {label:"🗑 全削除", desc:"すべての使用記録を一括削除します。タップすると「⚠ 全件削除しますか？」の確認が表示されます。「削除する」で全件削除、「キャンセル」で取り消せます。"},
                 ],
