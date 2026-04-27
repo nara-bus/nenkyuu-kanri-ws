@@ -17385,7 +17385,7 @@ const THEMES = {
     re_diaColor: "#7c3aed",
     re_noColor: "#000000", re_noBg: "rgba(0,0,0,0.06)",
     re_workColor_fill: "#000000", re_workColor_empty: "#000000",
-    re_editColor: "#4f46e5",
+    re_editColor: "#7c3aed",
     re_emptyColor: "#64748b",
     // hayami
     hay_prevBg: "rgba(0,0,0,0.06)", hay_prevBorder: "rgba(0,0,0,0.18)",
@@ -17576,6 +17576,7 @@ function NumpadModal({ title, mode="hm", initH=0, initM=0, initNum="", maxNum=99
   const [m, setM]   = useState(String(initM));
   const [focus, setFocus] = useState("h");
   const [num, setNum] = useState(initNum);
+  const [pressedKey, setPressedKey] = useState(null);
 
   // 表示用：分は2桁ゼロ埋め
   const mDisplay = m.padStart(2,"0");
@@ -17694,14 +17695,21 @@ function NumpadModal({ title, mode="hm", initH=0, initM=0, initNum="", maxNum=99
           , keys.flat().map(k => {
             const isAct = k==="C"||k==="⌫";
             return (
-              React.createElement('button', { key: k, onClick: ()=>{ vibe(50); if(k==="C") pressClear(); else if(k==="⌫") pressDel(); else pressNum(k); },
+              React.createElement('button', { key: k,
+                onPointerDown: ()=>{ setPressedKey(k); },
+                onPointerUp:   ()=>{ setPressedKey(null); },
+                onPointerLeave:()=>{ setPressedKey(null); },
+                onClick: ()=>{ if(k==="C") pressClear(); else if(k==="⌫") pressDel(); else pressNum(k); },
                 style: {
                   ...nkBase,
                   height:52,
-                  background: isAct ? "rgba(248,113,113,0.15)" : (T===THEMES.light ? "rgba(0,0,0,0.09)" : T.np_btnBg),
+                  background: pressedKey===k
+                    ? (isAct ? "rgba(248,113,113,0.45)" : (T===THEMES.light ? "rgba(0,0,0,0.22)" : "rgba(255,255,255,0.2)"))
+                    : (isAct ? "rgba(248,113,113,0.15)" : (T===THEMES.light ? "rgba(0,0,0,0.09)" : T.np_btnBg)),
                   color: isAct ? "#f87171" : T.np_btnColor,
                   fontSize: k==="⌫" ? 18 : 20,
                   border: isAct ? "1px solid rgba(248,113,113,0.25)" : T.np_clrBorder,
+                  transition: pressedKey===k ? "none" : "background 0.15s",
                 }}
                 , k
               )
@@ -17711,16 +17719,22 @@ function NumpadModal({ title, mode="hm", initH=0, initM=0, initNum="", maxNum=99
 
         /* 確定 / キャンセル */
         , React.createElement('div', { style: { display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginTop:12 }}
-          , React.createElement('button', { onClick: ()=>{ vibe(50); onClose(); }, style: {
+          , React.createElement('button', {
+            onPointerDown:()=>setPressedKey("cancel"), onPointerUp:()=>setPressedKey(null), onPointerLeave:()=>setPressedKey(null),
+            onClick: ()=>{ onClose(); }, style: {
             ...nkBase, height:44, fontSize:13,
-            background:T.np_clrBg, border:T.np_clrBorder,
-            color:T.np_clrColor,
+            background: pressedKey==="cancel" ? "rgba(0,0,0,0.18)" : T.np_clrBg,
+            border:T.np_clrBorder, color:T.np_clrColor,
+            transition: pressedKey==="cancel" ? "none" : "background 0.15s",
           }}, "キャンセル")
-          , React.createElement('button', { onClick: ()=>{ if(!overMax) vibe(50); confirm(); }, style: {
+          , React.createElement('button', {
+            onPointerDown:()=>{ if(!overMax) setPressedKey("ok"); }, onPointerUp:()=>setPressedKey(null), onPointerLeave:()=>setPressedKey(null),
+            onClick: ()=>{ if(!overMax) confirm(); }, style: {
             ...nkBase, height:44, fontSize:13, fontWeight:700,
-            background: overMax ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
+            background: overMax ? "rgba(255,255,255,0.1)" : pressedKey==="ok" ? "linear-gradient(135deg,#4338ca,#7c3aed)" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
             border:"none", color: overMax ? "#475569" : "#fff",
             cursor: overMax ? "not-allowed" : "pointer",
+            transition: pressedKey==="ok" ? "none" : "background 0.15s",
           }}, "確定")
         )
       )
@@ -18850,7 +18864,7 @@ function App() {
                           padding:"2px 7px", borderRadius:20, fontWeight:700 }}, e.dow)
                       )
                       , React.createElement('div', { style: { display:"flex", gap:8, flexWrap:"wrap" }}
-                        , React.createElement('span', { style: { fontSize:14, background:"rgba(139,92,246,0.15)", color:T.re_diaColor, padding:"2px 8px", borderRadius:6 }}, "ダイヤ "
+                        , React.createElement('span', { style: { fontSize:14, background:isDark?"rgba(99,102,241,0.38)":"rgba(124,58,237,0.15)", color:T.re_diaColor, padding:"2px 8px", borderRadius:6 }}, "ダイヤ "
                            , e.diamond)
                         , e.diamondNo && React.createElement('span', { style: { fontSize:14, background:T.re_noBg, color:T.re_noColor, padding:"2px 8px", borderRadius:6 }}, "No."
                           , e.diamondNo)
@@ -18864,12 +18878,12 @@ function App() {
                     , React.createElement('div', { style: { display:"flex", gap:6, marginLeft:8, flexShrink:0, flexDirection:"column", alignItems:"center" }}
                       , React.createElement('div', { style: { display:"flex", gap:6 }}
                         , React.createElement('button', { onClick: ()=>{ vibe(50); setEditId(isEd?null:e.id); }, style: {
-                          background:isEd?"rgba(99,102,241,0.3)":"rgba(99,102,241,0.1)",
-                          border:`1px solid ${isEd?"rgba(99,102,241,0.6)":"rgba(99,102,241,0.25)"}`,
+                          background:isDark?"rgba(99,102,241,0.38)":"rgba(124,58,237,0.15)",
+                          border:"1px solid "+(isDark?"rgba(99,102,241,0.7)":"rgba(124,58,237,0.5)"),
                           borderRadius:8, color:T.re_editColor, width:32, height:32, cursor:"pointer", fontSize:14 }}, "✏")
                         , React.createElement('button', { onClick: ()=>{ vibe(50); setDeleteConfirmId(e.id); }, style: {
-                          background:"rgba(248,113,113,0.1)", border:"1px solid rgba(248,113,113,0.2)",
-                          borderRadius:8, color:"#f87171", width:32, height:32, cursor:"pointer", fontSize:14 }}, "🗑")
+                          background:"rgba(248,113,113,0.22)", border:"1px solid rgba(248,113,113,0.5)",
+                          borderRadius:8, color:"#ef4444", width:32, height:32, cursor:"pointer", fontSize:14 }}, "🗑")
                       )
                       , React.createElement('button', { onClick: ()=>{ vibe(50); setEntries(p=>p.map(x=>x.id===e.id?{...x,submitted:!x.submitted}:x)); }, style: {
                         background: e.submitted?(isDark?"rgba(52,211,153,0.15)":"rgba(52,211,153,0.28)"):"rgba(248,113,113,0.12)",
@@ -19009,14 +19023,14 @@ function App() {
                     /* 基準時間列 */
                     , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1422}}
                       , React.createElement('div', { style: { fontSize:10, color:T.hay_baseLabel, marginBottom:2 }}, "基準時間")
-                      , React.createElement('div', { style: { fontSize:14, fontWeight:600, color:_nullishCoalesce(valCol, () => ("#34d399")) }}
+                      , React.createElement('div', { style: { fontSize:14, fontWeight:600, color:isDark?"#34d399":"#059669" }}
                         , mmHHMM(row.remainMin)
                       )
                     )
                     /* 日数判定時間列 */
                     , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1429}}
                       , React.createElement('div', { style: { fontSize:10, color:T.hay_judgeLabel, marginBottom:2 }}, "日数判定時間")
-                      , React.createElement('div', { style: { fontSize:13, fontWeight:600, color:_nullishCoalesce(valCol, () => ("#60a5fa")) }}
+                      , React.createElement('div', { style: { fontSize:13, fontWeight:600, color:isDark?"#60a5fa":"#2563eb" }}
                         , mmHHMM(row.maxMin), React.createElement('span', { style: { color:T.fld_label, margin:"0 3px" }}, "～"), mmHHMM(row.judgeMax)
                       )
                     )
