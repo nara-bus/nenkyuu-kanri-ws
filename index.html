@@ -18474,14 +18474,32 @@ function App() {
               , React.createElement('div', { style: { display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8 }}
                 /* 円グラフ */
                 , React.createElement('div', { style: { position:"relative", width:200, height:200 }}
-                  , React.createElement('svg', { width:200, height:200, style:{ transform:"rotate(-90deg)" }}
-                    , React.createElement('circle', { cx:100, cy:100, r:86, fill:"none", stroke: isDark?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.08)", strokeWidth:10 })
-                    , React.createElement('circle', { cx:100, cy:100, r:86, fill:"none",
-                        stroke:"#00c853", strokeWidth:10,
-                        strokeDasharray: `${2*Math.PI*86}`,
-                        strokeDashoffset: `${2*Math.PI*86*(1-Math.min(remMin/Math.max((parseHM(prevH)||0)+(parseHM(currH)||153*60),1),1))}`,
-                        strokeLinecap:"round",
-                      })
+                  , React.createElement('svg', { width:200, height:200, style:{ transform:"rotate(-90deg)" }},
+                    /* 背景トラック */
+                    React.createElement('circle', { cx:100, cy:100, r:86, fill:"none", stroke: isDark?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.08)", strokeWidth:10 }),
+                    /* 前年度消費中：前年度残÷前年度総量を紫で360°表示
+                       今年度消費中：今年度残÷今年度総量を緑で360°表示 */
+                    (()=>{
+                      const circ = 2*Math.PI*86;
+                      if(prevRem >= 0 && prevMin > 0) {
+                        const ratio = Math.min(prevRem / Math.max(prevMin, 1), 1);
+                        return React.createElement('circle', { cx:100, cy:100, r:86, fill:"none",
+                          stroke:"#818cf8", strokeWidth:10,
+                          strokeDasharray:`${circ*ratio} ${circ*(1-ratio)}`,
+                          strokeDashoffset:"0",
+                          strokeLinecap:"round",
+                        });
+                      } else {
+                        const currRem = Math.max(currMin + prevRem, 0);
+                        const ratio = Math.min(currRem / Math.max(currMin, 1), 1);
+                        return React.createElement('circle', { cx:100, cy:100, r:86, fill:"none",
+                          stroke:"#00c853", strokeWidth:10,
+                          strokeDasharray:`${circ*ratio} ${circ*(1-ratio)}`,
+                          strokeDashoffset:"0",
+                          strokeLinecap:"round",
+                        });
+                      }
+                    })()
                   )
                   /* 中央テキスト */
                   , React.createElement('div', { style: {
@@ -18493,9 +18511,9 @@ function App() {
                     , React.createElement('div', { style: {
                         marginTop:4, fontSize:11, fontWeight:700,
                         padding:"2px 8px", borderRadius:10,
-                        background: prevRem>=0 ? "rgba(99,102,241,0.25)" : (isDark?"rgba(52,211,153,0.2)":"rgba(52,211,153,0.28)"),
-                        color:       prevRem>=0 ? T.badgePurple           : (isDark?"#34d399":"#047857"),
-                      }}, prevRem>=0 ? "前年度残" : "今年度残")
+                        background: (prevRem>=0 && prevMin>0) ? "rgba(129,140,248,0.25)" : (isDark?"rgba(52,211,153,0.2)":"rgba(52,211,153,0.28)"),
+                        color:       (prevRem>=0 && prevMin>0) ? "#818cf8"               : (isDark?"#34d399":"#047857"),
+                      }}, (prevRem>=0 && prevMin>0) ? "前年度残" : "今年度残")
                   )
                 )
                 /* 残時間日数換算 */
@@ -18635,13 +18653,13 @@ function App() {
                   width:38,height:38, fontSize:20, fontWeight:900, cursor:"pointer",
                   borderRadius:8,
                   background: isDark
-                    ? "linear-gradient(180deg,#9ca3af 0%,#6b7280 40%,#4b5563 100%)"
-                    : "linear-gradient(180deg,#f1f5f9 0%,#cbd5e1 40%,#94a3b8 100%)",
-                  border: isDark?"1px solid #374151":"1px solid #94a3b8",
+                    ? "linear-gradient(180deg,#d1d5db 0%,#9ca3af 40%,#6b7280 100%)"
+                    : "linear-gradient(180deg,#ffffff 0%,#e2e8f0 40%,#bdc8d4 100%)",
+                  border: isDark?"1px solid #6b7280":"1px solid #94a3b8",
                   color: isDark?"#1e293b":"#1e293b",
                   boxShadow: isDark
-                    ? "inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.5)"
-                    : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 4px rgba(0,0,0,0.18)",
+                    ? "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(0,0,0,0.4)"
+                    : "inset 0 1px 0 rgba(255,255,255,1.0), 0 2px 4px rgba(0,0,0,0.15)",
                 }}, "−")
                 , React.createElement('div', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', style: { textAlign:"center", fontSize:28, fontWeight:700, color:T.inputVal, background:T.card_bg, border:"1px solid "+T.goal_diffBorder_ok, borderRadius:8, padding:"4px 16px" }}
                   , tDays, " " , React.createElement('span', { style: { fontSize:14 }}, "日")
@@ -18650,13 +18668,13 @@ function App() {
                   width:38,height:38, fontSize:20, fontWeight:900, cursor:"pointer",
                   borderRadius:8,
                   background: isDark
-                    ? "linear-gradient(180deg,#9ca3af 0%,#6b7280 40%,#4b5563 100%)"
-                    : "linear-gradient(180deg,#f1f5f9 0%,#cbd5e1 40%,#94a3b8 100%)",
-                  border: isDark?"1px solid #374151":"1px solid #94a3b8",
+                    ? "linear-gradient(180deg,#d1d5db 0%,#9ca3af 40%,#6b7280 100%)"
+                    : "linear-gradient(180deg,#ffffff 0%,#e2e8f0 40%,#bdc8d4 100%)",
+                  border: isDark?"1px solid #6b7280":"1px solid #94a3b8",
                   color: isDark?"#1e293b":"#1e293b",
                   boxShadow: isDark
-                    ? "inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.5)"
-                    : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 4px rgba(0,0,0,0.18)",
+                    ? "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(0,0,0,0.4)"
+                    : "inset 0 1px 0 rgba(255,255,255,1.0), 0 2px 4px rgba(0,0,0,0.15)",
                 }}, "＋")
               )
               , hd && (
