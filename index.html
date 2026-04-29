@@ -18463,19 +18463,63 @@ function App() {
         , tab==="main" && (
           React.createElement('div', { style: { display:"flex", flexDirection:"column", gap:12 }}
 
-            /* 年休所得時間（前年度・今年度） ＋ 1日の所定労働時間 を横並び */
-            , React.createElement('div', { style: { display:"grid", gridTemplateColumns:"1fr auto", gap:8, alignItems:"stretch" }}
-
-              /* 年休所得時間カード */
-              , React.createElement('div', { style: {
+            /* ═══ メインビジュアルカード：円グラフ＋右側入力 ═══ */
+            , React.createElement('div', { style: {
                 background:T.card_bg, border:T.card_border,
-                borderRadius:12, padding:12,
+                borderRadius:16, padding:16,
+                display:"grid", gridTemplateColumns:"1fr auto", gap:12, alignItems:"stretch",
               }}
-                , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:8 }}, "年休所得時間")
-                , React.createElement('div', { style: { display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}
+
+              /* 左：円グラフ＋年休残時間＋残時間日数換算 */
+              , React.createElement('div', { style: { display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8 }}
+                /* 円グラフ */
+                , React.createElement('div', { style: { position:"relative", width:200, height:200 }}
+                  , React.createElement('svg', { width:200, height:200, style:{ transform:"rotate(-90deg)" }}
+                    , React.createElement('circle', { cx:100, cy:100, r:86, fill:"none", stroke: isDark?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.08)", strokeWidth:10 })
+                    , React.createElement('circle', { cx:100, cy:100, r:86, fill:"none",
+                        stroke:"#00c853", strokeWidth:10,
+                        strokeDasharray: `${2*Math.PI*86}`,
+                        strokeDashoffset: `${2*Math.PI*86*(1-Math.min(remMin/Math.max((parseHM(prevH)||0)+(parseHM(currH)||153*60),1),1))}`,
+                        strokeLinecap:"round",
+                      })
+                  )
+                  /* 中央テキスト */
+                  , React.createElement('div', { style: {
+                      position:"absolute", inset:0,
+                      display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:2,
+                    }}
+                    , React.createElement('div', { style: { fontSize:11, color:T.card_label2, fontWeight:500 }}, "年休残時間")
+                    , React.createElement('div', { style: { fontSize:28, fontWeight:700, color:"#00c853", lineHeight:1 }}, mmHHMM(remMin))
+                    , React.createElement('div', { style: { fontSize:11, color:T.fld_label, marginTop:2 }},
+                        remWhole, "日 ", mmHHMM(remSub)
+                    )
+                    , React.createElement('div', { style: {
+                        marginTop:4, fontSize:11, fontWeight:700,
+                        padding:"2px 8px", borderRadius:10,
+                        background: prevRem>=0 ? "rgba(99,102,241,0.25)" : (isDark?"rgba(52,211,153,0.2)":"rgba(52,211,153,0.28)"),
+                        color:       prevRem>=0 ? T.badgePurple           : (isDark?"#34d399":"#047857"),
+                      }}, prevRem>=0 ? "前年度残" : "今年度残")
+                  )
+                )
+                /* 残時間日数換算 */
+                , React.createElement('div', { style: { textAlign:"center" }}
+                  , React.createElement('div', { style: { fontSize:11, color:T.card_label, marginBottom:2 }}, "残時間日数換算")
+                  , React.createElement('div', { style: { display:"flex", alignItems:"baseline", justifyContent:"center", gap:4 }}
+                    , React.createElement('span', { style: { fontSize:22, fontWeight:700, color:"#00c853" }}, remWhole, "日")
+                    , React.createElement('span', { style: { fontSize:18, fontWeight:700, color:"#00c853" }}, mmHHMM(remSub))
+                  )
+                )
+              )
+
+              /* 右：年休所得時間（前年度・今年度）＋所定労働時間 */
+              , React.createElement('div', { style: { display:"flex", flexDirection:"column", gap:10, width:120 }}
+
+                /* 年休所得時間ブロック */
+                , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 880}}
+                  , React.createElement('div', { style: { fontSize:12, color:T.card_label, marginBottom:6 }}, "年休所得時間")
                   /* 前年度 */
-                  , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 887}}
-                    , React.createElement('div', { style: { fontSize:11, color:T.fld_label, marginBottom:3, display:"flex", alignItems:"center", justifyContent:"space-between", paddingRight:"14px" }}
+                  , React.createElement('div', { style: { marginBottom:6 }}
+                    , React.createElement('div', { style: { fontSize:11, color:T.fld_label, marginBottom:3, display:"flex", alignItems:"center", justifyContent:"space-between" }}
                       , React.createElement('span', null, "前年度")
                       , React.createElement('span', { onClick: e=>{ e.stopPropagation(); setInfoPopup({title:"前年度 年休所得時間", desc:"前年度に付与・繰越された年休の時間を入力して下さい。前年度分は今年度分より先に消費されます。"}); }, style:{ fontSize:12, cursor:"pointer", opacity:0.8 }}, "ℹ️")
                     )
@@ -18487,18 +18531,23 @@ function App() {
                         }); }, style: {
                         ...IS(T), cursor:"pointer", userSelect:"none",
                         color: prevH ? T.inputVal : "#64748b",
-                        fontWeight:700, fontSize:20,
+                        fontWeight:700, fontSize:18,
                         display:"flex", alignItems:"center", justifyContent:"center",
-                        padding:"10px 14px",
-                        background:"rgba(0,170,255,0.18)",
-                        border:"1px solid rgba(0,170,255,0.95)",
+                        padding:"8px 10px",
+                        background: isDark
+                          ? "linear-gradient(180deg,#9ca3af 0%,#6b7280 40%,#4b5563 100%)"
+                          : "linear-gradient(180deg,#f1f5f9 0%,#cbd5e1 40%,#94a3b8 100%)",
+                        border: isDark?"1px solid #374151":"1px solid #94a3b8",
+                        boxShadow: isDark
+                          ? "inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.5)"
+                          : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 4px rgba(0,0,0,0.18)",
                       }}
                       , React.createElement('span', null, prevH || "0:00")
                     )
                   )
                   /* 今年度 */
                   , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 900}}
-                    , React.createElement('div', { style: { fontSize:11, color:T.fld_label, marginBottom:3, display:"flex", alignItems:"center", justifyContent:"space-between", paddingRight:"14px" }}
+                    , React.createElement('div', { style: { fontSize:11, color:T.fld_label, marginBottom:3, display:"flex", alignItems:"center", justifyContent:"space-between" }}
                       , React.createElement('span', null, "今年度")
                       , React.createElement('span', { onClick: e=>{ e.stopPropagation(); setInfoPopup({title:"今年度 年休所得時間", desc:"今年度に新たに付与された年休の時間を入力して下さい。前年度分を使い切った後にこちらが消費されます。"}); }, style:{ fontSize:12, cursor:"pointer", opacity:0.8 }}, "ℹ️")
                     )
@@ -18510,27 +18559,26 @@ function App() {
                         }); }, style: {
                         ...IS(T), cursor:"pointer", userSelect:"none",
                         color: currH ? T.inputVal : "#64748b",
-                        fontWeight:700, fontSize:20,
+                        fontWeight:700, fontSize:18,
                         display:"flex", alignItems:"center", justifyContent:"center",
-                        padding:"10px 14px",
-                        background:"rgba(0,170,255,0.18)",
-                        border:"1px solid rgba(0,170,255,0.95)",
+                        padding:"8px 10px",
+                        background: isDark
+                          ? "linear-gradient(180deg,#9ca3af 0%,#6b7280 40%,#4b5563 100%)"
+                          : "linear-gradient(180deg,#f1f5f9 0%,#cbd5e1 40%,#94a3b8 100%)",
+                        border: isDark?"1px solid #374151":"1px solid #94a3b8",
+                        boxShadow: isDark
+                          ? "inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.5)"
+                          : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 4px rgba(0,0,0,0.18)",
                       }}
                       , React.createElement('span', null, currH || "0:00")
                     )
                   )
                 )
-              )
 
-              /* 1日の所定労働時間 */
-              , React.createElement('div', { style: {
-                background:T.card_bg, border:T.card_border2,
-                borderRadius:12, padding:12, width:120,
-                display:"flex", flexDirection:"column", alignSelf:"stretch",
-              }}
-                , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:8, whiteSpace:"nowrap" }}, "所定労働時間")
-                , React.createElement('div', { style: { flex:1, display:"flex", flexDirection:"column", justifyContent:"flex-end" }}
-                  , React.createElement('div', { style: { fontSize:11, color:T.fld_label, marginBottom:3, display:"flex", alignItems:"center", justifyContent:"space-between", paddingRight:"14px" }}
+                /* 所定労働時間 */
+                , React.createElement('div', { style: { borderTop: isDark?"1px solid rgba(255,255,255,0.1)":"1px solid rgba(0,0,0,0.08)", paddingTop:10 }}
+                  , React.createElement('div', { style: { fontSize:12, color:T.card_label, marginBottom:6, whiteSpace:"nowrap" }}, "所定労働時間")
+                  , React.createElement('div', { style: { fontSize:11, color:T.fld_label, marginBottom:3, display:"flex", alignItems:"center", justifyContent:"space-between" }}
                     , React.createElement('span', null, "時間")
                     , React.createElement('span', { onClick: e=>{ e.stopPropagation(); setInfoPopup({title:"所定労働時間", desc:"1日の勤務時間を設定します。タップすると時間を入力できます。早見表の基準時間・判定時間はこの値から自動計算されます。"}); }, style:{ fontSize:12, cursor:"pointer", opacity:0.8 }}, "ℹ️")
                   )
@@ -18540,73 +18588,21 @@ function App() {
                     onConfirm:(h,m)=>{ setWpd(h*60+m||1); closePad(); },
                   }); }, style: {
                     ...IS(T), cursor:"pointer", userSelect:"none",
-                    color:T.inputVal, fontWeight:700, fontSize:20,
-                    background:"rgba(0,170,255,0.18)", border:"1px solid rgba(0,170,255,0.95)",
+                    color:T.inputVal, fontWeight:700, fontSize:18,
+                    background: isDark
+                      ? "linear-gradient(180deg,#9ca3af 0%,#6b7280 40%,#4b5563 100%)"
+                      : "linear-gradient(180deg,#f1f5f9 0%,#cbd5e1 40%,#94a3b8 100%)",
+                    border: isDark?"1px solid #374151":"1px solid #94a3b8",
+                    boxShadow: isDark
+                      ? "inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.5)"
+                      : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 4px rgba(0,0,0,0.18)",
                     display:"flex", alignItems:"center", justifyContent:"center",
-                    padding:"10px 14px",
+                    padding:"8px 10px",
                   }}
                     , React.createElement('span', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 933}}, mmHHMM(wpd))
                   )
                 )
               )
-            )
-
-            /* 使用・残・残日数 */
-            , React.createElement('div', { style: { display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10 }}
-
-              /* 消費時間 */
-              , React.createElement('div', { style: {
-                background:T.card_bg, border:T.card_border2,
-                borderRadius:12, padding:"12px 8px",
-                display:"flex", flexDirection:"column", alignItems:"center",
-              }}
-                , React.createElement('div', { style: { fontSize:12, color:T.card_label, marginBottom:8 }}, "消費時間")
-                , React.createElement('div', { style: { flex:1, display:"flex", alignItems:"center", justifyContent:"center" }}
-                  , React.createElement('span', { style: { fontSize:22, fontWeight:700, color:"#00c853", lineHeight:1 }}
-                    , mmHHMM(usedMin)
-                  )
-                )
-                , React.createElement('div', { style: { marginTop:6, fontSize:11, color:"transparent", userSelect:"none" }}, "−")
-              )
-
-              /* 年休残時間（バッジを時間の下に横書き） */
-              , React.createElement('div', { style: {
-                background:T.card_bg, border:T.card_border2,
-                borderRadius:12, padding:"12px 8px",
-                display:"flex", flexDirection:"column", alignItems:"center",
-              }}
-                , React.createElement('div', { style: { fontSize:12, color:T.card_label2, marginBottom:8 }}, "年休残時間")
-                , React.createElement('div', { style: { flex:1, display:"flex", alignItems:"center", justifyContent:"center" }}
-                  , React.createElement('span', { style: { fontSize:22, fontWeight:700, color:"#00c853", lineHeight:1 }}
-                    , mmHHMM(remMin)
-                  )
-                )
-                , React.createElement('div', { style: {
-                  marginTop:6, fontSize:12, fontWeight:700,
-                  padding:"2px 8px", borderRadius:10,
-                  background: prevRem>=0 ? "rgba(99,102,241,0.25)" : (isDark?"rgba(52,211,153,0.2)":"rgba(52,211,153,0.28)"),
-                  color:       prevRem>=0 ? T.badgePurple           : (isDark?"#34d399":"#047857"),
-                }}, prevRem>=0 ? "前年度" : "今年度")
-              )
-
-              /* 残日数 */
-              , React.createElement('div', { style: {
-                background:T.card_bg, border:T.card_border2,
-                borderRadius:12, padding:"12px 8px",
-                display:"flex", flexDirection:"column", alignItems:"center",
-              }}
-                , React.createElement('div', { style: { fontSize:12, color:T.card_label, marginBottom:8 }}, "残時間日数換算")
-                , React.createElement('div', { style: { flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:3 }}
-                  , React.createElement('span', { style: { fontSize:22, fontWeight:700, color:"#00c853", lineHeight:1 }}
-                    , remWhole, "日"
-                  )
-                  , React.createElement('span', { style: { fontSize:22, fontWeight:700, color:"#00c853", lineHeight:1 }}
-                    , mmHHMM(remSub)
-                  )
-                )
-                , React.createElement('div', { style: { marginTop:6, fontSize:11, color:"transparent", userSelect:"none" }}, "−")
-              )
-
             )
 
             /* 日数判定・切り替わり */
@@ -18639,14 +18635,32 @@ function App() {
               , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:10 }}, "目標残日数設定")
               , React.createElement('div', { style: { display:"flex", alignItems:"center", justifyContent:"center", gap:19 }}
                 , React.createElement('button', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', onClick: ()=>{ vibe(50); setPulseOff(p=>({...p,tDays:true})); setTDays(d=>Math.max(0,d-1)); }, style: {
-                  width:38,height:38, background:T.goal_btnBg, border:T.goal_btnBorder,
-                  borderRadius:8, color:T.goal_btnColor, fontSize:20, cursor:"pointer" }}, "−")
-                , React.createElement('div', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', style: { textAlign:"center", fontSize:28, fontWeight:700, color:T.inputVal, background:"rgba(0,170,255,0.18)", border:"1px solid rgba(0,170,255,0.95)", borderRadius:8, padding:"4px 16px" }}
+                  width:38,height:38, fontSize:20, cursor:"pointer",
+                  borderRadius:8,
+                  background: isDark
+                    ? "linear-gradient(180deg,#9ca3af 0%,#6b7280 40%,#4b5563 100%)"
+                    : "linear-gradient(180deg,#f1f5f9 0%,#cbd5e1 40%,#94a3b8 100%)",
+                  border: isDark?"1px solid #374151":"1px solid #94a3b8",
+                  color: isDark?"#1e293b":"#1e293b",
+                  boxShadow: isDark
+                    ? "inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.5)"
+                    : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 4px rgba(0,0,0,0.18)",
+                }}, "−")
+                , React.createElement('div', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', style: { textAlign:"center", fontSize:28, fontWeight:700, color:T.inputVal, background:T.card_bg, border:"1px solid "+T.goal_diffBorder_ok, borderRadius:8, padding:"4px 16px" }}
                   , tDays, " " , React.createElement('span', { style: { fontSize:14 }}, "日")
                 )
                 , React.createElement('button', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', onClick: ()=>{ vibe(50); setPulseOff(p=>({...p,tDays:true})); setTDays(d=>Math.min(20,d+1)); }, style: {
-                  width:38,height:38, background:T.goal_btnBg, border:T.goal_btnBorder,
-                  borderRadius:8, color:T.goal_btnColor, fontSize:20, cursor:"pointer" }}, "＋")
+                  width:38,height:38, fontSize:20, cursor:"pointer",
+                  borderRadius:8,
+                  background: isDark
+                    ? "linear-gradient(180deg,#9ca3af 0%,#6b7280 40%,#4b5563 100%)"
+                    : "linear-gradient(180deg,#f1f5f9 0%,#cbd5e1 40%,#94a3b8 100%)",
+                  border: isDark?"1px solid #374151":"1px solid #94a3b8",
+                  color: isDark?"#1e293b":"#1e293b",
+                  boxShadow: isDark
+                    ? "inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.5)"
+                    : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 4px rgba(0,0,0,0.18)",
+                }}, "＋")
               )
               , hd && (
                 React.createElement('div', { style: { marginTop:12, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}
