@@ -18490,9 +18490,6 @@ function App() {
                     }}
                     , React.createElement('div', { style: { fontSize:11, color:T.card_label2, fontWeight:500 }}, "年休残時間")
                     , React.createElement('div', { style: { fontSize:28, fontWeight:700, color:"#00c853", lineHeight:1 }}, mmHHMM(remMin))
-                    , React.createElement('div', { style: { fontSize:11, color:T.fld_label, marginTop:2 }},
-                        remWhole, "日 ", mmHHMM(remSub)
-                    )
                     , React.createElement('div', { style: {
                         marginTop:4, fontSize:11, fontWeight:700,
                         padding:"2px 8px", borderRadius:10,
@@ -18635,7 +18632,7 @@ function App() {
               , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:10 }}, "目標残日数設定")
               , React.createElement('div', { style: { display:"flex", alignItems:"center", justifyContent:"center", gap:19 }}
                 , React.createElement('button', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', onClick: ()=>{ vibe(50); setPulseOff(p=>({...p,tDays:true})); setTDays(d=>Math.max(0,d-1)); }, style: {
-                  width:38,height:38, fontSize:20, cursor:"pointer",
+                  width:38,height:38, fontSize:20, fontWeight:900, cursor:"pointer",
                   borderRadius:8,
                   background: isDark
                     ? "linear-gradient(180deg,#9ca3af 0%,#6b7280 40%,#4b5563 100%)"
@@ -18650,7 +18647,7 @@ function App() {
                   , tDays, " " , React.createElement('span', { style: { fontSize:14 }}, "日")
                 )
                 , React.createElement('button', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', onClick: ()=>{ vibe(50); setPulseOff(p=>({...p,tDays:true})); setTDays(d=>Math.min(20,d+1)); }, style: {
-                  width:38,height:38, fontSize:20, cursor:"pointer",
+                  width:38,height:38, fontSize:20, fontWeight:900, cursor:"pointer",
                   borderRadius:8,
                   background: isDark
                     ? "linear-gradient(180deg,#9ca3af 0%,#6b7280 40%,#4b5563 100%)"
