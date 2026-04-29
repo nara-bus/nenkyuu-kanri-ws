@@ -17349,7 +17349,7 @@ const THEMES = {
     rc_cardBg: "rgba(0,0,0,0.07)", rc_cardBorder: "1px solid rgba(0,0,0,0.08)",
     rc_innerBorder: "1px solid rgba(0,0,0,0.13)",
     // new entry area
-    ne_bg: "rgba(0,0,0,0.06)", ne_border: "1px solid rgba(0,0,0,0.09)",
+    ne_bg: "#f8fafc", ne_border: "1px solid rgba(0,0,0,0.09)",
     ne_title: "#4f46e5",
     ne_label: "#64748b",
     ne_cancelBg: "rgba(0,0,0,0.06)", ne_cancelBorder: "1px solid rgba(0,0,0,0.09)", ne_cancelColor: "#64748b",
@@ -17365,10 +17365,12 @@ const THEMES = {
     badgePurple: "#9333ea",
     tabActiveColor: "#7c00ff",
     // cards
-    card_bg: "rgba(0,0,0,0.05)", card_border: "1px solid rgba(0,0,0,0.11)",
+    card_bg: "#ffffff", card_border: "1px solid rgba(0,0,0,0.09)",
+    card_shadow: "0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)",
     card_label: "#334155",
     card_label2: "#64748b",
     card_border2: "1px solid rgba(0,0,0,0.08)",
+    card_shadow2: "0 2px 6px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05)",
     // goal card
     goal_btnBg: "rgba(0,0,0,0.07)", goal_btnBorder: "1px solid rgba(0,0,0,0.09)", goal_btnColor: "#1e293b",
     goal_diffBorder_ok: "rgba(255,255,255,0.08)",
@@ -17473,9 +17475,11 @@ const THEMES = {
     badgePurple: "#a5b4fc",
     tabActiveColor: "#a5b4fc",
     card_bg: "rgba(255,255,255,0.05)", card_border: "1px solid rgba(99,102,241,0.3)",
+    card_shadow: "0 4px 12px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3)",
     card_label: "#cbd5e1",
     card_label2: "#cbd5e1",
     card_border2: "1px solid rgba(255,255,255,0.08)",
+    card_shadow2: "0 3px 8px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.25)",
     goal_btnBg: "rgba(255,255,255,0.1)", goal_btnBorder: "1px solid rgba(255,255,255,0.4)", goal_btnColor: "#e2e8f0",
     goal_diffBorder_ok: "rgba(255,255,255,0.08)",
     goal_diffLabel: "#cbd5e1",
@@ -18511,7 +18515,7 @@ function App() {
             /* ═══ メインビジュアルカード：円グラフ＋右側入力 ═══ */
             , React.createElement('div', { style: {
                 background:T.card_bg, border:T.card_border,
-                borderRadius:16, padding:"12px 16px",
+                borderRadius:16, padding:"12px 16px", boxShadow:T.card_shadow,
                 display:"grid", gridTemplateColumns:"1fr auto", gap:12, alignItems:"stretch",
               }}
 
@@ -18669,7 +18673,7 @@ function App() {
             /* 日数判定・切り替わり */
             , React.createElement('div', { style: {
               background:T.card_bg, border:T.card_border2,
-              borderRadius:12, padding:14, display:"grid", gridTemplateColumns:"1fr 1fr", gap:10,
+              borderRadius:12, padding:14, display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, boxShadow:T.card_shadow2,
             }}
               , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1002}}
                 , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:4 }}, "日数判定")
@@ -18692,7 +18696,7 @@ function App() {
             )
 
             /* 目標日数 */
-            , React.createElement('div', { style: { background:T.card_bg, border:T.card_border2, borderRadius:12, padding:14 }}
+            , React.createElement('div', { style: { background:T.card_bg, border:T.card_border2, borderRadius:12, padding:14, boxShadow:T.card_shadow2 }}
               , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:10 }}, "目標残日数設定")
               , React.createElement('div', { style: { display:"flex", alignItems:"center", justifyContent:"center", gap:19 }}
                 , React.createElement('button', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', onClick: ()=>{ vibe(50); setPulseOff(p=>({...p,tDays:true})); setTDays(d=>Math.max(0,d-1)); }, style: {
@@ -18725,14 +18729,14 @@ function App() {
               )
               , hd && (
                 React.createElement('div', { style: { marginTop:12, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}
-                  , React.createElement('div', { style: { background:T.card_bg, border:"1px solid "+(vsTgt>=0?T.goal_diffBorder_ok:"rgba(248,113,113,0.6)"), borderRadius:12, padding:"8px 10px" }}
+                  , React.createElement('div', { style: { background:T.card_bg, border:"1px solid "+(vsTgt>=0?T.goal_diffBorder_ok:"rgba(248,113,113,0.6)"), borderRadius:12, padding:"8px 10px", boxShadow:T.card_shadow2 }}
                     , React.createElement('div', { style: { fontSize:13, color:T.goal_diffLabel }}, "基準時間との差")
                     , React.createElement('div', { style: { fontSize:22, fontWeight:700, color:"#00c853" }}
                       , vsTgt>=0?"+":"-", mmHHMM(Math.abs(vsTgt))
                     )
                     , React.createElement('div', { style: { fontSize:12, color:T.hay_baseLabel }}, "基準: " , mmHHMM(tRemMin))
                   )
-                  , React.createElement('div', { style: { background:T.card_bg, border:"1px solid "+(vsMax>=0?T.goal_diffBorder_ok:"rgba(248,113,113,0.6)"), borderRadius:12, padding:"8px 10px" }}
+                  , React.createElement('div', { style: { background:T.card_bg, border:"1px solid "+(vsMax>=0?T.goal_diffBorder_ok:"rgba(248,113,113,0.6)"), borderRadius:12, padding:"8px 10px", boxShadow:T.card_shadow2 }}
                     , React.createElement('div', { style: { fontSize:13, color:T.goal_diffLabel }}, "最大ここまで休める！")
                     , React.createElement('div', { style: { fontSize:22, fontWeight:700, color:"#ff69b4" }}
                       , vsMax>=0?"+":"-", mmHHMM(Math.abs(vsMax))
@@ -18747,6 +18751,7 @@ function App() {
             , React.createElement('div', { style: {
               background:"rgba(251,146,60,0.07)", border:"1px solid rgba(251,146,60,0.3)",
               borderLeft:"3px solid #fb923c", borderRadius:10, padding:"10px 12px",
+              boxShadow:T.card_shadow2,
             }}
               , React.createElement('div', { style: { fontSize:11, fontWeight:700, color:"#fb923c", marginBottom:4 }}, "⚠ 注意事項" )
               , React.createElement('p', { style: { fontSize:11, color:T.fld_label, lineHeight:1.8, margin:0 }}
@@ -18792,7 +18797,7 @@ function App() {
             /* 新規追加フォーム */
             , showAdd && (
               React.createElement('div', { style: { background:T.ne_bg, border:T.ne_border,
-                borderRadius:12, padding:14, display:"flex", flexDirection:"column", gap:10 }}
+                borderRadius:12, padding:14, display:"flex", flexDirection:"column", gap:10, boxShadow:T.card_shadow2 }}
                 , React.createElement('div', { style: { fontSize:13, fontWeight:600, color:T.ne_title }}, "新規追加")
 
                 , React.createElement('div', { style: { display:"grid", gridTemplateColumns:"1fr 60px", gap:8 }}
@@ -18950,7 +18955,7 @@ function App() {
               return (
                 React.createElement('div', { key: e.id, style: {
                   background:T.ne_bg, border:T.ne_border,
-                  borderRadius:12, padding:12,
+                  borderRadius:12, padding:12, boxShadow:T.card_shadow2,
                 }}
                   , React.createElement('div', { style: { display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}
                     , React.createElement('div', { style: { flex:1 }}
@@ -19262,6 +19267,7 @@ function App() {
                 border:`1px solid ${sec.color}44`,
                 borderLeft:`3px solid ${sec.color}`,
                 borderRadius:12, padding:"12px 14px",
+                boxShadow:T.card_shadow2,
               }}
                 , React.createElement('div', { style: { display:"flex", alignItems:"center", gap:8, marginBottom:10 }}
                   , React.createElement('span', { style: { fontSize:18 }}, sec.icon)
