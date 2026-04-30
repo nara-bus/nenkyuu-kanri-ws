@@ -17963,6 +17963,8 @@ function App() {
 
   const hayamiScrollRef = useRef(null);
   const judgeRowRef     = useRef(null);
+  const prevVsMaxSign   = useRef(localStorage.getItem('vsMaxSign') || null); // 前回のvsMax符号追跡用
+  const [starAnim, setStarAnim] = useState(false); // 符号変化時だけtrueにしてアニメーション発火
 
   // スワイプでタブ切替
   const TABS = ["main","records","hayami","help"];
@@ -18128,6 +18130,19 @@ function App() {
   const tMaxMin= _nullishCoalesce(_optionalChain([hd, 'optionalAccess', _9 => _9.maxMin]), () => (null));
   const vsTgt  = tRemMin!==null?remMin-tRemMin:null;
   const vsMax  = tMaxMin!==null?remMin-tMaxMin:null;
+
+  // vsMaxの符号が変わったときだけ☆アニメーションをリセット
+  useEffect(() => {
+    if(vsMax === null) return;
+    const sign = vsMax >= 0 ? "pos" : "neg";
+    if(prevVsMaxSign.current !== sign) {
+      prevVsMaxSign.current = sign;
+      localStorage.setItem('vsMaxSign', sign);
+      setStarAnim(true);
+      // 3回×1.5秒=4.5秒後にアニメーションクラスを外す
+      setTimeout(() => setStarAnim(false), 4600);
+    }
+  }, [vsMax === null ? null : vsMax >= 0]);
 
   // handlers
   const addEntry = () => {
@@ -18538,7 +18553,7 @@ function App() {
                     , React.createElement('div', { style: { fontSize:13, color:T.goal_diffLabel }}, "最大ここまで休める！")
                     , React.createElement('div', { style: { fontSize:22, fontWeight:700, color:"#00c853", display:"flex", alignItems:"center", gap:4 }}
                       , vsMax>=0?"+":"-", mmHHMM(Math.abs(vsMax))
-                      , React.createElement('span', { className: vsMax>=0 ? "star-blink" : "star-blink-red", style:{ fontSize:18 }}, vsMax>=0 ? "🌟" : "⚠️")
+                      , React.createElement('span', { className: starAnim ? (vsMax>=0 ? "star-blink" : "star-blink-red") : "", style:{ fontSize:18 }}, vsMax>=0 ? "🌟" : "⚠️")
                     )
                     , React.createElement('div', { style: { fontSize:12, color:T.hay_judgeLabel }}, "日数判定: " , mmHHMM(tMaxMin))
                   )
