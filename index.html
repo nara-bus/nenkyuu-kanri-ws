@@ -62,7 +62,12 @@
       0%,100% { filter: drop-shadow(0 0 2px rgba(255,215,0,0.4)) drop-shadow(0 0 4px rgba(255,215,0,0.2)); transform: scale(1); }
       50%      { filter: drop-shadow(0 0 8px rgba(255,215,0,1.0)) drop-shadow(0 0 16px rgba(255,165,0,0.7)) drop-shadow(0 0 24px rgba(255,200,0,0.4)); transform: scale(1.15); }
     }
-    .star-blink { animation: star-pulse 1.5s ease-in-out 3; animation-fill-mode: forwards; display:inline-block; }
+    @keyframes star-pulse-red {
+      0%,100% { filter: drop-shadow(0 0 2px rgba(255,80,80,0.4)) drop-shadow(0 0 4px rgba(255,80,80,0.2)); transform: scale(1); }
+      50%      { filter: drop-shadow(0 0 8px rgba(255,80,80,1.0)) drop-shadow(0 0 16px rgba(220,40,40,0.7)) drop-shadow(0 0 24px rgba(255,100,100,0.4)); transform: scale(1.15); }
+    }
+    .star-blink     { animation: star-pulse     1.5s ease-in-out 3; animation-fill-mode: forwards; display:inline-block; }
+    .star-blink-red { animation: star-pulse-red 1.5s ease-in-out 3; animation-fill-mode: forwards; display:inline-block; }
     @keyframes ob-pulse {
       0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.0); border-color: rgba(99,102,241,0.4); }
       50%      { box-shadow: 0 0 0 6px rgba(99,102,241,0.35); border-color: rgba(99,102,241,1.0); }
@@ -18533,7 +18538,7 @@ function App() {
                     , React.createElement('div', { style: { fontSize:13, color:T.goal_diffLabel }}, "最大ここまで休める！")
                     , React.createElement('div', { style: { fontSize:22, fontWeight:700, color:"#00c853", display:"flex", alignItems:"center", gap:4 }}
                       , vsMax>=0?"+":"-", mmHHMM(Math.abs(vsMax))
-                      , React.createElement('span', { className:"star-blink", style:{ fontSize:18 }}, "🌟")
+                      , React.createElement('span', { className: vsMax>=0 ? "star-blink" : "star-blink-red", style:{ fontSize:18 }}, vsMax>=0 ? "🌟" : "⚠️")
                     )
                     , React.createElement('div', { style: { fontSize:12, color:T.hay_judgeLabel }}, "日数判定: " , mmHHMM(tMaxMin))
                   )
