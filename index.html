@@ -17378,13 +17378,13 @@ const THEMES = {
     card_bg: "#ffffff", card_border: "1px solid rgba(0,0,0,0.09)",
     card_shadow: "0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)",
     card_label: "#334155",
-    card_label2: "#64748b",
+    card_label2: "#475569",
     card_border2: "1px solid rgba(0,0,0,0.08)",
     card_shadow2: "0 2px 6px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05)",
     // goal card
     goal_btnBg: "rgba(0,0,0,0.07)", goal_btnBorder: "1px solid rgba(0,0,0,0.09)", goal_btnColor: "#1e293b",
-    goal_diffBorder_ok: "rgba(255,255,255,0.08)",
-    goal_diffLabel: "#334155",
+    goal_diffBorder_ok: "rgba(0,0,0,0.15)",
+    goal_diffLabel: "#1e293b",
     // help
     help_sectionBg: "rgba(0,0,0,0.06)",
     help_sectionColor: "#334155",
@@ -17408,8 +17408,8 @@ const THEMES = {
     hay_judgeColor: "#64748b",
     hay_rowBg_normal: "rgba(0,0,0,0.06)",
     hay_rowBorder_normal: "rgba(0,0,0,0.09)",
-    hay_baseLabel: "#64748b",
-    hay_judgeLabel: "#64748b",
+    hay_baseLabel: "#475569",
+    hay_judgeLabel: "#475569",
     hay_dc_default: "#94a3b8",
     // modal
     modal_bg: "#ffffff", modal_border: "1px solid rgba(0,0,0,0.09)",
@@ -18371,10 +18371,10 @@ function App() {
                     , React.createElement('div', { style: { fontSize:11, color:T.card_label2, fontWeight:500 }}, "年休残時間")
                     , React.createElement('div', { style: { fontSize:34, fontWeight:700, color:"#00c853", lineHeight:1 }}, mmHHMM(remMin))
                     , React.createElement('div', { style: {
-                        marginTop:4, fontSize:11, fontWeight:700,
-                        padding:"2px 8px", borderRadius:10,
-                        background: "rgba(99,102,241,0.25)",
-                        color:       T.tabActiveColor,
+                        marginTop:4, fontSize:10, fontWeight:500,
+                        padding:"2px 10px", borderRadius:10,
+                        background: isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.08)",
+                        color:       isDark ? "#cbd5e1" : "#475569",
                       }}, (prevRem>=0 && prevMin>0) ? "前年度残" : "今年度残")
                   )
                 )
@@ -18424,7 +18424,7 @@ function App() {
                     )
                   )
                   /* 今年度 */
-                  , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 900}}
+                  , React.createElement('div', {__self: this}
                     , React.createElement('div', { style: { fontSize:11, color:T.card_label, marginBottom:3, display:"flex", alignItems:"center", justifyContent:"space-between" }}
                       , React.createElement('span', null, "今年度")
                       , React.createElement('span', { onClick: e=>{ e.stopPropagation(); setInfoPopup({title:"今年度 年休所得時間", desc:"今年度に新たに付与された年休の時間を入力して下さい。前年度分を使い切った後にこちらが消費されます。"}); }, style:{ fontSize:12, cursor:"pointer", opacity:0.8 }}, "ℹ️")
@@ -18455,7 +18455,7 @@ function App() {
                 )
 
                 /* 所定労働時間 */
-                , React.createElement('div', { style: { borderTop: isDark?"1px solid rgba(255,255,255,0.1)":"1px solid rgba(0,0,0,0.08)", paddingTop:10 }}
+                , React.createElement('div', { style: { borderTop: isDark?"1px solid rgba(255,255,255,0.2)":"1px solid rgba(0,0,0,0.35)", paddingTop:10 }}
                   , React.createElement('div', { style: { fontSize:12, color:T.card_label, marginBottom:6, whiteSpace:"nowrap", display:"flex", alignItems:"center", justifyContent:"space-between" }}
                     , React.createElement('span', null, "所定労働時間")
                     , React.createElement('span', { onClick: e=>{ e.stopPropagation(); setInfoPopup({title:"所定労働時間", desc:"1日の勤務時間を設定します。タップすると時間を入力できます。早見表の基準時間・判定時間はこの値から自動計算されます。"}); }, style:{ fontSize:12, cursor:"pointer", opacity:0.8 }}, "ℹ️")
@@ -18486,9 +18486,9 @@ function App() {
             /* 日数判定・切り替わり */
             , React.createElement('div', { style: {
               background:T.card_bg, border:T.card_border2,
-              borderRadius:12, padding:14, display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, boxShadow:T.card_shadow2,
+              borderRadius:12, padding:14, display:"grid", gridTemplateColumns:"1fr 1px 1fr", gap:0, boxShadow:T.card_shadow2,
             }}
-              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1002}}
+              , React.createElement('div', { style: { paddingRight:12 }}
                 , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:4 }}, "日数判定")
                 , React.createElement('div', { style: { fontSize:26, fontWeight:700, color:"#00c853" }}
                   , dayJudge, React.createElement('span', { style: { fontSize:13, marginLeft:3 }}, "日")
@@ -18497,8 +18497,9 @@ function App() {
                    , mmHHMM(remSub), " " , remSub<=halfWpd?"≤半日→切捨":">半日→切上"
                 )
               )
-              , React.createElement('div', {__self: this, __source: {fileName: _jsxFileName, lineNumber: 1011}}
-                , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:4 }}, dayJudge===0 ? (prevRem>=0 ? "前年度分使い切りまでの時間" : "今年度分使い切りまでの時間") : (dayJudge-1)+"日に切替までの時間")
+              , React.createElement('div', { style: { background: isDark?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.35)", margin:"2px 0" }})
+              , React.createElement('div', { style: { paddingLeft:12 }}
+                , React.createElement('div', { style: { fontSize:13, color:T.card_label, marginBottom:4 }}, dayJudge===0 ? (prevRem>=0 ? "前年度分使い切りまでの時間" : "今年度分使い切りまでの時間") : (dayJudge-1)+"日に切替るまでの時間")
                 , React.createElement('div', { style: { fontSize:26, fontWeight:700, color:"#00c853" }}
                   , mmHHMM(dayJudge===0 ? activeMin : switchMin)
                 )
@@ -18524,7 +18525,7 @@ function App() {
                     ? "inset 0 1px 0 rgba(255,255,255,0.35), 0 2px 4px rgba(0,0,0,0.4)"
                     : "inset 0 1px 0 rgba(255,255,255,1.0), 0 2px 4px rgba(0,0,0,0.15)",
                 }}, "−")
-                , React.createElement('div', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', style: { textAlign:"center", fontSize:28, fontWeight:700, color:T.inputVal, background:T.card_bg, border:"1px solid "+T.goal_diffBorder_ok, borderRadius:8, padding:"4px 16px" }}
+                , React.createElement('div', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', style: { textAlign:"center", fontSize:28, fontWeight:700, color:T.inputVal, background:T.card_bg, border:"1px solid "+(isDark?T.goal_diffBorder_ok:"rgba(0,0,0,0.25)"), borderRadius:8, padding:"4px 16px" }}
                   , tDays, " " , React.createElement('span', { style: { fontSize:14 }}, "日")
                 )
                 , React.createElement('button', { className: (!pulseOff.tDays) ? 'ob-pulse' : '', onClick: ()=>{ vibe(50); setPulseOff(p=>({...p,tDays:true})); setTDays(d=>Math.min(20,d+1)); }, style: {
@@ -19003,7 +19004,7 @@ function App() {
                   {label:"前年度の年休所得時間", desc:"前の年度から持ち越した年休の所得時間を入力します。枠をタップするとテンキーが開きます。前年度分がない場合は 0:00 のままにしてください。"},
                   {label:"今年度の年休所得時間", desc:"今年度に新しく付与された年休の所得時間を入力します。枠をタップするとテンキーが開きます。上限は所定労働時間×20日です。"},
                   {label:"所定労働時間", desc:"1日の勤務時間を入力します。枠をタップするとテンキーが開きます。早見表の計算にも使われます。"},
-                  {label:"目標残日数", desc:"年休の更新日までに残しておきたい日数を − ・ ＋ ボタンで設定します。設定すると光りが消えます。"},
+                  {label:"目標残日数", desc:"年休の更新日までに残しておきたい日数を − ・ ＋ ボタンで設定します。"},
                 ],
               },
               {
@@ -19016,12 +19017,11 @@ function App() {
                   {label:"残時間日数換算", desc:"残り時間をもとに、何日分の年休が残っているかを表示します。"},
                   {label:"年休所得時間（前年度・今年度）", desc:"年休の所得時間を入力する枠です。タップするとテンキーが開きます。入力上限は所定労働時間×20日です。"},
                   {label:"所定労働時間", desc:"1日の勤務時間を設定する枠です。タップするとテンキーが開きます。"},
-                  {label:"消費時間", desc:"使用記録に登録した年休の合計時間です。"},
                   {label:"目標残日数設定", desc:"− ・ ＋ ボタンで目標残日数を変更できます。"},
                   {label:"基準時間との差", desc:"目標日数をキープするのに必要な時間と、現在の残り時間との差です。マイナスになると枠が赤く変わります。"},
-                  {label:"最大ここまで休める！", desc:"現在の残り時間で最大何時間まで年休を取れるかの目安です。"},
-                  {label:"日数判定詳細", desc:"残り時間から算出した、現在の年休残日数の判定値と端数の判定根拠です。"},
-                  {label:"〇〇日に切替までの時間", desc:"あと何時間使うと残日数の判定が1日減るかを示します。消化ペースの目安にしてください。"},
+                  {label:"最大ここまで休める！", desc:"現在の残り時間で最大何時間まで年休を取れるかの目安です。マイナスになると枠が赤く変わります。"},
+                  {label:"日数判定", desc:"残り時間から算出した現在の年休残日数と、端数の切捨て・切上げの判定根拠を表示します。"},
+                  {label:"〇〇日に切替るまでの時間", desc:"あと何時間使うと残日数の判定が1日減るかを示します。消化ペースの目安にしてください。"},
                 ],
               },
               {
@@ -19038,6 +19038,7 @@ function App() {
                   {label:"届出済 / 未提出", desc:"年休届の提出状況を管理できます。タップするたびに切り替わります。届出済は緑色、未提出は赤色で表示されます。"},
                   {label:"✏ 編集 / 🗑 削除", desc:"登録済みの記録を修正・削除できます。🗑 をタップすると確認ダイアログが表示されます。「削除する」で削除、「キャンセル」で取り消せます。"},
                   {label:"🗑 全削除", desc:"すべての使用記録を一括削除します。タップすると確認ダイアログが表示されます。「削除する」で全件削除、「キャンセル」で取り消せます。"},
+                  {label:"使用件数 / 合計", desc:"使用記録の件数と、登録した年休の合計時間が一覧の下部に表示されます。"},
                 ],
               },
               {
