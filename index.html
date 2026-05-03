@@ -17922,21 +17922,25 @@ function App() {
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false); // 前年度→今年度移行確認ダイアログ
 
   // ─── オンボーディング ───────────────────────────────────
-  const isFirstVisit = !localStorage.getItem('onboarding_done');
+  // localStorage が使えない・オフライン中断の場合も安全に読む
+  const _lsGet = (key) => { try { return localStorage.getItem(key); } catch(e){ return null; } };
+  const _lsSet = (key, val) => { try { localStorage.setItem(key, val); } catch(e){} };
+  const isFirstVisit = !_lsGet('onboarding_done');
   const [showOnboarding, setShowOnboarding] = useState(isFirstVisit);
   // 点滅対象フィールドの解除フラグ（localStorageで永続化）
+  // オフライン時・localStorage失敗時は「全タップ済み」として扱い、ブロックしない
   const loadPulseOff = () => {
     if(isFirstVisit) return null; // 初回は保存値を無視して必ずfalseで初期化
-    try { const s = localStorage.getItem('pulseOff'); return s ? JSON.parse(s) : null; } catch(e){ return null; }
+    try { const s = _lsGet('pulseOff'); return s ? JSON.parse(s) : { prevH:true, currH:true, wpd:true, tDays:true }; } catch(e){ return { prevH:true, currH:true, wpd:true, tDays:true }; }
   };
   const initPulse = loadPulseOff() || { prevH:!isFirstVisit, currH:!isFirstVisit, wpd:!isFirstVisit, tDays:!isFirstVisit };
   const [pulseOff, setPulseOffRaw] = useState(initPulse);
   const setPulseOff = (fn) => {
     setPulseOffRaw(prev => {
       const next = typeof fn === 'function' ? fn(prev) : fn;
-      localStorage.setItem('pulseOff', JSON.stringify(next));
+      _lsSet('pulseOff', JSON.stringify(next));
       if(next.prevH && next.currH && next.wpd && next.tDays){
-        localStorage.setItem('onboarding_done','1');
+        _lsSet('onboarding_done','1');
       }
       return next;
     });
