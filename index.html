@@ -17564,8 +17564,11 @@ function applyThemeCSSVars(isDark) {
 
 // ─── storage ──────────────────────────────────────────────
 const SK = "nenkyuu_v2";
-const load = () => { try{ const r=localStorage.getItem(SK); return r?JSON.parse(r):null; }catch (e2){ return null; } };
-const save = d => { try{ localStorage.setItem(SK,JSON.stringify(d)); }catch (e3){} };
+// localStorage を安全にラップ（オフライン起動時のSecurityError対策）
+const _lsGet = (key) => { try { return localStorage.getItem(key); } catch(e){ return null; } };
+const _lsSet = (key, val) => { try { localStorage.setItem(key, val); } catch(e){} };
+const load = () => { try{ const r=_lsGet(SK); return r?JSON.parse(r):null; }catch(e){ return null; } };
+const save = d => { try{ _lsSet(SK, JSON.stringify(d)); }catch(e){} };
 
 // ─── バイブレーション（無効化） ─────────────────────
 let _vibeOn = false;
@@ -17887,13 +17890,13 @@ function EditForm({ entry, workPerDay, holidays, onSave, onCancel, T=THEMES.ligh
 
 // ─── メインアプリ ──────────────────────────────────────────
 function App() {
-  const [isDark, setIsDark] = React.useState(() => localStorage.getItem('nenkyuu_dark') === '1');
+  const [isDark, setIsDark] = React.useState(() => { try { return _lsGet('nenkyuu_dark') === '1'; } catch(e){ return false; } });
   const T = isDark ? THEMES.dark : THEMES.light;
   window.__appT = T;
   const toggleTheme = () => {
     setIsDark(d => {
       const next = !d;
-      localStorage.setItem('nenkyuu_dark', next ? '1' : '0');
+      _lsSet('nenkyuu_dark', next ? '1' : '0');
       applyThemeCSSVars(next);
       return next;
     });
@@ -17922,13 +17925,9 @@ function App() {
   const [showSwitchConfirm, setShowSwitchConfirm] = useState(false); // 前年度→今年度移行確認ダイアログ
 
   // ─── オンボーディング ───────────────────────────────────
-  // localStorage が使えない・オフライン中断の場合も安全に読む
-  const _lsGet = (key) => { try { return localStorage.getItem(key); } catch(e){ return null; } };
-  const _lsSet = (key, val) => { try { localStorage.setItem(key, val); } catch(e){} };
   const isFirstVisit = !_lsGet('onboarding_done');
   const [showOnboarding, setShowOnboarding] = useState(isFirstVisit);
   // 点滅対象フィールドの解除フラグ（localStorageで永続化）
-  // オフライン時・localStorage失敗時は「全タップ済み」として扱い、ブロックしない
   const loadPulseOff = () => {
     if(isFirstVisit) return null; // 初回は保存値を無視して必ずfalseで初期化
     try { const s = _lsGet('pulseOff'); return s ? JSON.parse(s) : { prevH:true, currH:true, wpd:true, tDays:true }; } catch(e){ return { prevH:true, currH:true, wpd:true, tDays:true }; }
@@ -17959,7 +17958,7 @@ function App() {
     const dd = now.getDate();
     if(mm < 9 || (mm === 9 && dd < 16)) return false;
     const key = 'renewalNoticed_' + now.getFullYear();
-    if(localStorage.getItem(key)) return false;
+    if(_lsGet(key)) return false;
     return true;
   });
   const [pendingWorkTime,   setPendingWorkTime]   = useState("");    // 確認待ちの労働時間
@@ -17970,7 +17969,7 @@ function App() {
 
   const hayamiScrollRef = useRef(null);
   const judgeRowRef     = useRef(null);
-  const prevVsMaxSign   = useRef(localStorage.getItem('vsMaxSign') || null); // 前回のvsMax符号追跡用
+  const prevVsMaxSign   = useRef(_lsGet('vsMaxSign') || null); // 前回のvsMax符号追跡用
   const [starAnim, setStarAnim] = useState(false); // 符号変化時だけtrueにしてアニメーション発火
 
   // スワイプでタブ切替
@@ -18144,7 +18143,7 @@ function App() {
     const sign = vsMax >= 0 ? "pos" : "neg";
     if(prevVsMaxSign.current !== sign) {
       prevVsMaxSign.current = sign;
-      localStorage.setItem('vsMaxSign', sign);
+      _lsSet('vsMaxSign', sign);
       setStarAnim(true);
       // 3回×1.5秒=4.5秒後にアニメーションクラスを外す
       setTimeout(() => setStarAnim(false), 4600);
@@ -19296,7 +19295,7 @@ function App() {
             , React.createElement('button', { onClick: ()=>{
               vibe(50);
               const key = 'renewalNoticed_' + new Date().getFullYear();
-              localStorage.setItem(key, '1');
+              _lsSet(key, '1');
               setShowRenewalNotice(false);
             }, style: {
               padding:"8px 28px",
