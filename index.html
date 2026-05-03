@@ -828,13 +828,20 @@ function App() {
   }, [allPulseOff, tab]);
   useEffect(()=>{
     const load = async () => {
+      // オフライン時のフリーズ防止: 3秒タイムアウト
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       try {
-        const res = await fetch("https://holidays-jp.github.io/api/v1/date.json");
+        const res = await fetch("https://holidays-jp.github.io/api/v1/date.json", {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
         if(!res.ok) throw new Error();
         const json = await res.json();
         setHolidays(new Set(Object.keys(json)));
       } catch (e4) {
-        setHolidays(FALLBACK_HOLIDAYS);
+        clearTimeout(timeoutId);
+        setHolidays(FALLBACK_HOLIDAYS); // オフライン時はフォールバック祝日を即時使用
       }
     };
     load();
