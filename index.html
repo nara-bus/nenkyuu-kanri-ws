@@ -1456,7 +1456,7 @@ function renderIchiran() {
         <div class="ich-card-info">
           <div class="ich-card-badges">
             ${isToday ? '<span class="ich-card-today-badge">TODAY</span>' : ''}
-            ${typeBadgeHtml(d.type)}
+            ${(isMiddle && nextDayType !== '平日') ? '' : typeBadgeHtml(d.type)}
           </div>
           <div class="ich-card-preview">${previewHtml(d)}</div>
         </div>
