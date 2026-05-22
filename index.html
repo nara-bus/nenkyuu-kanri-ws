@@ -2283,10 +2283,40 @@ setInterval(updateClock, 30000);
 
 <script>
 // ── PWA: Service Worker 登録 ──
+const APP_VERSION = '20250522-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
-    .then(() => console.log('SW registered'))
+    .then(reg => {
+      console.log('SW registered');
+      // 待機中のSWがあれば即アクティブ化
+      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+    })
     .catch(err => console.warn('SW registration failed:', err));
+
+  // SW切り替わり後に自動リロード
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) { refreshing = true; location.reload(); }
+  });
+
+  // バージョン変更検知：古いキャッシュなら全削除してリロード
+  const VER_KEY = 'appVersion';
+  const storedVer = localStorage.getItem(VER_KEY);
+  if (storedVer && storedVer !== APP_VERSION) {
+    localStorage.setItem(VER_KEY, APP_VERSION);
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => location.reload());
+  } else {
+    localStorage.setItem(VER_KEY, APP_VERSION);
+  }
 }
 </script>
 </body>
