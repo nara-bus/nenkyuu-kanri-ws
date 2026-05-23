@@ -1212,6 +1212,9 @@ const ICHIRAN_DATA = [
 ];
 
 
+// ICHIRAN_DATAの元データをディープコピーで保持（全削除後の復元用）
+const _ICHIRAN_DATA_ORIG = JSON.parse(JSON.stringify(ICHIRAN_DATA));
+
 const HOLIDAYS = new Set(["2024-01-01","2024-01-08","2024-02-11","2024-02-12","2024-02-23","2024-03-20","2024-04-29","2024-05-03","2024-05-04","2024-05-05","2024-05-06","2024-07-15","2024-08-11","2024-08-12","2024-09-16","2024-09-22","2024-09-23","2024-10-14","2024-11-03","2024-11-04","2024-11-23","2024-12-23","2025-01-01","2025-01-13","2025-02-11","2025-02-23","2025-02-24","2025-03-20","2025-04-29","2025-05-03","2025-05-04","2025-05-05","2025-05-06","2025-07-21","2025-08-11","2025-09-15","2025-09-22","2025-09-23","2025-10-13","2025-11-03","2025-11-23","2025-11-24","2026-01-01","2026-01-12","2026-02-11","2026-02-23","2026-03-20","2026-04-29","2026-05-03","2026-05-04","2026-05-05","2026-05-06","2026-07-20","2026-08-11","2026-09-21","2026-09-22","2026-09-23","2026-10-12","2026-11-03","2026-11-23","2027-01-01","2027-01-11","2027-02-11","2027-02-23","2027-03-20","2027-04-29","2027-05-03","2027-05-04","2027-05-05","2027-07-19","2027-08-11","2027-09-20","2027-09-23","2027-10-11","2027-11-03","2027-11-23"]);
 
 const BASE_DATE = new Date(2025, 0, 1);
@@ -2466,8 +2469,46 @@ function getEffectiveDiaType(dia, baseType) {
   return baseType; // フラグなし→元のtype
 }
 
+// フィールド定義（applyMasterOverrides より前に必要）
+const _MASTER_FIELDS = [
+  { key:'okibo',   label:'起床' },
+  { key:'shukkin', label:'出社' },
+  { key:'tochaku', label:'到着' },
+  { key:'start',   label:'出勤' },
+  { key:'taikin',  label:'退勤' },
+  { key:'kitan',   label:'帰宅' },
+  { key:'rosen',   label:'路線', isRosen: true },
+];
+const _MASTER_FIELDS2 = [
+  { key:'okibo2',   label:'起床' },
+  { key:'shukkin2', label:'出社' },
+  { key:'tochaku2', label:'到着' },
+  { key:'start2',   label:'出勤' },
+  { key:'taikin2',  label:'退勤' },
+  { key:'kitan2',   label:'帰宅' },
+  { key:'rosen2',   label:'路線', isRosen: true },
+];
+
 // ===== マスターデータ上書き適用 =====
 function applyMasterOverrides() {
+  // まずICHIRAN_DATAを元データに完全リセット
+  _ICHIRAN_DATA_ORIG.forEach((orig, i) => {
+    ICHIRAN_DATA[i].type = orig.type;
+    ['hei','doy','nch'].forEach(dow => {
+      if (orig[dow] && ICHIRAN_DATA[i][dow]) {
+        // 元データのキーをすべて復元
+        Object.keys(orig[dow]).forEach(k => {
+          ICHIRAN_DATA[i][dow][k] = orig[dow][k];
+        });
+        // 元データにないキーを削除（上書きで増えたキーを消す）
+        Object.keys(ICHIRAN_DATA[i][dow]).forEach(k => {
+          if (orig[dow][k] === undefined) delete ICHIRAN_DATA[i][dow][k];
+        });
+      }
+    });
+  });
+
+  // MASTER_OVERRIDESを上から適用
   for (const key of Object.keys(MASTER_OVERRIDES)) {
     const m = key.match(/^dia_(\d+)_(hei|doy|nch)$/);
     if (!m) continue;
@@ -2481,7 +2522,6 @@ function applyMasterOverrides() {
     // 中間/通常フラグを適用
     if (override._isMiddle !== undefined && dow === 'hei') {
       entry.type = override._isMiddle ? '中間' : '';
-      // 通常化の場合：後半フィールドを削除
       if (!override._isMiddle) {
         _MASTER_FIELDS2.forEach(f => { delete row[f.key]; });
       }
@@ -2561,24 +2601,6 @@ function _refreshMasterDowBtns() {
 }
 
 // フィールド定義（中間ダイヤは前半・後半あり）
-const _MASTER_FIELDS = [
-  { key:'okibo',   label:'起床' },
-  { key:'shukkin', label:'出社' },
-  { key:'tochaku', label:'到着' },
-  { key:'start',   label:'出勤' },
-  { key:'taikin',  label:'退勤' },
-  { key:'kitan',   label:'帰宅' },
-  { key:'rosen',   label:'路線', isRosen: true },
-];
-const _MASTER_FIELDS2 = [
-  { key:'okibo2',   label:'起床' },
-  { key:'shukkin2', label:'出社' },
-  { key:'tochaku2', label:'到着' },
-  { key:'start2',   label:'出勤' },
-  { key:'taikin2',  label:'退勤' },
-  { key:'kitan2',   label:'帰宅' },
-  { key:'rosen2',   label:'路線', isRosen: true },
-];
 
 function _getSourceRow() {
   const entry = ICHIRAN_DATA.find(r => r.dia === _mDia);
@@ -2885,28 +2907,19 @@ function masterResetAllExecute() {
   // 出勤(start)・退勤(taikin)・路線(rosen) は残す
   const removeKeys = ['okibo','shukkin','tochaku','kitan','okibo2','shukkin2','tochaku2','kitan2'];
   for (const storeKey of Object.keys(MASTER_OVERRIDES)) {
+    if (!storeKey.startsWith('dia_')) continue; // teire_Nキーは触らない
     const ov = MASTER_OVERRIDES[storeKey];
     removeKeys.forEach(k => delete ov[k]);
-    // オブジェクトが _isMiddle だけ、または空になったら丸ごと削除
+    // 時刻系が全部なくなり _isMiddle だけなら丸ごと削除
     const remaining = Object.keys(ov).filter(k => k !== '_isMiddle');
-    if (remaining.length === 0) {
-      delete MASTER_OVERRIDES[storeKey];
-    }
+    if (remaining.length === 0) delete MASTER_OVERRIDES[storeKey];
   }
   saveMasterOverrides();
 
-  // ICHIRAN_DATA からも削除（元データにあった値はそのまま残す）
-  // → 元データに起床等があるものは元に戻す必要があるため
-  //    ICHIRAN_DATAをリセットしてから再適用
-  // ただしICHIRAN_DATAはconst定数なので直接リセットは不可
-  // → applyMasterOverridesを再呼び出しするだけでOK（削除済みのキーは上書きされない）
-  // 先に削除対象フィールドをICHIRAN_DATAから消す（上書きされた場合に元値に戻す）
-  // 元のICHIRAN_DATAは変数宣言時の初期値を持っているため、
-  // localStorageから再ロードして全再描画するのが最もクリーン
-  // ここではapplyMasterOverrides再呼び出しのみ（上書きしたフィールドの削除は次回ロード時に反映）
-  document.getElementById('master-reset-confirm-overlay').classList.add('hidden');
+  // ICHIRAN_DATAを元データに戻してからMASTER_OVERRIDESを再適用
+  applyMasterOverrides();
 
-  // フィールドUIを更新
+  document.getElementById('master-reset-confirm-overlay').classList.add('hidden');
   _refreshMasterFields();
 
   const msg = document.getElementById('save-msg');
@@ -2916,6 +2929,7 @@ function masterResetAllExecute() {
     setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
   }
   render();
+  if (currentView === 'ichiran') renderIchiran();
 }
 
 // ⑤ 日付変わり目（深夜0時）に再描画
