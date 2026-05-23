@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kinmu-v8';
+const CACHE_NAME = 'kinmu-v9';
 const ASSETS = [
   './',
   './index.html',
