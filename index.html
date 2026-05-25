@@ -813,6 +813,11 @@
     box-shadow: 0 2px 6px rgba(40,120,70,0.30); transition: all 0.1s;
   }
   .master-confirm-ok:active { border-bottom-width: 1px; transform: translateY(2px); }
+  .rinji-badge {
+    display: inline-block; background: #ff5252; color: #fff;
+    font-size: 11px; font-weight: 700; padding: 2px 10px;
+    border-radius: 20px; margin-bottom: 6px; letter-spacing: 0.05em;
+  }
   .hidden { display: none !important; }
   /* 出勤時間臨時変更テンキー専用スタイル */
   .shukkin-numpad-box {
@@ -1344,6 +1349,13 @@ function saveShukkinOverrides() {
   try { localStorage.setItem('shukkinOverrides', JSON.stringify(SHUKKIN_OVERRIDES)); } catch(e) {}
 }
 
+// 退勤時間臨時変更: key="YYYY-MM-DD_shiftIndex" → 分数
+let TAIKIN_OVERRIDES = {};
+try { TAIKIN_OVERRIDES = JSON.parse(localStorage.getItem('taikinOverrides') || '{}'); } catch(e) {}
+function saveTaikinOverrides() {
+  try { localStorage.setItem('taikinOverrides', JSON.stringify(TAIKIN_OVERRIDES)); } catch(e) {}
+}
+
 function saveDiaOverrides() {
   try { localStorage.setItem('diaOverrides', JSON.stringify(DIA_OVERRIDES)); } catch(e) {}
 }
@@ -1374,10 +1386,28 @@ function _diaRowToShifts(row, dateKey) {
 function getSchedule(date) {
   const key = getDateKey(date);
   const dayType = getDayType(date);
-  const dia = DIA_OVERRIDES[key] !== undefined ? DIA_OVERRIDES[key] : getDiaForDate(date);
+  const overrideVal = DIA_OVERRIDES[key];
+  let dia, rinjiType = null;
+  if (overrideVal !== undefined) {
+    if (typeof overrideVal === 'object' && overrideVal.dia === 99) {
+      dia = 99;
+      rinjiType = overrideVal.type || '全日';
+    } else {
+      dia = overrideVal;
+    }
+  } else {
+    dia = getDiaForDate(date);
+  }
 
   // renderIchiran内のICHIRANと同じデータをここでも参照できるよう
   // ICHIRAN_DATA としてグローバルに持つ（後述）
+  // ダイヤ99 = 臨時ダイヤ
+  if (dia === 99) {
+    const sh1 = { shukkinTime: '0:00', taikinTime: '0:00', rosen: '', _dateKey: key };
+    const sh2 = { shukkinTime: '0:00', taikinTime: '0:00', rosen: '', _dateKey: key };
+    const shifts = (rinjiType === '中間') ? [sh1, sh2] : [sh1];
+    return { dia, dayType, shifts, rinji: true, rinjiType: rinjiType || '全日' };
+  }
   const entry = ICHIRAN_DATA.find(r => r.dia === dia);
   if (!entry) return { dia, dayType, kyukyu: true };
   if (entry.type === '公休') return { dia, dayType, kyukyu: true };
@@ -1417,7 +1447,7 @@ function minToTime(min) {
   if (min === null) return '—';
   const nextDay = min >= 1440;
   const m = ((min % 1440) + 1440) % 1440;
-  const hh = String(Math.floor(m / 60)).padStart(2, '0');
+  const hh = Math.floor(m / 60);
   const mm = String(m % 60).padStart(2, '0');
   return (nextDay ? '翌' : '') + hh + ':' + mm;
 }
@@ -1429,7 +1459,7 @@ function calcTime(baseTime, offsetMin) {
   return base + offsetMin;
 }
 
-function buildShiftCard(shifts, isKyukyu, isYobi) {
+function buildShiftCard(shifts, isKyukyu, isYobi, isRinji) {
   if (isYobi) return `<div class="kyukyu-card"><span class="yobi-text">予　備</span></div>`;
   if (isKyukyu) {
     return `<div class="kyukyu-card"><span class="kyukyu-icon">🏖️</span><span class="kyukyu-text">公　休</span></div>`;
@@ -1450,15 +1480,20 @@ function buildShiftCard(shifts, isKyukyu, isYobi) {
     const workStartMin  = isOverride ? overrideMin : timeToMin(sh.shukkinTime);
     const workStartColor = isOverride ? '#b8355a' : '#ff5cb8';
     const shukkinOverrideFlag = isOverride ? ' ✎' : '';
+    const taikinOverrideMin = TAIKIN_OVERRIDES[overrideKey];
+    const isTaikinOverride = taikinOverrideMin !== undefined;
+    const taikinTimeMin = isTaikinOverride ? taikinOverrideMin : timeToMin(sh.taikinTime);
+    const taikinColor = isTaikinOverride ? '#1a5fc0' : '#2979ff';
+    const taikinOverrideFlag = isTaikinOverride ? ' ✎' : '';
     const okiboMin      = workStartMin !== null ? workStartMin - wake   : null;
     const shusshaMin    = workStartMin !== null ? workStartMin - leave  : null;
     const tochakuMin    = workStartMin !== null ? workStartMin - arrive : null;
-    const taikinTimeMin = timeToMin(sh.taikinTime);
     const kikakuMin     = taikinTimeMin !== null ? taikinTimeMin + retMin : null;
 
     return `
     <div class="shift-card">
       ${shifts.length > 1 ? `<div class="shift-sublabel">${i === 0 ? '中間前半' : '中間後半'}</div>` : ''}
+      ${isRinji ? `<div class="rinji-badge">🚨 臨時ダイヤ</div>` : ''}
       ${s.showOkibo ? `<div class="shift-row">
         <span class="shift-icon">🥱</span>
         <span class="shift-label">① 起床</span>
@@ -1482,7 +1517,7 @@ function buildShiftCard(shifts, isKyukyu, isYobi) {
       ${s.showTaikinTime ? `<div class="shift-row">
         <span class="shift-icon">⏹️</span>
         <span class="shift-label">⑤ 退勤時間（勤務終了）</span>
-        <span class="shift-time" style="color:#2979ff">${minToTime(taikinTimeMin)}</span>
+        <button class="shukkin-btn${isTaikinOverride ? ' override' : ''}" style="color:${taikinColor}" onclick="openTaikinNumpad('${dateKey}',${shiftIdx},'${sh.taikinTime}')">${minToTime(taikinTimeMin)}${taikinOverrideFlag}</button>
       </div>` : ''}
       ${s.showKikaku ? `<div class="shift-row">
         <span class="shift-icon">🏠</span>
@@ -1524,7 +1559,7 @@ function buildDayBlock(date, isToday) {
         </div>
       </div>
     </div>
-    <div class="shift-area">${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi)}</div>
+    <div class="shift-area">${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji)}</div>
   </div>`;
 }
 
@@ -2730,12 +2765,14 @@ function _applyImport(text, fname) {
     if (data.warningSuppressed) localStorage.setItem('warningSuppressed', data.warningSuppressed);
     // masterOverrides: null でも '{}' で上書きしてリセット状態を確実に反映
     localStorage.setItem('masterOverrides', data.masterOverrides || '{}');
+    localStorage.setItem('taikinOverrides', data.taikinOverrides || '{}');
 
     // データ再読み込み
     SETTINGS = loadSettings();
     try { DIA_OVERRIDES     = JSON.parse(localStorage.getItem('diaOverrides') || '{}'); } catch(e) { DIA_OVERRIDES = {}; }
     try { SHUKKIN_OVERRIDES = JSON.parse(localStorage.getItem('shukkinOverrides') || '{}'); } catch(e) { SHUKKIN_OVERRIDES = {}; }
     try { MASTER_OVERRIDES  = JSON.parse(localStorage.getItem('masterOverrides') || '{}'); } catch(e) { MASTER_OVERRIDES = {}; }
+    try { TAIKIN_OVERRIDES  = JSON.parse(localStorage.getItem('taikinOverrides') || '{}'); } catch(e) { TAIKIN_OVERRIDES = {}; }
     applyMasterOverrides();
     render();
     if (currentView === 'ichiran') renderIchiran();
@@ -2942,7 +2979,7 @@ function closeDiaNumpad() {
 
 function diaNumpadKey(k) {
   const currentCycle = parseInt(document.getElementById('set-cycle')?.textContent) || getCycle();
-  const maxVal = diaNumpadMode === 'cycle' ? 999 : currentCycle;
+  const maxVal = diaNumpadMode === 'cycle' ? 999 : 99;
   if (k === 'C') { diaNumpadVal = ''; }
   else if (k === 'del') { diaNumpadVal = diaNumpadVal.length > 1 ? diaNumpadVal.slice(0,-1) : ''; }
   else {
@@ -2964,13 +3001,30 @@ function diaNumpadReset() {
 
 function diaNumpadOk() {
   const val = parseInt(diaNumpadVal);
-  const maxVal = diaNumpadMode === 'cycle' ? 999 : getCycle();
-  if (isNaN(val) || val < 1 || val > maxVal) {
-    document.getElementById('dia-numpad-display').textContent = '!';
-    setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
-    return;
+  // cycle変更は数値範囲チェック、spot/masterはICHIRAN_DATA存在チェック + 99(臨時)
+  if (diaNumpadMode === 'cycle') {
+    if (isNaN(val) || val < 1 || val > 999) {
+      document.getElementById('dia-numpad-display').textContent = '!';
+      setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
+      return;
+    }
+  } else {
+    const validDias = new Set(ICHIRAN_DATA.map(r => r.dia));
+    validDias.add(99); // 臨時ダイヤ
+    if (isNaN(val) || !validDias.has(val)) {
+      document.getElementById('dia-numpad-display').textContent = '!';
+      setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
+      return;
+    }
   }
   if (diaNumpadMode === 'spot') {
+    if (val === 99) {
+      // 臨時ダイヤ：全日 or 中間を選択させる
+      closeDiaNumpad();
+      _rinjiDateKey = diaNumpadDateKey;
+      document.getElementById('rinji-type-overlay').classList.remove('hidden');
+      return;
+    }
     if (val === diaNumpadOriginal) {
       delete DIA_OVERRIDES[diaNumpadDateKey];
     } else {
@@ -3132,6 +3186,91 @@ function skOk() {
   document.getElementById('sk-np-overlay').classList.add('hidden');
   render();
 }
+
+// ===== 臨時ダイヤ種別選択 =====
+let _rinjiDateKey = '';
+function selectRinjiType(type) {
+  // type: '全日' or '中間'
+  DIA_OVERRIDES[_rinjiDateKey] = { dia: 99, type: type };
+  saveDiaOverrides();
+  document.getElementById('rinji-type-overlay').classList.add('hidden');
+  render();
+}
+function cancelRinjiType() {
+  document.getElementById('rinji-type-overlay').classList.add('hidden');
+}
+
+// ===== 退勤時間臨時変更テンキー =====
+let _tkDateKey = '', _tkIdx = 0, _tkOrigTime = '', _tkH = '0', _tkM = '00', _tkSeg = 'h';
+function openTaikinNumpad(dateKey, idx, origTime) {
+  _tkDateKey = dateKey;
+  _tkIdx = idx;
+  _tkOrigTime = origTime;
+  var okey = dateKey + '_' + idx;
+  var existing = TAIKIN_OVERRIDES[okey];
+  var initMin = (existing !== undefined) ? existing : (timeToMin(origTime) || 0);
+  var baseMin = ((initMin % 1440) + 1440) % 1440;
+  _tkH = String(Math.floor(baseMin / 60));
+  _tkM = String(baseMin % 60).padStart(2, '0');
+  _tkSeg = 'h';
+  var d = new Date(dateKey.replace(/-/g, '/'));
+  document.getElementById('tk-np-date').textContent =
+    d.toLocaleDateString('ja-JP', {month:'long', day:'numeric', weekday:'short'});
+  _tkUpdateDisplay();
+  _tkSelectSeg('h');
+  document.getElementById('tk-np-overlay').classList.remove('hidden');
+}
+function _tkSelectSeg(seg) {
+  _tkSeg = seg;
+  document.getElementById('tk-np-seg-h').classList.toggle('active', seg === 'h');
+  document.getElementById('tk-np-seg-m').classList.toggle('active', seg === 'm');
+}
+function _tkUpdateDisplay() {
+  document.getElementById('tk-np-h-val').textContent = _tkH || '0';
+  document.getElementById('tk-np-m-val').textContent = (_tkM || '0').padStart(2, '0');
+}
+function tkKey(k) {
+  if (_tkSeg === 'h') {
+    if (k === 'C') { _tkH = ''; }
+    else if (k === 'del') { _tkH = _tkH.length > 1 ? _tkH.slice(0,-1) : ''; }
+    else { var n = (_tkH === '' ? k : _tkH + k); _tkH = n.length > 2 ? n.slice(-2) : n; }
+  } else {
+    if (k === 'C') { _tkM = ''; }
+    else if (k === 'del') { _tkM = _tkM.length > 1 ? _tkM.slice(0,-1) : ''; }
+    else {
+      var n2 = (_tkM === '' || _tkM === '0') ? k : _tkM + k;
+      var v = parseInt(n2); if (v > 59) v = 59;
+      _tkM = String(v);
+    }
+  }
+  _tkUpdateDisplay();
+}
+function tkReset() {
+  delete TAIKIN_OVERRIDES[_tkDateKey + '_' + _tkIdx];
+  saveTaikinOverrides();
+  document.getElementById('tk-np-overlay').classList.add('hidden');
+  render();
+}
+function tkCancel() {
+  document.getElementById('tk-np-overlay').classList.add('hidden');
+}
+function tkOk() {
+  var h = parseInt(_tkH) || 0;
+  var m = parseInt(_tkM) || 0;
+  if (h > 23 || m > 59) {
+    var disp = document.getElementById('tk-np-h-val');
+    if (disp) { var orig = disp.textContent; disp.textContent = '!'; setTimeout(function(){ disp.textContent = orig; }, 600); }
+    return;
+  }
+  var newMin = h * 60 + m;
+  var origMin = timeToMin(_tkOrigTime);
+  var okey = _tkDateKey + '_' + _tkIdx;
+  if (newMin === origMin) { delete TAIKIN_OVERRIDES[okey]; }
+  else { TAIKIN_OVERRIDES[okey] = newMin; }
+  saveTaikinOverrides();
+  document.getElementById('tk-np-overlay').classList.add('hidden');
+  render();
+}
 setInterval(updateClock, 30000);
 
 // ⑤ 日付変わり目（深夜0時）に再描画
@@ -3242,6 +3381,58 @@ setInterval(updateClock, 30000);
     <div class="numpad-actions">
       <button class="nk-cancel" onclick="skCancel()">キャン<br>セル</button>
       <button class="nk-ok" onclick="skOk()">確定</button>
+    </div>
+  </div>
+</div>
+<!-- 退勤時間臨時変更テンキー -->
+<div id="tk-np-overlay" class="numpad-overlay hidden">
+  <div class="shukkin-numpad-box">
+    <div class="shukkin-numpad-title">⚠️ 退勤時間を臨時変更</div>
+    <div class="shukkin-numpad-date" id="tk-np-date"></div>
+    <div class="numpad-display-row" style="margin-bottom:8px">
+      <div class="numpad-seg" id="tk-np-seg-h" onclick="_tkSelectSeg('h')">
+        <div class="numpad-seg-val" id="tk-np-h-val">0</div>
+        <div class="numpad-seg-lbl">時</div>
+      </div>
+      <div class="numpad-colon">:</div>
+      <div class="numpad-seg" id="tk-np-seg-m" onclick="_tkSelectSeg('m')">
+        <div class="numpad-seg-val" id="tk-np-m-val">00</div>
+        <div class="numpad-seg-lbl">分</div>
+      </div>
+    </div>
+    <div class="shukkin-numpad-reset" onclick="tkReset()">🔄 元の退勤時間に戻す</div>
+    <div class="numpad-grid">
+      <button class="nk" onclick="tkKey('7')">7</button>
+      <button class="nk" onclick="tkKey('8')">8</button>
+      <button class="nk" onclick="tkKey('9')">9</button>
+      <button class="nk" onclick="tkKey('4')">4</button>
+      <button class="nk" onclick="tkKey('5')">5</button>
+      <button class="nk" onclick="tkKey('6')">6</button>
+      <button class="nk" onclick="tkKey('1')">1</button>
+      <button class="nk" onclick="tkKey('2')">2</button>
+      <button class="nk" onclick="tkKey('3')">3</button>
+      <button class="nk nk-clear" onclick="tkKey('C')">C</button>
+      <button class="nk" onclick="tkKey('0')">0</button>
+      <button class="nk nk-del" onclick="tkKey('del')">⌫</button>
+    </div>
+    <div class="numpad-actions">
+      <button class="nk-cancel" onclick="tkCancel()">キャン<br>セル</button>
+      <button class="nk-ok" onclick="tkOk()">確定</button>
+    </div>
+  </div>
+</div>
+<!-- 臨時ダイヤ種別選択 -->
+<div id="rinji-type-overlay" class="alert-overlay hidden">
+  <div class="master-confirm-box">
+    <div class="master-confirm-icon">🚨</div>
+    <div class="master-confirm-title">臨時ダイヤの種別を選択</div>
+    <div class="master-confirm-sub">ダイヤ 99 を設定します</div>
+    <div class="master-confirm-btns">
+      <button class="master-confirm-ok" style="flex:1;background:linear-gradient(170deg,#4db880,#3d9e6e);border-color:#2a7a50;border-bottom-color:#1e6040" onclick="selectRinjiType('全日')">全日</button>
+      <button class="master-confirm-ok" style="flex:1;background:linear-gradient(170deg,#7c6fff,#5b4fcf);border-color:#4a3fb0;border-bottom-color:#3a2f90" onclick="selectRinjiType('中間')">中間</button>
+    </div>
+    <div style="margin-top:10px">
+      <button class="master-confirm-cancel" style="width:100%;font-size:12px" onclick="cancelRinjiType()">キャンセル</button>
     </div>
   </div>
 </div>
