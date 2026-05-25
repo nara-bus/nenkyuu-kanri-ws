@@ -526,6 +526,293 @@
     transition: all 0.1s;
   }
   .nk-ok:active { border-bottom-width: 1px; transform: translateY(2px); box-shadow: inset 0 2px 4px rgba(0,0,0,0.20); }
+
+  /* ===== パスワードテンキー ===== */
+  .pw-numpad-box {
+    background: linear-gradient(170deg, #f8f8f8 0%, #efefef 100%);
+    border-radius: 20px;
+    padding: 22px 18px 18px; width: 290px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.9);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .pw-numpad-title {
+    text-align: center; font-size: 14px; font-weight: 700; color: #333; margin-bottom: 6px; letter-spacing: 0.04em;
+  }
+  .pw-numpad-sub {
+    text-align: center; font-size: 11px; color: #999; margin-bottom: 14px;
+  }
+  .pw-dots {
+    display: flex; justify-content: center; gap: 14px; margin-bottom: 18px;
+  }
+  .pw-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #ddd; border: 2px solid #bbb;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .pw-dot.filled { background: #3d9e6e; border-color: #2d7a52; }
+  .pw-dot.error  { background: #ef4444; border-color: #cc2222; }
+
+  .master-edit-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 0;
+  }
+  .master-edit-toggle-label { font-size: 13px; color: #3a6e55; font-weight: 600; }
+  .master-edit-toggle-sub { font-size: 11px; color: #80aa92; margin-top: 2px; }
+
+  .master-edit-body {
+    border-top: 1px solid rgba(100,180,140,0.2);
+    padding-top: 12px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  /* ダイヤ選択 + 曜日選択 行 */
+  .master-sel-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .master-sel-label { font-size: 12px; color: #5a8a72; font-weight: 700; min-width: 60px; }
+  .master-dia-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 15px; font-weight: 700; color: #2d5a47;
+    background: linear-gradient(170deg, #e8f5ee 0%, #d0eadc 100%);
+    border: 1px solid rgba(60,140,95,0.45);
+    border-bottom: 3px solid rgba(40,110,70,0.50);
+    border-radius: 8px; padding: 6px 14px; cursor: pointer;
+    box-shadow: 0 2px 0 rgba(40,110,70,0.22), inset 0 1px 0 rgba(255,255,255,0.75);
+    transition: all 0.1s; user-select: none;
+  }
+  .master-dia-btn:active {
+    border-bottom-width: 1px; transform: translateY(2px);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.12);
+  }
+  .master-dow-btns { display: flex; gap: 6px; }
+  .master-dow-btn {
+    flex: 1; padding: 7px 0; border-radius: 10px;
+    border: 1px solid rgba(100,180,140,0.35);
+    border-bottom: 3px solid rgba(80,150,110,0.40);
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    background: linear-gradient(170deg,#f5fdf8 0%,#e8f5ee 100%);
+    color: #3a6e50; transition: all 0.12s; user-select: none;
+    box-shadow: 0 2px 0 rgba(60,130,90,0.18), inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  .master-dow-btn.active {
+    background: linear-gradient(170deg,#4db880 0%,#3d9e6e 100%);
+    color: #fff; border-color: #2a7a50;
+    border-bottom-color: #1e6040;
+    box-shadow: 0 2px 0 #1a5035, inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .master-dow-btn:active { border-bottom-width: 1px; transform: translateY(2px); }
+
+  /* フィールド編集グリッド */
+  .master-field-grid {
+    display: flex; flex-direction: column; gap: 4px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(100,180,140,0.25);
+    border-radius: 12px; padding: 8px;
+  }
+  .master-field-half-label {
+    font-size: 11px; font-weight: 800; color: #3d9e6e;
+    letter-spacing: 0.08em; padding: 2px 4px 4px;
+    border-bottom: 1px solid rgba(100,180,140,0.2);
+    margin-bottom: 2px;
+  }
+  .master-field-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 4px;
+    border-bottom: 1px solid rgba(100,180,140,0.12);
+  }
+  .master-field-row:last-child { border-bottom: none; }
+  .master-field-lbl { font-size: 12px; color: #5a8a72; font-weight: 600; min-width: 80px; }
+  .master-field-val {
+    display: inline-flex; align-items: center;
+    font-size: 16px; font-weight: 700; color: #2d5a47;
+    background: linear-gradient(170deg,#fefae8 0%,#faf2cc 100%);
+    border: 1px solid rgba(180,160,80,0.38);
+    border-bottom: 3px solid rgba(160,140,60,0.38);
+    border-radius: 8px; padding: 4px 12px; cursor: pointer;
+    box-shadow: 0 2px 0 rgba(160,140,60,0.16), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: all 0.1s; user-select: none; min-width: 72px; text-align: center; justify-content: center;
+  }
+  .master-field-val:active {
+    border-bottom-width: 1px; transform: translateY(2px);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.12);
+  }
+  .master-field-val.rosen-input {
+    font-size: 13px; background: linear-gradient(170deg,#f0f8ff 0%,#ddeeff 100%);
+    border-color: rgba(80,140,200,0.38); border-bottom-color: rgba(60,110,180,0.38);
+    color: #1a4a8a; box-shadow: 0 2px 0 rgba(60,110,180,0.16), inset 0 1px 0 rgba(255,255,255,0.8);
+    padding: 4px 8px; min-width: 100px;
+  }
+  .master-no-data {
+    text-align: center; color: #90b8a0; font-size: 13px; padding: 12px 0; font-weight: 600;
+  }
+
+  /* 路線テキスト入力（インライン） */
+  .master-rosen-input {
+    font-size: 13px; font-weight: 700; color: #1a4a8a;
+    background: linear-gradient(170deg,#f0f8ff 0%,#ddeeff 100%);
+    border: 1px solid rgba(80,140,200,0.38);
+    border-bottom: 3px solid rgba(60,110,180,0.38);
+    border-radius: 8px; padding: 5px 8px;
+    width: 130px; text-align: center; font-family: inherit;
+    box-shadow: 0 2px 0 rgba(60,110,180,0.16), inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  .master-rosen-input:focus {
+    outline: none; border-color: #3d9e6e;
+    box-shadow: 0 0 0 2px rgba(61,158,110,0.25);
+  }
+
+  /* マスター編集用 時刻テンキー */
+  .master-time-numpad-box {
+    background: linear-gradient(170deg,#f8f8f8 0%,#efefef 100%);
+    border-radius: 20px; padding: 18px 14px 14px; width: 300px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.9);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .master-time-numpad-title {
+    text-align: center; font-size: 13px; font-weight: 700;
+    color: #444; margin-bottom: 6px;
+  }
+  .master-time-numpad-field {
+    text-align: center; font-size: 11px; color: #3d9e6e;
+    font-weight: 700; margin-bottom: 10px;
+  }
+
+  /* 中間/通常切り替えスイッチ行 */
+  .master-shift-type-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 4px 10px;
+    border-bottom: 1px solid rgba(100,180,140,0.18);
+    margin-bottom: 6px;
+  }
+  .master-shift-type-label { font-size: 12px; color: #5a8a72; font-weight: 700; }
+  .master-shift-type-badge {
+    font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 99px;
+    background: #e8f5ee; color: #2d7a50;
+    border: 1px solid rgba(60,140,95,0.3);
+  }
+  .master-shift-type-badge.middle {
+    background: #fff0e0; color: #8a4500;
+    border-color: rgba(180,100,30,0.3);
+  }
+  .master-shift-type-toggle {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .master-shift-type-sw { font-size: 11px; color: #80aa92; }
+
+  .master-teire-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 4px 10px;
+    border-bottom: 1px solid rgba(100,180,140,0.18);
+    margin-bottom: 4px;
+  }
+
+  .master-init-btn {
+    width: 100%; margin-top: 8px; padding: 12px;
+    background: linear-gradient(170deg, #f0f0ff 0%, #e0e0f8 100%);
+    color: #3a3a8a; border: 1px solid #b0b0e0;
+    border-bottom: 3px solid #8080c0;
+    border-radius: 14px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 3px 0 #8080c0, 0 5px 12px rgba(80,80,200,0.10), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: all 0.1s; letter-spacing: 0.04em;
+  }
+  .master-init-btn:active {
+    border-bottom-width: 1px; transform: translateY(2px);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.12), 0 1px 0 #8080c0;
+  }
+
+  .master-reset-all-btn {
+    width: 100%; margin-top: 8px; padding: 12px;
+    background: linear-gradient(170deg, #fff0f0 0%, #fdd 100%);
+    color: #c0392b; border: 1px solid #f8b0b0;
+    border-bottom: 3px solid #e08080;
+    border-radius: 14px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 3px 0 #e08080, 0 5px 12px rgba(200,60,60,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: all 0.1s; letter-spacing: 0.04em;
+  }
+  .master-reset-all-btn:active {
+    border-bottom-width: 1px; transform: translateY(2px);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.12), 0 1px 0 #e08080;
+  }
+
+  /* 全削除確認ダイアログ */
+  .master-reset-confirm-box {
+    background: #fff; border-radius: 20px;
+    padding: 28px 22px 20px; width: 320px; max-width: 92vw;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.25); text-align: center;
+  }
+  .master-reset-confirm-icon { font-size: 40px; margin-bottom: 10px; }
+  .master-reset-confirm-title {
+    font-size: 15px; font-weight: 800; color: #c0392b;
+    line-height: 1.6; margin-bottom: 6px;
+  }
+  .master-reset-confirm-sub {
+    font-size: 12px; color: #888; margin-bottom: 6px; line-height: 1.7;
+  }
+  .master-reset-confirm-items {
+    font-size: 12px; color: #3d9e6e; font-weight: 700;
+    background: rgba(61,158,110,0.08); border: 1px solid rgba(61,158,110,0.2);
+    border-radius: 10px; padding: 8px 12px; margin-bottom: 18px;
+    line-height: 1.8; text-align: left;
+  }
+  .master-reset-confirm-btns { display: flex; gap: 8px; }
+  .master-reset-confirm-cancel {
+    flex: 1; padding: 12px; background: #f5f5f5;
+    border: 1px solid #ccc; border-bottom: 3px solid #aaa;
+    border-radius: 12px; color: #555; font-size: 14px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08); transition: all 0.1s;
+  }
+  .master-reset-confirm-cancel:active { border-bottom-width: 1px; transform: translateY(2px); }
+  .master-reset-confirm-delete {
+    flex: 2; padding: 12px;
+    background: linear-gradient(170deg, #e74c3c 0%, #c0392b 100%);
+    border: 1px solid #a93226; border-bottom: 3px solid #922b21;
+    border-radius: 12px; color: #fff; font-size: 15px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 6px rgba(192,57,43,0.35); transition: all 0.1s;
+  }
+  .master-reset-confirm-delete:active { border-bottom-width: 1px; transform: translateY(2px); }
+
+  /* ===== パスワードテンキー ===== */
+  .pw-overlay {
+    position: fixed; inset: 0; z-index: 9000;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .master-confirm-box {
+    background: #fff; border-radius: 20px;
+    padding: 28px 22px 20px; width: 310px; max-width: 90vw;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.22); text-align: center;
+  }
+  .master-confirm-icon { font-size: 36px; margin-bottom: 8px; }
+  .master-confirm-title {
+    font-size: 14px; font-weight: 700; color: #2d5a47;
+    line-height: 1.7; margin-bottom: 6px;
+  }
+  .master-confirm-sub {
+    font-size: 11px; color: #80aa92; margin-bottom: 18px; line-height: 1.6;
+  }
+  .master-confirm-btns { display: flex; gap: 8px; }
+  .master-confirm-cancel {
+    flex: 1; padding: 12px; background: #f5f5f5;
+    border: 1px solid #ccc; border-bottom: 3px solid #aaa;
+    border-radius: 12px; color: #555; font-size: 14px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08); transition: all 0.1s;
+  }
+  .master-confirm-cancel:active { border-bottom-width: 1px; transform: translateY(2px); }
+  .master-confirm-ok {
+    flex: 2; padding: 12px;
+    background: linear-gradient(170deg,#4db880 0%,#3d9e6e 60%,#2f8a5c 100%);
+    border: 1px solid #2a7a50; border-bottom: 3px solid #1e6040;
+    border-radius: 12px; color: #fff; font-size: 15px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 6px rgba(40,120,70,0.30); transition: all 0.1s;
+  }
+  .master-confirm-ok:active { border-bottom-width: 1px; transform: translateY(2px); }
   .hidden { display: none !important; }
   /* 出勤時間臨時変更テンキー専用スタイル */
   .shukkin-numpad-box {
@@ -969,6 +1256,10 @@ const ICHIRAN_DATA = [
     { dia:57, type:'公休',   hei:null, doy:null, nch:null },
 ];
 
+// ===== マスターデータ上書き管理 =====
+// 初期値のディープコピー（applyMasterOverridesで毎回ここからリセット）
+const _ICHIRAN_DATA_ORIG = JSON.parse(JSON.stringify(ICHIRAN_DATA));
+
 
 const HOLIDAYS = new Set(["2024-01-01","2024-01-08","2024-02-11","2024-02-12","2024-02-23","2024-03-20","2024-04-29","2024-05-03","2024-05-04","2024-05-05","2024-05-06","2024-07-15","2024-08-11","2024-08-12","2024-09-16","2024-09-22","2024-09-23","2024-10-14","2024-11-03","2024-11-04","2024-11-23","2024-12-23","2025-01-01","2025-01-13","2025-02-11","2025-02-23","2025-02-24","2025-03-20","2025-04-29","2025-05-03","2025-05-04","2025-05-05","2025-05-06","2025-07-21","2025-08-11","2025-09-15","2025-09-22","2025-09-23","2025-10-13","2025-11-03","2025-11-23","2025-11-24","2026-01-01","2026-01-12","2026-02-11","2026-02-23","2026-03-20","2026-04-29","2026-05-03","2026-05-04","2026-05-05","2026-05-06","2026-07-20","2026-08-11","2026-09-21","2026-09-22","2026-09-23","2026-10-12","2026-11-03","2026-11-23","2027-01-01","2027-01-11","2027-02-11","2027-02-23","2027-03-20","2027-04-29","2027-05-03","2027-05-04","2027-05-05","2027-07-19","2027-08-11","2027-09-20","2027-09-23","2027-10-11","2027-11-03","2027-11-23"]);
 
@@ -987,7 +1278,7 @@ const DEFAULT_SETTINGS = {
   returnAfterEnd:    0,
   showOkibo: true, showShukkin: true, showTochaku: true,
   showShukkinTime: true, showTaikinTime: true, showKikaku: true,
-  ichiranCalcMode: false,
+  ichiranCalcMode: true,
 };
 
 function isDefaultSettings(s) {
@@ -1062,8 +1353,8 @@ function _convTime(t) {
   if (!t) return null;
   const parts = t.split(':');
   const h = parseInt(parts[0]), m = parseInt(parts[1]);
-  if (h >= 24) return '+' + String(h - 24).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+  if (h >= 24) return '+' + String(h - 24) + ':' + String(m).padStart(2, '0');
+  return h + ':' + String(m).padStart(2, '0');
 }
 
 // DIADATAの1曜日分データをSCHEDULES互換のshiftオブジェクトに変換
@@ -1184,12 +1475,12 @@ function buildShiftCard(shifts, isKyukyu, isYobi) {
         <span class="shift-time" style="color:#1a1a1a">${minToTime(tochakuMin)}</span>
       </div>` : ''}
       ${s.showShukkinTime ? `<div class="shift-row">
-        <span class="shift-icon"><img src="data:image/png;base64,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" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-bottom:2px;"></span>
+        <span class="shift-icon">▶️</span>
         <span class="shift-label">④ 出勤時間（勤務開始）</span>
         <button class="shukkin-btn${isOverride ? ' override' : ''}" style="color:${workStartColor}" onclick="openShukkinNumpad('${dateKey}',${shiftIdx},'${sh.shukkinTime}')">${minToTime(workStartMin)}${shukkinOverrideFlag}</button>
       </div>` : ''}
       ${s.showTaikinTime ? `<div class="shift-row">
-        <span class="shift-icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhYAAAIWCAMAAAA8mTThAAAC/VBMVEVHcEzxnBTxnBLvlQjvlAbxnBH0pRvzpxvvlgnwkwDwmQ7xnRHulAX0pxnyoBXzoh390Dfypxv4vzP2syfwoBD3tif0pCDxlwP3uzD84F//62b711Pynhn0piD5zUb/6mX/6mPzphH0qCD/5131sBz3vSr3tSn/6WH/51vynAb2sif/5lj4wjT5xTr81UT/5FT1rCX/5Vbvlgn93Vb/6F72uCn3wC/6zDf6yTn3tij/4Uv/72//7mz/41H/7Wn/40/1qSX1qCX2sif4wDb/7Gj1qyX1qiX4xDLumgr1rSb2tSj3uin5xjX/4k33th31rib1sCf1pyT3vCr0piT/3kT2syj3uSf/3UL3tyj/4Ej0pST0rBb2uyr0pCT/30b3wCv3vyr4wyv70DX3wSv/3D70ogj0oyP3vCj3wiv0pCP4wSr/3UD/2jj5yTX/2zz6zTL/2Tb0oiP4vyn4xCz/2zr5yCz4viH81TP4xiz/2DT81TH5ySz/1zL3xCv4yCz6zS3+0y75xjD/1zD8zCb4xiv/1i73sA75yy370TH5xyz/1Sz/0yf6yjD7xiD/1Cr/0iT7vxf6zy3/0SL60C360S760i770y771S7/0B771y772C/82S//zBX/zhj7ugj/yQ3wnA/wmRL82y/skgP/yxHrjwD83S/2rybtlAf93jD93zDx0S3Nrya5lyKffx3lxSv4wCr94DDZuimXdB1sUBVCKw1NNA/7xzD72C7CoiSFZxlbPxP/xwf/2zuviiD/2zrvmQzYrCapaAX5yC99VSD4wjnLnyT4vj72tif5wj34vjjztCv4vDr3uz/3ujz3t0D4vEL3uEP3tUT2s0b2tT/2s0H2sET3tz32sEj2rUr1rkb3uSj1q0j1qkv0p030pU70o1D0qEnzoFLznlPzmlbzm1Pyl1e7eD6aZDDXjUfxk1rwjV7iuCropT/FjTXtszf0pUntuyrzn070o0vuwyv3ujb1rUH0qUT3vDL2tjf2szr1sD32uDP/8HL/8XaS3aBdAAAA3HRSTlMALnKXwYJgIOD/0RDzP1Ghdv////+q8P///////67/////3////5X////////////A/6/////////////////////X////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////uv/////////////////////////////D///////p/6bs/////////7f///7////////////////////pVnTP+AAAXUBJREFUeAHs2YVy4zAUhWG1MfTGdhpWYDdc3jIzM9P7v8pKltNattRlcHu/wpCHkn+OiSCEEEIIIYQQ+hMGBlOGYZiWTRAS7NQQ9KUthzAIowCJa+JngkwXogzlYDge7shH4Q2BQjoawEDKEMHgKeYjMEHNIGGWAS/cDHnfkJ0GHTM0KAZIUuQ9Q54LWq5NBCcFANgFnkCk735gCOKGyTuFHAPe5hBmEJQGCUoqL5sd9jzne08guXw+XyjKX31Kf4pJIOSVyhQEN2V/xwmkUq356gUIpImTBh2DJA2yS59A8tmJHGCAjDZqvmaz1aq3QbDToOeRREGZDsTQjHSEC7J2VUTR8nWDLuSjcr2RkR5N5lyg0TJQUBglL1IQUeiKoRDGxsYnolVNNsZ9U18oBGyCkmK0CDqj2kdY02IohDFuRo6iMhtEwcxQvBlJFnuOgl7QheWCjNbDQxEIz0VvNmiCm5/vd7FAUOKjYKhFiLMAEe1FeSi4paXl0JZIUTAr4BsiKPlRMEXbc+OXFfEmmAr0rcpNMLMUfAQlPwquDFHTiiikLNYiUcwy63jN+U6iUKONaBNCt9vPohcZCt8qPrlIchS53Nu5tOuqKLrd7vh4D4QNeSiEGcwiqVEUp6ubW1tbzUYPdHLdaBNBFAwNxiI6FMz29jZmkdAoGqyJwGIblAqaoWC6ayDMKJpgwJfxPM8mKIlR7DAFUFhTD4UQlNSORiHsgm/Pt79/MDc3bJqWh+vxP/A66ijoYfO1Cebo6CgXP2hGORTC1AwIDbkJYXc3uOQ8Pj7h9vb5fx4IL2TYtHBC/mUUoFaRojjyVWnsYlM7FPx+tD8WiqHgToE7OxeOuSCR/X1eB8+D1eEQ9J9EcVGVh4KpMZcg6Y1rh4K7AqERHwru+ga44u3t7XmYVMc+U54bHfQI+kuyuihy9dhQ1Hx1CFvRDwW3TYOxmBXkJpgJ4HJ3d3e3r+Q8+GmFud/fv+98NnE4/rzR8jei2JGjYFr1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" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-bottom:2px;"></span>
+        <span class="shift-icon">⏹️</span>
         <span class="shift-label">⑤ 退勤時間（勤務終了）</span>
         <span class="shift-time" style="color:#2979ff">${minToTime(taikinTimeMin)}</span>
       </div>` : ''}
@@ -1572,30 +1863,57 @@ function renderSettings() {
     <div class="settings-section">
       <div class="settings-title">👁️ 表示項目</div>
       <div class="settings-section-body">
+      ${(() => {
+        // 今日のシフトから予定時刻を計算
+        const today = new Date();
+        const sched = getSchedule(today);
+        const wake   = s.wakeBeforeLeave   ?? 90;
+        const leave  = s.leaveBeforeWork   ?? 60;
+        const arrive = s.arriveBeforeStart ?? 30;
+        const retMin = s.returnAfterEnd    ?? 10;
+        let tOkibo='', tShukkin='', tTochaku='', tStart='', tTaikin='', tKitan='';
+        if (sched && sched.shifts && sched.shifts.length > 0) {
+          const sh = sched.shifts[0];
+          const startMin = timeToMin(sh.shukkinTime);
+          if (startMin !== null) {
+            tOkibo   = minToTime(startMin - wake);
+            tShukkin = minToTime(startMin - leave);
+            tTochaku = minToTime(startMin - arrive);
+            tStart   = minToTime(startMin);
+          }
+          const taikinMin = timeToMin(sh.taikinTime);
+          if (taikinMin !== null) {
+            tTaikin = minToTime(taikinMin);
+            tKitan  = minToTime(taikinMin + retMin);
+          }
+        }
+        const tag = (t) => t ? `<span style="font-size:11px;color:#4db880;font-weight:700;margin-left:6px;letter-spacing:0.02em">(${t})</span>` : '';
+        return `
       <div class="settings-row">
-        <span class="settings-row-label">⏰ ① 起床時刻</span>
+        <span class="settings-row-label">🥱 ① 起床時刻${tag(tOkibo)}</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-okibo" ${chk('showOkibo')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">🚙 ② 出社時刻（家を出る）</span>
+        <span class="settings-row-label">🚙 ② 出社時刻（家を出る）${tag(tShukkin)}</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-shukkin" ${chk('showShukkin')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">🏢 ③ 到着時刻（会社）</span>
+        <span class="settings-row-label">🏢 ③ 到着時刻（会社）${tag(tTochaku)}</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-tochaku" ${chk('showTochaku')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">▶️ ④ 出勤時間（勤務開始）</span>
+        <span class="settings-row-label">▶️ ④ 出勤時間（勤務開始）${tag(tStart)}</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-shukkinTime" ${chk('showShukkinTime')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">⏹️ ⑤ 退勤時間（勤務終了）</span>
+        <span class="settings-row-label">⏹️ ⑤ 退勤時間（勤務終了）${tag(tTaikin)}</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-taikinTime" ${chk('showTaikinTime')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">🏠 ⑥ 帰宅時刻（家に到着）</span>
+        <span class="settings-row-label">🏠 ⑥ 帰宅時刻（家に到着）${tag(tKitan)}</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-kikaku" ${chk('showKikaku')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
-      </div>
+      </div>`;
+      })()}
       </div>
     </div>
 
@@ -1608,8 +1926,55 @@ function renderSettings() {
           <div class="settings-row-label">設定時間を反映した計算値を表示</div>
           <div class="settings-row-sub">OFFで従来表示（データ原本の時刻）</div>
         </div>
-        <label class="toggle-wrap"><input type="checkbox" id="tog-ichiranCalc" ${chk('ichiranCalcMode')}><span class="toggle-slider"></span></label>
+        <label class="toggle-wrap"><input type="checkbox" id="tog-ichiranCalc" ${chk('ichiranCalcMode')} onchange="toggleWithPassword(this, 'ichiranCalcMode')"><span class="toggle-slider"></span></label>
       </div>
+      </div>
+    </div>
+
+    <!-- 5. マスターデータ編集 -->
+    <div class="settings-section">
+      <div class="settings-title">🗂️ マスターデータ編集</div>
+      <div class="settings-section-body">
+        <div class="master-edit-toggle-row">
+          <div>
+            <div class="master-edit-toggle-label">ダイヤマスターを編集</div>
+            <div class="master-edit-toggle-sub">時刻データを直接変更できます</div>
+          </div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="tog-master-edit" onchange="toggleMasterEdit()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div id="master-edit-body" style="display:none">
+          <div class="master-edit-body">
+            <div class="master-sel-row">
+              <span class="master-sel-label">ダイヤ</span>
+              <button class="master-dia-btn" id="master-dia-btn" onclick="openMasterDiaNumpad()">1番</button>
+            </div>
+            <div class="master-teire-row" id="master-teire-row">
+              <div>
+                <div class="master-edit-toggle-label">🔧 手入バッジ</div>
+                <div class="master-edit-toggle-sub">このダイヤに手入バッジを表示する</div>
+              </div>
+              <label class="toggle-wrap">
+                <input type="checkbox" id="tog-teire" onchange="onTeireToggle()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="master-sel-row">
+              <span class="master-sel-label">曜日区分</span>
+              <div class="master-dow-btns">
+                <button class="master-dow-btn active" id="mdow-hei" onclick="selectMasterDow('hei')">平日</button>
+                <button class="master-dow-btn" id="mdow-doy" onclick="selectMasterDow('doy')">土曜</button>
+                <button class="master-dow-btn" id="mdow-nch" onclick="selectMasterDow('nch')">日祝</button>
+              </div>
+            </div>
+            <div id="master-field-area"></div>
+            <button class="save-btn" style="margin-top:4px" onclick="masterSaveConfirm()">💾 マスターデータを保存</button>
+            <button class="master-reset-all-btn" onclick="masterResetAllConfirm()">🔄 起床・出社・到着・帰宅を全リセット</button>
+            <button class="master-init-btn" onclick="masterInitConfirm()">🔁 マスターデータを初期値に戻す</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1619,6 +1984,10 @@ function renderSettings() {
     <br>
   `;
   updateTimeDiffLabels();
+  // マスターフォームが開いている場合は再描画
+  if (document.getElementById('tog-master-edit')?.checked) {
+    renderMasterEditForm();
+  }
 }
 
 function togglePreview() {
@@ -1676,6 +2045,606 @@ function applySettings() {
   setTimeout(() => { const el = document.getElementById('save-msg'); if(el) el.textContent=''; }, 2000);
 }
 
+
+// ========== パスワードテンキー ==========
+let _pwInput = '';
+let _pwCallback = null;  // 認証成功時のコールバック
+let _pwCancel = null;    // 取消時のコールバック
+
+function getAppPassword() {
+  return localStorage.getItem('appPassword') || '0924';
+}
+
+function openPwNumpad(title, onSuccess, onCancel) {
+  _pwInput = '';
+  _pwCallback = onSuccess || null;
+  _pwCancel = onCancel || null;
+  document.getElementById('pw-numpad-title').textContent = title || '🔒 パスワードを入力';
+  _updatePwDots(false);
+  document.getElementById('pw-numpad-overlay').classList.remove('hidden');
+}
+
+function _updatePwDots(isError) {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pw-dot-' + i);
+    dot.classList.remove('filled', 'error');
+    if (isError) {
+      dot.classList.add('error');
+    } else if (i < _pwInput.length) {
+      dot.classList.add('filled');
+    }
+  }
+}
+
+function pwKey(k) {
+  if (k === 'del') {
+    if (_pwInput.length > 0) _pwInput = _pwInput.slice(0, -1);
+    _updatePwDots(false);
+    return;
+  }
+  if (_pwInput.length >= 4) return;
+  _pwInput += k;
+  _updatePwDots(false);
+  if (_pwInput.length === 4) {
+    const correct = getAppPassword();
+    if (_pwInput === correct) {
+      document.getElementById('pw-numpad-overlay').classList.add('hidden');
+      _pwInput = '';
+      if (_pwCallback) _pwCallback();
+    } else {
+      _updatePwDots(true);
+      setTimeout(() => {
+        _pwInput = '';
+        _updatePwDots(false);
+      }, 700);
+    }
+  }
+}
+
+function pwCancel() {
+  document.getElementById('pw-numpad-overlay').classList.add('hidden');
+  _pwInput = '';
+  if (_pwCancel) _pwCancel();
+}
+
+// ========== マスターデータ編集 ==========
+let MASTER_OVERRIDES = {};
+try { MASTER_OVERRIDES = JSON.parse(localStorage.getItem('masterOverrides') || '{}'); } catch(e) {}
+function saveMasterOverrides() {
+  try { localStorage.setItem('masterOverrides', JSON.stringify(MASTER_OVERRIDES)); } catch(e) {}
+}
+
+// ===== 手入フラグ管理 =====
+// MASTER_OVERRIDES['teire_N'] = true → ダイヤNに手入バッジ
+//                              = false → 手入バッジ消去（元々手入のダイヤも含む）
+
+// ダイヤの実効typeを返す（手入フラグを考慮）
+function getEffectiveDiaType(dia, baseType) {
+  const key = 'teire_' + dia;
+  if (MASTER_OVERRIDES[key] === true)  return '手入';
+  if (MASTER_OVERRIDES[key] === false) return (baseType === '手入' ? '' : baseType);
+  return baseType; // フラグなし→元のtype
+}
+
+// フィールド定義（applyMasterOverrides より前に必要）
+const _MASTER_FIELDS = [
+  { key:'okibo',   label:'起床' },
+  { key:'shukkin', label:'出社' },
+  { key:'tochaku', label:'到着' },
+  { key:'start',   label:'出勤' },
+  { key:'taikin',  label:'退勤' },
+  { key:'kitan',   label:'帰宅' },
+  { key:'rosen',   label:'路線', isRosen: true },
+];
+const _MASTER_FIELDS2 = [
+  { key:'okibo2',   label:'起床' },
+  { key:'shukkin2', label:'出社' },
+  { key:'tochaku2', label:'到着' },
+  { key:'start2',   label:'出勤' },
+  { key:'taikin2',  label:'退勤' },
+  { key:'kitan2',   label:'帰宅' },
+  { key:'rosen2',   label:'路線', isRosen: true },
+];
+
+// ===== マスターデータ上書き適用 =====
+function applyMasterOverrides() {
+  // まずICHIRAN_DATAを元データに完全リセット
+  _ICHIRAN_DATA_ORIG.forEach((orig, i) => {
+    ICHIRAN_DATA[i].type = orig.type;
+    ['hei','doy','nch'].forEach(dow => {
+      if (orig[dow] && ICHIRAN_DATA[i][dow]) {
+        // 元データのキーをすべて復元
+        Object.keys(orig[dow]).forEach(k => {
+          ICHIRAN_DATA[i][dow][k] = orig[dow][k];
+        });
+        // 元データにないキーを削除（上書きで増えたキーを消す）
+        Object.keys(ICHIRAN_DATA[i][dow]).forEach(k => {
+          if (orig[dow][k] === undefined) delete ICHIRAN_DATA[i][dow][k];
+        });
+      }
+    });
+  });
+
+  // MASTER_OVERRIDESを上から適用
+  for (const key of Object.keys(MASTER_OVERRIDES)) {
+    const m = key.match(/^dia_(\d+)_(hei|doy|nch)$/);
+    if (!m) continue;
+    const dia = parseInt(m[1]), dow = m[2];
+    const entry = ICHIRAN_DATA.find(r => r.dia === dia);
+    if (!entry) continue;
+    const override = MASTER_OVERRIDES[key];
+    const row = entry[dow];
+    if (!row || row.yobi || row.type === '公休') continue;
+
+    // 中間/通常フラグを適用
+    if (override._isMiddle !== undefined && dow === 'hei') {
+      entry.type = override._isMiddle ? '中間' : '';
+      if (!override._isMiddle) {
+        _MASTER_FIELDS2.forEach(f => { delete row[f.key]; });
+      }
+    }
+    // 時刻フィールドを上書き
+    Object.keys(override).forEach(k => {
+      if (k !== '_isMiddle' && override[k] !== '') row[k] = override[k];
+    });
+  }
+}
+applyMasterOverrides();
+
+// 編集中の状態
+let _mDia = 1;
+let _mDow = 'hei';
+let _mEdits = {}; // { okibo:"4:20", shukkin:"5:50", ... } 編集中の一時データ
+
+function toggleMasterEdit() {
+  const on = document.getElementById('tog-master-edit').checked;
+  if (on) {
+    // ONにする時はパスワード確認
+    document.getElementById('tog-master-edit').checked = false; // 一旦戻す
+    openPwNumpad('🔒 マスターデータ編集',
+      () => {
+        document.getElementById('tog-master-edit').checked = true;
+        document.getElementById('master-edit-body').style.display = '';
+        _mDia = 1;
+        _mDow = 'hei';
+        document.getElementById('master-dia-btn').textContent = _mDia + '番';
+        _refreshMasterDowBtns();
+        _refreshTeireSwitch();
+        _refreshMasterFields();
+      },
+      () => {} // 取消：チェックは既にfalse
+    );
+  } else {
+    // OFFは即時
+    document.getElementById('master-edit-body').style.display = 'none';
+  }
+}
+
+// 手入スイッチのUI更新（ダイヤ切替時に呼ぶ）
+function _refreshTeireSwitch() {
+  const cb = document.getElementById('tog-teire');
+  if (!cb) return;
+  const entry = ICHIRAN_DATA.find(r => r.dia === _mDia);
+  const baseIsTeire = entry && entry.type === '手入';
+  const flagKey = 'teire_' + _mDia;
+  // フラグあり→フラグ値、フラグなし→元データのtype
+  let isTeire;
+  if (MASTER_OVERRIDES[flagKey] !== undefined) {
+    isTeire = MASTER_OVERRIDES[flagKey];
+  } else {
+    isTeire = baseIsTeire;
+  }
+  cb.checked = isTeire;
+}
+
+// 手入スイッチON/OFF → 即時保存（確認不要・ダイヤ単位の単純フラグ）
+function onTeireToggle() {
+  const isTeire = document.getElementById('tog-teire').checked;
+  const flagKey = 'teire_' + _mDia;
+  const entry = ICHIRAN_DATA.find(r => r.dia === _mDia);
+  const baseIsTeire = entry && entry.type === '手入';
+
+  if (isTeire === baseIsTeire) {
+    // 元データと同じ→フラグ不要なので削除
+    delete MASTER_OVERRIDES[flagKey];
+  } else {
+    MASTER_OVERRIDES[flagKey] = isTeire;
+  }
+  saveMasterOverrides();
+  render();
+  if (currentView === 'ichiran') renderIchiran();
+}
+
+function selectMasterDow(dow) {
+  _mDow = dow;
+  _refreshMasterDowBtns();
+  _refreshMasterFields();
+}
+
+function _refreshMasterDowBtns() {
+  ['hei','doy','nch'].forEach(d => {
+    const btn = document.getElementById('mdow-' + d);
+    if (btn) btn.classList.toggle('active', d === _mDow);
+  });
+}
+
+// フィールド定義（中間ダイヤは前半・後半あり）
+
+function _getSourceRow() {
+  const entry = ICHIRAN_DATA.find(r => r.dia === _mDia);
+  if (!entry) return null;
+  return entry[_mDow] || null;
+}
+
+// 編集中の「中間ダイヤとして扱うか」フラグ（スイッチ状態）
+let _mIsMiddle = false;
+
+function _refreshMasterFields() {
+  const area = document.getElementById('master-field-area');
+  if (!area) return;
+  const entry = ICHIRAN_DATA.find(r => r.dia === _mDia);
+  if (!entry) { area.innerHTML = '<div class="master-no-data">ダイヤが見つかりません</div>'; return; }
+
+  // 公休・予備の場合
+  if (entry.type === '公休') { area.innerHTML = '<div class="master-no-data">🏖️ 公休ダイヤ（編集不可）</div>'; return; }
+  if (entry.type === '予備') { area.innerHTML = '<div class="master-no-data">📋 予備ダイヤ（編集不可）</div>'; return; }
+
+  const row = entry[_mDow];
+  if (!row) { area.innerHTML = '<div class="master-no-data">データなし</div>'; return; }
+  if (row.type === '公休') { area.innerHTML = '<div class="master-no-data">🏖️ この曜日は公休（編集不可）</div>'; return; }
+  if (row.yobi) { area.innerHTML = '<div class="master-no-data">📋 この曜日は予備（編集不可）</div>'; return; }
+
+  // 初期値を _mEdits に読み込む
+  const storeKey = 'dia_' + _mDia + '_' + _mDow;
+  const savedOver = MASTER_OVERRIDES[storeKey] || {};
+
+  // 中間ダイヤかどうか：保存データ優先 → 元データで判定
+  const baseIsMiddle = row.okibo2 !== undefined;
+  // savedOverに_isMiddleフラグがあればそれを使う、なければ元データ
+  if (savedOver._isMiddle !== undefined) {
+    _mIsMiddle = savedOver._isMiddle;
+  } else {
+    _mIsMiddle = baseIsMiddle;
+  }
+
+  _mEdits = {};
+  const allFields = [..._MASTER_FIELDS, ...(_mIsMiddle ? _MASTER_FIELDS2 : [])];
+  allFields.forEach(f => {
+    _mEdits[f.key] = savedOver[f.key] !== undefined ? savedOver[f.key] : (row[f.key] || '');
+  });
+
+  // 平日のみ切り替えスイッチを表示
+  const showTypeSwitch = (_mDow === 'hei');
+  area.innerHTML = _buildMasterFieldsHtml(row, _mIsMiddle, showTypeSwitch);
+}
+
+function _buildMasterFieldsHtml(row, isMiddle, showTypeSwitch) {
+  function fieldRow(f) {
+    const val = _mEdits[f.key] !== undefined ? _mEdits[f.key] : (row[f.key] || '');
+    if (f.isRosen) {
+      return `<div class="master-field-row">
+        <span class="master-field-lbl">🚌 ${f.label}</span>
+        <input class="master-rosen-input" id="mf-${f.key}" value="${val}" placeholder="路線名">
+      </div>`;
+    }
+    return `<div class="master-field-row">
+      <span class="master-field-lbl">${f.label}</span>
+      <button class="master-field-val" id="mf-${f.key}" onclick="openMasterTimeNumpad('${f.key}','${f.label}')">${val || '—'}</button>
+    </div>`;
+  }
+
+  const typeSwitchHtml = showTypeSwitch ? `
+    <div class="master-shift-type-row">
+      <div>
+        <div class="master-shift-type-label">勤務タイプ</div>
+      </div>
+      <div class="master-shift-type-toggle">
+        <span class="master-shift-type-sw">通常</span>
+        <label class="toggle-wrap" style="width:44px;height:26px">
+          <input type="checkbox" id="tog-shift-type" ${isMiddle ? 'checked' : ''} onchange="toggleShiftType()">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="master-shift-type-sw">中間</span>
+      </div>
+      <span class="master-shift-type-badge ${isMiddle ? 'middle' : ''}" id="shift-type-badge">
+        ${isMiddle ? '中間ダイヤ' : '通常ダイヤ'}
+      </span>
+    </div>` : '';
+
+  if (!isMiddle) {
+    return `<div class="master-field-grid">
+      ${typeSwitchHtml}
+      ${_MASTER_FIELDS.map(fieldRow).join('')}
+    </div>`;
+  }
+  return `<div class="master-field-grid">
+    ${typeSwitchHtml}
+    <div class="master-field-half-label">▲ 前半</div>
+    ${_MASTER_FIELDS.map(fieldRow).join('')}
+    <div class="master-field-half-label" style="margin-top:6px">▼ 後半</div>
+    ${_MASTER_FIELDS2.map(fieldRow).join('')}
+  </div>`;
+}
+
+// 通常/中間スイッチ切り替え
+function toggleShiftType() {
+  // 現在のrosen入力値を先に保存
+  ['rosen','rosen2'].forEach(k => {
+    const el = document.getElementById('mf-' + k);
+    if (el && el.tagName === 'INPUT') _mEdits[k] = el.value;
+  });
+
+  _mIsMiddle = document.getElementById('tog-shift-type').checked;
+
+  // 中間→通常：後半フィールドをクリア
+  if (!_mIsMiddle) {
+    _MASTER_FIELDS2.forEach(f => { _mEdits[f.key] = ''; });
+  }
+  // 通常→中間：後半フィールドが空なら前半をコピーして初期値に
+  if (_mIsMiddle) {
+    _MASTER_FIELDS2.forEach((f, i) => {
+      if (!_mEdits[f.key]) {
+        const f1 = _MASTER_FIELDS[i];
+        _mEdits[f.key] = _mEdits[f1.key] || '';
+      }
+    });
+  }
+
+  const entry = ICHIRAN_DATA.find(r => r.dia === _mDia);
+  const row = entry ? entry[_mDow] : {};
+  const showTypeSwitch = (_mDow === 'hei');
+  const area = document.getElementById('master-field-area');
+  if (area) area.innerHTML = _buildMasterFieldsHtml(row || {}, _mIsMiddle, showTypeSwitch);
+}
+
+// ダイヤ番号選択（既存の diaNumpad を再利用）
+function openMasterDiaNumpad() {
+  diaNumpadMode = 'master';
+  diaNumpadVal = String(_mDia);
+  document.getElementById('dia-numpad-title').textContent = '編集するダイヤ番号';
+  document.getElementById('dia-numpad-date').textContent = '1〜' + getCycle() + ' の範囲で入力';
+  document.getElementById('dia-numpad-reset').style.display = 'none';
+  document.getElementById('dia-numpad-display').textContent = diaNumpadVal;
+  document.getElementById('dia-numpad-overlay').classList.remove('hidden');
+}
+
+// diaNumpadOk に master モードを追記するため上書き
+const _origDiaNumpadOk = diaNumpadOk;
+diaNumpadOk = function() {
+  if (diaNumpadMode === 'master') {
+    const val = parseInt(diaNumpadVal);
+    if (isNaN(val) || val < 1 || val > getCycle()) {
+      document.getElementById('dia-numpad-display').textContent = '!';
+      setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
+      return;
+    }
+    _mDia = val;
+    document.getElementById('master-dia-btn').textContent = val + '番';
+    closeDiaNumpad();
+    _refreshTeireSwitch();
+    _refreshMasterFields();
+  } else {
+    _origDiaNumpadOk();
+  }
+};
+
+// マスター時刻テンキー
+let _mtField = null, _mtLabel = '', _mtSeg = 'h', _mtH = '0', _mtM = '00';
+
+function openMasterTimeNumpad(fieldKey, label) {
+  _mtField = fieldKey;
+  _mtLabel = label;
+  const cur = _mEdits[fieldKey] || '';
+  // "HH:MM" or "24:xx" 形式を解析
+  if (cur && cur !== '—') {
+    const parts = cur.split(':');
+    _mtH = String(parseInt(parts[0]) || 0);
+    _mtM = String(parseInt(parts[1]) || 0).padStart(2,'0');
+  } else {
+    _mtH = '0'; _mtM = '00';
+  }
+  _mtSeg = 'h';
+  document.getElementById('mt-np-field').textContent = label;
+  _mtUpdateDisplay();
+  _mtSelectSeg('h');
+  document.getElementById('mt-np-overlay').classList.remove('hidden');
+}
+function _mtSelectSeg(seg) {
+  _mtSeg = seg;
+  document.getElementById('mt-np-seg-h').classList.toggle('active', seg === 'h');
+  document.getElementById('mt-np-seg-m').classList.toggle('active', seg === 'm');
+}
+function _mtUpdateDisplay() {
+  document.getElementById('mt-np-h-val').textContent = _mtH || '0';
+  document.getElementById('mt-np-m-val').textContent = (_mtM || '0').padStart(2,'0');
+}
+function mtKey(k) {
+  if (_mtSeg === 'h') {
+    if (k === 'C') { _mtH = ''; }
+    else if (k === 'del') { _mtH = _mtH.length > 1 ? _mtH.slice(0,-1) : ''; }
+    else { const n = _mtH === '' ? k : _mtH + k; _mtH = n.length > 2 ? n.slice(-2) : n; }
+  } else {
+    if (k === 'C') { _mtM = ''; }
+    else if (k === 'del') { _mtM = _mtM.length > 1 ? _mtM.slice(0,-1) : ''; }
+    else {
+      const n = (_mtM === '' || _mtM === '0') ? k : _mtM + k;
+      let v = parseInt(n); if (v > 59) v = 59; _mtM = String(v);
+    }
+  }
+  _mtUpdateDisplay();
+}
+function mtCancel() { document.getElementById('mt-np-overlay').classList.add('hidden'); }
+function mtOk() {
+  const h = parseInt(_mtH) || 0;
+  const m = parseInt(_mtM) || 0;
+  const timeStr = h + ':' + String(m).padStart(2,'0');
+  _mEdits[_mtField] = timeStr;
+  // ボタンの表示を更新
+  const btn = document.getElementById('mf-' + _mtField);
+  if (btn) btn.textContent = timeStr;
+  document.getElementById('mt-np-overlay').classList.add('hidden');
+}
+
+// 保存ボタン → 確認ダイアログ
+function masterSaveConfirm() {
+  // 路線inputの値を _mEdits に取り込む
+  ['rosen','rosen2'].forEach(k => {
+    const el = document.getElementById('mf-' + k);
+    if (el && el.tagName === 'INPUT') _mEdits[k] = el.value;
+  });
+  const entry = ICHIRAN_DATA.find(r => r.dia === _mDia);
+  if (!entry) return;
+  const row = entry[_mDow];
+  if (!row || row.type === '公休' || row.yobi || entry.type === '公休' || entry.type === '予備') return;
+
+  const dowLabel = { hei:'平日', doy:'土曜', nch:'日祝' }[_mDow];
+  document.getElementById('master-confirm-info').textContent =
+    'ダイヤ ' + _mDia + '番 ／ ' + dowLabel;
+  document.getElementById('master-confirm-overlay').classList.remove('hidden');
+}
+function masterConfirmCancel() {
+  document.getElementById('master-confirm-overlay').classList.add('hidden');
+}
+function masterConfirmOk() {
+  // 路線inputの値を再度取り込む
+  ['rosen','rosen2'].forEach(k => {
+    const el = document.getElementById('mf-' + k);
+    if (el && el.tagName === 'INPUT') _mEdits[k] = el.value;
+  });
+  const storeKey = 'dia_' + _mDia + '_' + _mDow;
+
+  // 保存データを構築
+  const cleaned = { _isMiddle: _mIsMiddle };
+  Object.keys(_mEdits).forEach(k => {
+    if (_mIsMiddle) {
+      if (_mEdits[k] !== '') cleaned[k] = _mEdits[k];
+    } else {
+      const is2nd = _MASTER_FIELDS2.some(f => f.key === k);
+      if (!is2nd && _mEdits[k] !== '') cleaned[k] = _mEdits[k];
+    }
+  });
+  MASTER_OVERRIDES[storeKey] = cleaned;
+  saveMasterOverrides();
+
+  // ICHIRAN_DATAをリセット＋再適用（直接書き換えはしない）
+  applyMasterOverrides();
+
+  document.getElementById('master-confirm-overlay').classList.add('hidden');
+  const msg = document.getElementById('save-msg');
+  if (msg) {
+    const dowLabel = { hei:'平日', doy:'土曜', nch:'日祝' }[_mDow];
+    const typeLabel = (_mDow === 'hei') ? '（' + (_mIsMiddle ? '中間' : '通常') + '）' : '';
+    msg.textContent = '✅ ダイヤ' + _mDia + '番（' + dowLabel + typeLabel + '）を保存しました';
+    msg.style.color = '#34d399';
+    setTimeout(() => { if (msg) msg.textContent = ''; }, 2500);
+  }
+  render();
+  if (currentView === 'ichiran') renderIchiran();
+}
+
+// ===== マスターデータ初期化 =====
+function masterInitConfirm() {
+  document.getElementById('master-init-confirm-overlay').classList.remove('hidden');
+}
+function masterInitCancel() {
+  document.getElementById('master-init-confirm-overlay').classList.add('hidden');
+}
+function masterInitExecute() {
+  // masterOverridesをlocalStorageから完全削除
+  localStorage.removeItem('masterOverrides');
+  MASTER_OVERRIDES = {};
+  // ICHIRAN_DATAを元データに完全リセット
+  applyMasterOverrides();
+  document.getElementById('master-init-confirm-overlay').classList.add('hidden');
+  _refreshMasterFields();
+  const msg = document.getElementById('save-msg');
+  if (msg) {
+    msg.textContent = '🔁 マスターデータを初期値に戻しました';
+    msg.style.color = '#818cf8';
+    setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
+  }
+  render();
+  if (currentView === 'ichiran') renderIchiran();
+}
+
+// ===== マスターデータ全削除 =====
+// リセット対象フィールド（出勤・退勤・路線 以外を 00:00 にする）
+const _MASTER_RESET_FIELDS = ['okibo','shukkin','tochaku','kitan','okibo2','shukkin2','tochaku2','kitan2'];
+
+function masterResetAllConfirm() {
+  document.getElementById('master-reset-confirm-overlay').classList.remove('hidden');
+}
+function masterResetAllCancel() {
+  document.getElementById('master-reset-confirm-overlay').classList.add('hidden');
+}
+function masterResetAllExecute() {
+  // リセット前に自動バックアップを保存
+  const now = new Date();
+  const fname = `出勤管理_バックアップ_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.json`;
+  const backupData = {
+    version: 1,
+    savedAt: now.toISOString(),
+    shiftSettings:     localStorage.getItem('shiftSettings')     || null,
+    diaOverrides:      localStorage.getItem('diaOverrides')      || null,
+    shukkinOverrides:  localStorage.getItem('shukkinOverrides')  || null,
+    masterOverrides:   localStorage.getItem('masterOverrides')   || null,
+    warningSuppressed: localStorage.getItem('warningSuppressed') || null,
+  };
+  const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fname; a.click();
+  URL.revokeObjectURL(url);
+  // 全ダイヤ×全曜日をループして対象フィールドを 00:00 で上書き
+  ICHIRAN_DATA.forEach(entry => {
+    if (entry.type === '公休' || entry.type === '予備') return;
+    ['hei','doy','nch'].forEach(dow => {
+      const row = entry[dow];
+      if (!row || row.yobi || row.type === '公休') return;
+      const storeKey = 'dia_' + entry.dia + '_' + dow;
+      if (!MASTER_OVERRIDES[storeKey]) MASTER_OVERRIDES[storeKey] = {};
+      const ov = MASTER_OVERRIDES[storeKey];
+      // 対象フィールドを 00:00 で上書き（元データにあるフィールドのみ）
+      _MASTER_RESET_FIELDS.forEach(k => {
+        if (row[k] !== undefined || ov[k] !== undefined) {
+          ov[k] = '00:00';
+        }
+      });
+    });
+  });
+  saveMasterOverrides();
+
+  // ICHIRAN_DATAをリセット＋再適用
+  applyMasterOverrides();
+
+  document.getElementById('master-reset-confirm-overlay').classList.add('hidden');
+  _refreshMasterFields();
+
+  const msg = document.getElementById('save-msg');
+  if (msg) {
+    msg.textContent = '🔄 起床・出社・到着・帰宅を 00:00 にリセットしました';
+    msg.style.color = '#f87171';
+    setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
+  }
+  render();
+  if (currentView === 'ichiran') renderIchiran();
+}
+
+// ========== パスワード付きトグル（一覧表モード用） ==========
+function toggleWithPassword(checkbox, settingKey) {
+  const newVal = checkbox.checked;
+  checkbox.checked = !newVal;
+  openPwNumpad('一覧表モード 切替',
+    function() {
+      checkbox.checked = newVal;
+      SETTINGS.ichiranCalcMode = newVal;
+      saveSettings(SETTINGS);
+      if (currentView === 'ichiran') renderIchiran();
+    },
+    function() {}
+  );
+}
+
 // ========== ファイル保存・読込 ==========
 async function doExport() {
   const now = new Date();
@@ -1687,6 +2656,7 @@ async function doExport() {
     diaOverrides:      localStorage.getItem('diaOverrides')      || null,
     shukkinOverrides:  localStorage.getItem('shukkinOverrides')  || null,
     warningSuppressed: localStorage.getItem('warningSuppressed') || null,
+    masterOverrides:   localStorage.getItem('masterOverrides')   || null,
   };
   const json = JSON.stringify(appData, null, 2);
 
@@ -1758,12 +2728,17 @@ function _applyImport(text, fname) {
     if (data.diaOverrides)      localStorage.setItem('diaOverrides',      data.diaOverrides);
     if (data.shukkinOverrides)  localStorage.setItem('shukkinOverrides',  data.shukkinOverrides);
     if (data.warningSuppressed) localStorage.setItem('warningSuppressed', data.warningSuppressed);
+    // masterOverrides: null でも '{}' で上書きしてリセット状態を確実に反映
+    localStorage.setItem('masterOverrides', data.masterOverrides || '{}');
 
     // データ再読み込み
     SETTINGS = loadSettings();
     try { DIA_OVERRIDES     = JSON.parse(localStorage.getItem('diaOverrides') || '{}'); } catch(e) { DIA_OVERRIDES = {}; }
     try { SHUKKIN_OVERRIDES = JSON.parse(localStorage.getItem('shukkinOverrides') || '{}'); } catch(e) { SHUKKIN_OVERRIDES = {}; }
+    try { MASTER_OVERRIDES  = JSON.parse(localStorage.getItem('masterOverrides') || '{}'); } catch(e) { MASTER_OVERRIDES = {}; }
+    applyMasterOverrides();
     render();
+    if (currentView === 'ichiran') renderIchiran();
     if (currentView === 'settings') renderSettings();
     alert('📂 読込完了しました！\nファイル: ' + (fname || ''));
   } catch(err) {
@@ -2004,6 +2979,13 @@ function diaNumpadOk() {
     saveDiaOverrides();
     closeDiaNumpad();
     render();
+  } else if (diaNumpadMode === 'master') {
+    _mDia = val;
+    const btn = document.getElementById('master-dia-btn');
+    if (btn) btn.textContent = val + '番';
+    closeDiaNumpad();
+    _refreshTeireSwitch();
+    _refreshMasterFields();
   } else {
     document.getElementById(diaNumpadMode === 'dia' ? 'set-dia' : 'set-cycle').textContent = val;
     closeDiaNumpad();
@@ -2263,6 +3245,114 @@ setInterval(updateClock, 30000);
     </div>
   </div>
 </div>
+<!-- パスワードテンキーオーバーレイ -->
+<div id="pw-numpad-overlay" class="numpad-overlay hidden">
+  <div class="pw-numpad-box">
+    <div class="pw-numpad-title" id="pw-numpad-title">🔒 パスワードを入力</div>
+    <div class="pw-numpad-sub" id="pw-numpad-sub">4桁の番号を入力してください</div>
+    <div class="pw-dots">
+      <div class="pw-dot" id="pw-dot-0"></div>
+      <div class="pw-dot" id="pw-dot-1"></div>
+      <div class="pw-dot" id="pw-dot-2"></div>
+      <div class="pw-dot" id="pw-dot-3"></div>
+    </div>
+    <div class="numpad-grid">
+      <button class="nk" onclick="pwKey('7')">7</button>
+      <button class="nk" onclick="pwKey('8')">8</button>
+      <button class="nk" onclick="pwKey('9')">9</button>
+      <button class="nk" onclick="pwKey('4')">4</button>
+      <button class="nk" onclick="pwKey('5')">5</button>
+      <button class="nk" onclick="pwKey('6')">6</button>
+      <button class="nk" onclick="pwKey('1')">1</button>
+      <button class="nk" onclick="pwKey('2')">2</button>
+      <button class="nk" onclick="pwKey('3')">3</button>
+      <button class="nk nk-del" onclick="pwKey('del')">⌫</button>
+      <button class="nk" onclick="pwKey('0')">0</button>
+      <button class="nk nk-cancel" style="font-size:12px;" onclick="pwCancel()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- マスターデータ編集：時刻テンキー -->
+<div id="mt-np-overlay" class="numpad-overlay hidden">
+  <div class="master-time-numpad-box">
+    <div class="master-time-numpad-title">⏰ 時刻を編集</div>
+    <div class="master-time-numpad-field" id="mt-np-field"></div>
+    <div class="numpad-display-row" style="margin-bottom:10px">
+      <div class="numpad-seg" id="mt-np-seg-h" onclick="_mtSelectSeg('h')">
+        <div class="numpad-seg-val" id="mt-np-h-val">0</div>
+        <div class="numpad-seg-lbl">時</div>
+      </div>
+      <div class="numpad-colon">:</div>
+      <div class="numpad-seg" id="mt-np-seg-m" onclick="_mtSelectSeg('m')">
+        <div class="numpad-seg-val" id="mt-np-m-val">00</div>
+        <div class="numpad-seg-lbl">分</div>
+      </div>
+    </div>
+    <div class="numpad-grid">
+      <button class="nk" onclick="mtKey('7')">7</button>
+      <button class="nk" onclick="mtKey('8')">8</button>
+      <button class="nk" onclick="mtKey('9')">9</button>
+      <button class="nk" onclick="mtKey('4')">4</button>
+      <button class="nk" onclick="mtKey('5')">5</button>
+      <button class="nk" onclick="mtKey('6')">6</button>
+      <button class="nk" onclick="mtKey('1')">1</button>
+      <button class="nk" onclick="mtKey('2')">2</button>
+      <button class="nk" onclick="mtKey('3')">3</button>
+      <button class="nk nk-clear" onclick="mtKey('C')">C</button>
+      <button class="nk" onclick="mtKey('0')">0</button>
+      <button class="nk nk-del" onclick="mtKey('del')">⌫</button>
+    </div>
+    <div class="numpad-actions">
+      <button class="nk-cancel" onclick="mtCancel()">キャン<br>セル</button>
+      <button class="nk-ok" onclick="mtOk()">確定</button>
+    </div>
+  </div>
+</div>
+
+<!-- マスターデータ保存確認ダイアログ -->
+<div id="master-confirm-overlay" class="alert-overlay hidden">
+  <div class="master-confirm-box">
+    <div class="master-confirm-icon">💾</div>
+    <div class="master-confirm-title">マスターデータを保存しますか？</div>
+    <div class="master-confirm-sub" id="master-confirm-info"></div>
+    <div class="master-confirm-sub">変更内容をアプリに反映します。<br>元のデータに戻すには「マスターデータを初期値に戻す」を使ってください。</div>
+    <div class="master-confirm-btns">
+      <button class="master-confirm-cancel" onclick="masterConfirmCancel()">Cancel</button>
+      <button class="master-confirm-ok" onclick="masterConfirmOk()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- マスターデータ初期化確認ダイアログ -->
+<div id="master-init-confirm-overlay" class="alert-overlay hidden">
+  <div class="master-confirm-box">
+    <div class="master-confirm-icon">🔁</div>
+    <div class="master-confirm-title">マスターデータを初期値に戻しますか？</div>
+    <div class="master-confirm-sub">マスター編集で変更した全データを削除して、アプリの初期値に完全リセットします。<br>この操作は元に戻せません。</div>
+    <div class="master-confirm-btns">
+      <button class="master-confirm-cancel" onclick="masterInitCancel()">Cancel</button>
+      <button class="master-confirm-ok" onclick="masterInitExecute()">🔁 初期値に戻す</button>
+    </div>
+  </div>
+</div>
+
+<!-- マスターデータ全削除確認ダイアログ -->
+<div id="master-reset-confirm-overlay" class="alert-overlay hidden">
+  <div class="master-reset-confirm-box">
+    <div class="master-reset-confirm-icon">🗑️</div>
+    <div class="master-reset-confirm-title">起床・出社・到着・帰宅を全リセットしますか？</div>
+    <div class="master-reset-confirm-sub">実行前にバックアップファイルを自動保存します。<br>元に戻すにはそのファイルを読込してください。</div>
+    <div class="master-reset-confirm-items">
+      リセットすると 0:00 になります。
+    </div>
+    <div class="master-reset-confirm-btns">
+      <button class="master-reset-confirm-cancel" onclick="masterResetAllCancel()">Cancel</button>
+      <button class="master-reset-confirm-delete" onclick="masterResetAllExecute()">🔄 リセットする</button>
+    </div>
+  </div>
+</div>
+
 <!-- デフォルト値警告オーバーレイ -->
 <div id="time-error-overlay" class="alert-overlay hidden">
   <div class="alert-box">
@@ -2283,7 +3373,7 @@ setInterval(updateClock, 30000);
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20250522-001';
+const APP_VERSION = '20260524-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
