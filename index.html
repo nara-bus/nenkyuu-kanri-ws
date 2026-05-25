@@ -2893,8 +2893,19 @@ function closeNumpad() {
 function numpadOk() {
   if (numpadValH === '' || numpadValH === undefined) numpadValH = '0';
   if (numpadValM === '' || numpadValM === undefined) numpadValM = '0';
-  if (numpadTargetH) numpadTargetH.value = parseInt(numpadValH) || 0;
-  if (numpadTargetM) numpadTargetM.value = parseInt(numpadValM) || 0;
+  const h = parseInt(numpadValH) || 0;
+  const m = parseInt(numpadValM) || 0;
+  // 9:01以上は弾いて0にリセット
+  if (h * 60 + m > 540) {
+    numpadValH = '0';
+    numpadValM = '00';
+    updateNumpadDisplay();
+    const disp = document.getElementById('seg-h-val');
+    if (disp) { const orig = disp.textContent; disp.textContent = '!'; setTimeout(() => { disp.textContent = '0'; }, 600); }
+    return;
+  }
+  if (numpadTargetH) numpadTargetH.value = h;
+  if (numpadTargetM) numpadTargetM.value = m;
   closeNumpad();
   updateTimeDiffLabels();
 }
