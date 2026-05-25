@@ -782,6 +782,37 @@
     display: flex; align-items: center; justify-content: center;
   }
 
+  .master-confirm-box {
+    background: #fff; border-radius: 20px;
+    padding: 28px 22px 20px; width: 310px; max-width: 90vw;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.22); text-align: center;
+  }
+  .master-confirm-icon { font-size: 36px; margin-bottom: 8px; }
+  .master-confirm-title {
+    font-size: 14px; font-weight: 700; color: #2d5a47;
+    line-height: 1.7; margin-bottom: 6px;
+  }
+  .master-confirm-sub {
+    font-size: 11px; color: #80aa92; margin-bottom: 18px; line-height: 1.6;
+  }
+  .master-confirm-btns { display: flex; gap: 8px; }
+  .master-confirm-cancel {
+    flex: 1; padding: 12px; background: #f5f5f5;
+    border: 1px solid #ccc; border-bottom: 3px solid #aaa;
+    border-radius: 12px; color: #555; font-size: 14px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08); transition: all 0.1s;
+  }
+  .master-confirm-cancel:active { border-bottom-width: 1px; transform: translateY(2px); }
+  .master-confirm-ok {
+    flex: 2; padding: 12px;
+    background: linear-gradient(170deg,#4db880 0%,#3d9e6e 60%,#2f8a5c 100%);
+    border: 1px solid #2a7a50; border-bottom: 3px solid #1e6040;
+    border-radius: 12px; color: #fff; font-size: 15px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 6px rgba(40,120,70,0.30); transition: all 0.1s;
+  }
+  .master-confirm-ok:active { border-bottom-width: 1px; transform: translateY(2px); }
   .hidden { display: none !important; }
   /* 出勤時間臨時変更テンキー専用スタイル */
   .shukkin-numpad-box {
