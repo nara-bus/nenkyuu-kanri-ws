@@ -2494,15 +2494,6 @@ function masterConfirmOk() {
   });
   MASTER_OVERRIDES[storeKey] = cleaned;
   saveMasterOverrides();
-  // デバッグ：保存後のlocalStorage確認
-  const lsVal = localStorage.getItem('masterOverrides');
-  const lsObj = lsVal ? JSON.parse(lsVal) : {};
-  showDebugPanel([
-    '💾 マスター保存: ' + storeKey,
-    'cleaned: ' + JSON.stringify(cleaned).slice(0,100),
-    'localStorage masterOverrides keys: ' + Object.keys(lsObj).length,
-    'lsVal先頭100: ' + (lsVal || 'null').slice(0,100),
-  ]);
 
   // ICHIRAN_DATAをリセット＋再適用（直接書き換えはしない）
   applyMasterOverrides();
