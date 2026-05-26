@@ -1291,6 +1291,8 @@ function isDefaultSettings(s) {
   // （一部だけ一致しても設定済みとみなす）
   return (
     s.baseDate        === DEFAULT_SETTINGS.baseDate        &&
+    (s.baseDia           ?? DEFAULT_SETTINGS.baseDia)           === DEFAULT_SETTINGS.baseDia           &&
+    (s.cycle             ?? DEFAULT_SETTINGS.cycle)             === DEFAULT_SETTINGS.cycle             &&
     (s.wakeBeforeLeave   ?? DEFAULT_SETTINGS.wakeBeforeLeave)   === DEFAULT_SETTINGS.wakeBeforeLeave   &&
     (s.leaveBeforeWork   ?? DEFAULT_SETTINGS.leaveBeforeWork)   === DEFAULT_SETTINGS.leaveBeforeWork   &&
     (s.arriveBeforeStart ?? DEFAULT_SETTINGS.arriveBeforeStart) === DEFAULT_SETTINGS.arriveBeforeStart &&
@@ -2026,13 +2028,14 @@ function renderSettings() {
 }
 
 function togglePreview() {
-  // トグル変更を即時にSETTINGSに反映（保存はしない）
+  // トグル変更を即時にSETTINGSに反映して保存
   SETTINGS.showOkibo       = document.getElementById('tog-okibo').checked;
   SETTINGS.showShukkin     = document.getElementById('tog-shukkin').checked;
   SETTINGS.showTochaku     = document.getElementById('tog-tochaku').checked;
   SETTINGS.showShukkinTime = document.getElementById('tog-shukkinTime').checked;
   SETTINGS.showTaikinTime  = document.getElementById('tog-taikinTime').checked;
   SETTINGS.showKikaku      = document.getElementById('tog-kikaku').checked;
+  saveSettings(SETTINGS);
 }
 
 function applySettings() {
@@ -2622,6 +2625,7 @@ function masterResetAllExecute() {
     shiftSettings:     localStorage.getItem('shiftSettings')     || null,
     diaOverrides:      localStorage.getItem('diaOverrides')      || null,
     shukkinOverrides:  localStorage.getItem('shukkinOverrides')  || null,
+    taikinOverrides:   localStorage.getItem('taikinOverrides')   || null,
     masterOverrides:   localStorage.getItem('masterOverrides')   || null,
     warningSuppressed: localStorage.getItem('warningSuppressed') || null,
   };
@@ -2690,6 +2694,7 @@ async function doExport() {
     shiftSettings:     localStorage.getItem('shiftSettings')     || null,
     diaOverrides:      localStorage.getItem('diaOverrides')      || null,
     shukkinOverrides:  localStorage.getItem('shukkinOverrides')  || null,
+    taikinOverrides:   localStorage.getItem('taikinOverrides')   || null,
     warningSuppressed: localStorage.getItem('warningSuppressed') || null,
     masterOverrides:   localStorage.getItem('masterOverrides')   || null,
   };
@@ -2998,8 +3003,7 @@ function diaNumpadKey(k) {
     const next = diaNumpadVal === '' ? k : diaNumpadVal + k;
     let val = parseInt(next);
     if (val > maxVal) val = maxVal;
-    if (val < 1) val = 1;
-    diaNumpadVal = String(val);
+    diaNumpadVal = val > 0 ? String(val) : '';
   }
   document.getElementById('dia-numpad-display').textContent = diaNumpadVal || '';
 }
@@ -3191,8 +3195,10 @@ function skOk() {
   }
   var newMin = h * 60 + m;
   var origMin = timeToMin(_skOrigTime);
+  // 翌日時刻(1440+)の場合は同じ時:分で一致判定（テンキーは0〜23時のみ入力可）
+  var origMinNorm = origMin !== null ? origMin % 1440 : null;
   var okey = _skDateKey + '_' + _skIdx;
-  if (newMin === origMin) { delete SHUKKIN_OVERRIDES[okey]; }
+  if (newMin === origMinNorm) { delete SHUKKIN_OVERRIDES[okey]; }
   else { SHUKKIN_OVERRIDES[okey] = newMin; }
   saveShukkinOverrides();
   document.getElementById('sk-np-overlay').classList.add('hidden');
@@ -3276,8 +3282,10 @@ function tkOk() {
   }
   var newMin = h * 60 + m;
   var origMin = timeToMin(_tkOrigTime);
+  // 翌日時刻(1440+)の場合は同じ時:分で一致判定（テンキーは0〜23時のみ入力可）
+  var origMinNorm = origMin !== null ? origMin % 1440 : null;
   var okey = _tkDateKey + '_' + _tkIdx;
-  if (newMin === origMin) { delete TAIKIN_OVERRIDES[okey]; }
+  if (newMin === origMinNorm) { delete TAIKIN_OVERRIDES[okey]; }
   else { TAIKIN_OVERRIDES[okey] = newMin; }
   saveTaikinOverrides();
   document.getElementById('tk-np-overlay').classList.add('hidden');
