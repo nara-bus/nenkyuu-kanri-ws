@@ -2955,7 +2955,8 @@ function openDiaNumpad(dateKey, currentDia) {
   diaNumpadMode = 'spot';
   diaNumpadDateKey = dateKey;
   diaNumpadOriginal = getDiaForDate(new Date(dateKey.replace(/-/g,'/')));
-  diaNumpadVal = String(DIA_OVERRIDES[dateKey] ?? currentDia);
+  const _ov = DIA_OVERRIDES[dateKey];
+  diaNumpadVal = String((_ov !== undefined ? (typeof _ov === 'object' ? _ov.dia : _ov) : currentDia));
   const d = new Date(dateKey.replace(/-/g,'/'));
   document.getElementById('dia-numpad-title').textContent = 'ダイヤ番号を変更';
   document.getElementById('dia-numpad-date').textContent =
