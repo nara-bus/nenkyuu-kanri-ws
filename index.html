@@ -1900,57 +1900,30 @@ function renderSettings() {
     <div class="settings-section">
       <div class="settings-title">👁️ 表示項目</div>
       <div class="settings-section-body">
-      ${(() => {
-        // 今日のシフトから予定時刻を計算
-        const today = new Date();
-        const sched = getSchedule(today);
-        const wake   = s.wakeBeforeLeave   ?? 90;
-        const leave  = s.leaveBeforeWork   ?? 60;
-        const arrive = s.arriveBeforeStart ?? 30;
-        const retMin = s.returnAfterEnd    ?? 10;
-        let tOkibo='', tShukkin='', tTochaku='', tStart='', tTaikin='', tKitan='';
-        if (sched && sched.shifts && sched.shifts.length > 0) {
-          const sh = sched.shifts[0];
-          const startMin = timeToMin(sh.shukkinTime);
-          if (startMin !== null) {
-            tOkibo   = minToTime(startMin - wake);
-            tShukkin = minToTime(startMin - leave);
-            tTochaku = minToTime(startMin - arrive);
-            tStart   = minToTime(startMin);
-          }
-          const taikinMin = timeToMin(sh.taikinTime);
-          if (taikinMin !== null) {
-            tTaikin = minToTime(taikinMin);
-            tKitan  = minToTime(taikinMin + retMin);
-          }
-        }
-        const tag = (t) => t ? `<span style="font-size:11px;color:#4db880;font-weight:700;margin-left:6px;letter-spacing:0.02em">(${t})</span>` : '';
-        return `
       <div class="settings-row">
-        <span class="settings-row-label">🥱 ① 起床時刻${tag(tOkibo)}</span>
+        <span class="settings-row-label">🥱 ① 起床時刻</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-okibo" ${chk('showOkibo')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">🚙 ② 出社時刻（家を出る）${tag(tShukkin)}</span>
+        <span class="settings-row-label">🚙 ② 出社時刻（家を出る）</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-shukkin" ${chk('showShukkin')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">🏢 ③ 到着時刻（会社）${tag(tTochaku)}</span>
+        <span class="settings-row-label">🏢 ③ 到着時刻（会社）</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-tochaku" ${chk('showTochaku')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">▶️ ④ 出勤時間（勤務開始）${tag(tStart)}</span>
+        <span class="settings-row-label">▶️ ④ 出勤時間（勤務開始）</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-shukkinTime" ${chk('showShukkinTime')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">⏹️ ⑤ 退勤時間（勤務終了）${tag(tTaikin)}</span>
+        <span class="settings-row-label">⏹️ ⑤ 退勤時間（勤務終了）</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-taikinTime" ${chk('showTaikinTime')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
       </div>
       <div class="settings-row">
-        <span class="settings-row-label">🏠 ⑥ 帰宅時刻（家に到着）${tag(tKitan)}</span>
+        <span class="settings-row-label">🏠 ⑥ 帰宅時刻（家に到着）</span>
         <label class="toggle-wrap"><input type="checkbox" id="tog-kikaku" ${chk('showKikaku')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
-      </div>`;
-      })()}
+      </div>
       </div>
     </div>
 
