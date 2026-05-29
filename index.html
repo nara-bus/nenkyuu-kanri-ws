@@ -343,7 +343,6 @@
     font-family: inherit;
     width: 80px;
     -webkit-appearance: none;
-    inputmode: numeric;
     box-shadow: inset 0 2px 5px rgba(40,100,70,0.13), 0 1px 0 rgba(255,255,255,0.8);
   }
   .settings-input:focus { outline: none; border-color: #3d9e6e; box-shadow: 0 0 0 2px rgba(61,158,110,0.25); }
@@ -1996,7 +1995,7 @@ function renderSettings() {
   updateTimeDiffLabels();
   // マスターフォームが開いている場合は再描画
   if (document.getElementById('tog-master-edit')?.checked) {
-    renderMasterEditForm();
+    _refreshMasterFields();
   }
 }
 
@@ -2419,25 +2418,7 @@ function openMasterDiaNumpad() {
   document.getElementById('dia-numpad-overlay').classList.remove('hidden');
 }
 
-// diaNumpadOk に master モードを追記するため上書き
-const _origDiaNumpadOk = diaNumpadOk;
-diaNumpadOk = function() {
-  if (diaNumpadMode === 'master') {
-    const val = parseInt(diaNumpadVal);
-    if (isNaN(val) || val < 1 || val > getCycle()) {
-      document.getElementById('dia-numpad-display').textContent = '!';
-      setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
-      return;
-    }
-    _mDia = val;
-    document.getElementById('master-dia-btn').textContent = val + '番';
-    closeDiaNumpad();
-    _refreshTeireSwitch();
-    _refreshMasterFields();
-  } else {
-    _origDiaNumpadOk();
-  }
-};
+
 
 // マスター時刻テンキー
 let _mtField = null, _mtLabel = '', _mtSeg = 'h', _mtH = '0', _mtM = '00';
@@ -2990,14 +2971,21 @@ function diaNumpadReset() {
 
 function diaNumpadOk() {
   const val = parseInt(diaNumpadVal);
-  // cycle変更は数値範囲チェック、spot/masterはICHIRAN_DATA存在チェック + 99(臨時)
+  // 範囲チェック：モードごとに異なる
   if (diaNumpadMode === 'cycle') {
     if (isNaN(val) || val < 1 || val > 999) {
       document.getElementById('dia-numpad-display').textContent = '!';
       setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
       return;
     }
+  } else if (diaNumpadMode === 'master') {
+    if (isNaN(val) || val < 1 || val > getCycle()) {
+      document.getElementById('dia-numpad-display').textContent = '!';
+      setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
+      return;
+    }
   } else {
+    // spot / dia：ICHIRAN_DATA存在チェック + 99(臨時)
     const validDias = new Set(ICHIRAN_DATA.map(r => r.dia));
     validDias.add(99); // 臨時ダイヤ
     if (isNaN(val) || !validDias.has(val)) {
