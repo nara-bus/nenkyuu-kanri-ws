@@ -498,6 +498,15 @@
     box-shadow: inset 0 2px 6px rgba(0,0,0,0.18), 0 1px 0 #1a5035;
     transform: translateY(3px);
   }
+  .apply-btn {
+    background: linear-gradient(170deg, #ff9f3f 0%, #e8760a 60%, #c85f00 100%);
+    border: 1px solid #c05a00;
+    border-bottom: 4px solid #a04800;
+    box-shadow: 0 4px 0 #8a3e00, 0 6px 14px rgba(200,100,0,0.30), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .apply-btn:active {
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.18), 0 1px 0 #8a3e00;
+  }
   .save-msg {
     text-align: center;
     font-size: 13px;
@@ -1596,32 +1605,32 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji) {
       ${isRinji ? `<div class="rinji-badge">🚨 臨時ダイヤ</div>` : ''}
       ${s.showOkibo ? `<div class="shift-row">
         <span class="shift-icon">🥱</span>
-        <span class="shift-label">① 起床</span>
+        <span class="shift-label">起床</span>
         <span class="shift-time" style="color:#1a1a1a">${minToTime(okiboMin)}</span>
       </div>` : ''}
       ${s.showShukkin ? `<div class="shift-row">
         <span class="shift-icon">🚙</span>
-        <span class="shift-label">② 出社（家を出る）</span>
+        <span class="shift-label">出社（家を出る）</span>
         <span class="shift-time" style="color:#1a1a1a">${minToTime(shusshaMin)}</span>
       </div>` : ''}
       ${s.showTochaku ? `<div class="shift-row">
         <span class="shift-icon">🏢</span>
-        <span class="shift-label">③ 到着（会社）</span>
+        <span class="shift-label">到着（会社）</span>
         <span class="shift-time" style="color:#1a1a1a">${minToTime(tochakuMin)}</span>
       </div>` : ''}
       ${s.showShukkinTime ? `<div class="shift-row">
         <span class="shift-icon">▶️</span>
-        <span class="shift-label">④ 出勤時間（勤務開始）</span>
+        <span class="shift-label">出勤時間（勤務開始）</span>
         <button class="shukkin-btn${isOverride ? ' override' : ''}" style="color:${workStartColor}" onclick="openShukkinNumpad('${dateKey}',${shiftIdx},'${sh.shukkinTime}')">${minToTime(workStartMin)}${shukkinOverrideFlag}</button>
       </div>` : ''}
       ${s.showTaikinTime ? `<div class="shift-row">
         <span class="shift-icon">⏹️</span>
-        <span class="shift-label">⑤ 退勤時間（勤務終了）</span>
+        <span class="shift-label">退勤時間（勤務終了）</span>
         <button class="shukkin-btn${isTaikinOverride ? ' override' : ''}" style="color:${taikinColor}" onclick="openTaikinNumpad('${dateKey}',${shiftIdx},'${sh.taikinTime}')">${minToTime(taikinTimeMin)}${taikinOverrideFlag}</button>
       </div>` : ''}
       ${s.showKikaku ? `<div class="shift-row">
         <span class="shift-icon">🏠</span>
-        <span class="shift-label">⑥ 帰宅（家に到着）</span>
+        <span class="shift-label">帰宅（家に到着）</span>
         <span class="shift-time" style="color:#1a1a1a">${minToTime(kikakuMin)}</span>
       </div>` : ''}
       ${sh.rosen !== undefined ? `<div class="rosen-row"><span class="rosen-icon">🚌</span><span class="rosen-label">路線:</span><span class="rosen-val">${sh.rosen || '—'}</span></div>` : ''}
@@ -1923,6 +1932,10 @@ function renderSettings() {
       今日のダイヤ番号：<strong>${todayDia}</strong>（${getCycle()}日サイクル）
     </div>
 
+    <button class="save-btn apply-btn" onclick="applySettings()">💾 保存して適用</button>
+    <div style="font-size:11px;color:#c05a00;font-weight:600;text-align:center;margin-top:4px;letter-spacing:0.02em">⚠️ 設定変更する場合は、このボタンを押さないと反映しません。</div>
+    <div class="save-msg" id="save-msg"></div>
+
     <!-- 1. 基本設定 -->
     <div class="settings-section">
       <div class="settings-title">📅 基本設定</div>
@@ -2015,19 +2028,19 @@ function renderSettings() {
         </div>
         <div id="display-items-body" style="display:${s.showDisplayItems ? 'block' : 'none'}">
           <div class="settings-row">
-            <span class="settings-row-label">🥱 ① 起床時刻</span>
+            <span class="settings-row-label">🥱 起床時刻</span>
             <button class="item-mode-btn ${s.showOkibo ? 'item-mode-btn-on' : 'item-mode-btn-off'}" onclick="toggleItemBtn('showOkibo',this)">${s.showOkibo ? 'ON' : 'OFF'}</button>
           </div>
           <div class="settings-row">
-            <span class="settings-row-label">🚙 ② 出社時刻（家を出る）</span>
+            <span class="settings-row-label">🚙 出社時刻（家を出る）</span>
             <button class="item-mode-btn ${s.showShukkin ? 'item-mode-btn-on' : 'item-mode-btn-off'}" onclick="toggleItemBtn('showShukkin',this)">${s.showShukkin ? 'ON' : 'OFF'}</button>
           </div>
           <div class="settings-row">
-            <span class="settings-row-label">🏢 ③ 到着時刻（会社）</span>
+            <span class="settings-row-label">🏢 到着時刻（会社）</span>
             <button class="item-mode-btn ${s.showTochaku ? 'item-mode-btn-on' : 'item-mode-btn-off'}" onclick="toggleItemBtn('showTochaku',this)">${s.showTochaku ? 'ON' : 'OFF'}</button>
           </div>
           <div class="settings-row">
-            <span class="settings-row-label">🏠 ④ 帰宅時刻（家に到着）</span>
+            <span class="settings-row-label">🏠 帰宅時刻（家に到着）</span>
             <button class="item-mode-btn ${s.showKikaku ? 'item-mode-btn-on' : 'item-mode-btn-off'}" onclick="toggleItemBtn('showKikaku',this)">${s.showKikaku ? 'ON' : 'OFF'}</button>
           </div>
         </div>
@@ -2136,9 +2149,6 @@ function renderSettings() {
         </div>
       </div>
     </div>
-
-    <button class="save-btn" onclick="applySettings()">💾 保存して適用</button>
-    <div class="save-msg" id="save-msg"></div>
 
     <br>
   `;
