@@ -2243,6 +2243,16 @@ function toggleItemBtn(key, btn) {
   markSettingsDirty();
 }
 
+function cancelSettings() {
+  document.getElementById('cancel-confirm-overlay').classList.remove('hidden');
+}
+function cancelSettingsExecute() {
+  document.getElementById('cancel-confirm-overlay').classList.add('hidden');
+  _initSettingsDraft();
+  renderSettings();
+  clearSettingsDirty();
+}
+
 function markSettingsDirty() {
   const wrap = document.getElementById('apply-float-wrap');
   if (wrap) wrap.classList.add('visible');
@@ -3830,6 +3840,19 @@ setInterval(updateClock, 30000);
   <button onclick="installPWA()" style="background:#3d9e6e;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">追加する</button>
 </div>
 
+<!-- Cancel確認ダイアログ -->
+<div id="cancel-confirm-overlay" class="alert-overlay hidden">
+  <div class="master-confirm-box">
+    <div class="master-confirm-icon">↩️</div>
+    <div class="master-confirm-title">入力をクリアしますか？</div>
+    <div class="master-confirm-sub">変更した設定を保存前の状態に戻します。</div>
+    <div class="master-confirm-btns" style="gap:20px;justify-content:center">
+      <button class="master-confirm-cancel" style="flex:1;max-width:120px" onclick="document.getElementById('cancel-confirm-overlay').classList.add('hidden')">NO</button>
+      <button class="master-confirm-ok" style="flex:1;max-width:120px;font-size:14px" onclick="cancelSettingsExecute()">OK</button>
+    </div>
+  </div>
+</div>
+
 <!-- 設定変更時 固定フローティング保存ボタン -->
 <style>
 #apply-float-wrap {
@@ -3838,6 +3861,8 @@ setInterval(updateClock, 30000);
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 398px;
   z-index: 300;
   pointer-events: none;
 }
@@ -3847,8 +3872,9 @@ setInterval(updateClock, 30000);
 }
 #apply-float-btn {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 3px;
   padding: 14px 32px 12px;
   background: linear-gradient(170deg, #e8e5ff 0%, #d4cfff 60%, #bdb5f8 100%);
   color: #3d2fa0;
@@ -3876,12 +3902,35 @@ setInterval(updateClock, 30000);
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.18), 0 1px 0 #3d34a5;
   transform: translateY(3px);
 }
+#apply-cancel-btn {
+  padding: 8px 20px;
+  background: linear-gradient(170deg, #ffffff 0%, #f0f0f0 100%);
+  color: #2d5a47;
+  border: 1.5px solid rgba(0,0,0,0.08);
+  border-bottom: 4px solid #ddd;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 0 #ddd, 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+#apply-cancel-btn:active {
+  border-bottom-width: 1px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.12), 0 1px 0 #ccc;
+  transform: translateY(3px);
+}
 </style>
 <div id="apply-float-wrap">
-  <button id="apply-float-btn" onclick="applySettings()">
-    <span style="display:block;font-size:15px;font-weight:700">💾 保存して適用</span>
-    <span style="display:block;font-size:10px;font-weight:600;margin-top:3px;opacity:0.75;letter-spacing:0.02em">⚠️ 押さないと設定が反映されません</span>
-  </button>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%">
+    <button id="apply-float-btn" onclick="applySettings()">
+      <span style="display:block;font-size:15px;font-weight:700">💾 保存して適用</span>
+      <span style="display:block;font-size:10px;font-weight:600;margin-top:3px;opacity:0.75;letter-spacing:0.02em">⚠️ 押さないと設定が反映されません</span>
+    </button>
+    <button id="apply-cancel-btn" onclick="cancelSettings()">Cancel</button>
+  </div>
 </div>
 
 <script>
