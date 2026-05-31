@@ -1427,7 +1427,7 @@ function getBaseDate() {
   return new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
 }
 function getBaseDia() { return parseInt(SETTINGS.baseDia) || 1; }
-function getCycle()   { return parseInt(SETTINGS.cycle) || 57; }
+function getCycle()   { return Math.max(...ICHIRAN_DATA.map(r => r.dia)); }
 
 function getDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -1966,13 +1966,7 @@ function renderSettings() {
         <div class="settings-input" id="set-dia" style="cursor:pointer;user-select:none"
           onclick="openDiaNumpadForSetting('dia')">${s.baseDia}</div>
       </div>
-
-      <div class="settings-row">
-        <div class="settings-row-label">総ダイヤ数（サイクル）</div>
-        <div class="settings-input" id="set-cycle" style="cursor:pointer;user-select:none"
-          onclick="openDiaNumpadForSetting('cycle')">${getCycle()}</div>
-      </div>
-      </div>
+    </div>
     </div>
 
     <!-- 2. 時間計算設定 -->
@@ -2266,7 +2260,7 @@ function applySettings() {
   if (!_settingsDraft) return;
   const dateVal  = document.getElementById('set-date').value;
   const dia      = parseInt(document.getElementById('set-dia').textContent);
-  const cycle    = parseInt(document.getElementById('set-cycle').textContent);
+  const cycle    = 57;
   const wake     = (parseInt(document.getElementById('set-wake-h').value)||0)*60   + (parseInt(document.getElementById('set-wake-m').value)||0);
   const leave    = (parseInt(document.getElementById('set-leave-h').value)||0)*60  + (parseInt(document.getElementById('set-leave-m').value)||0);
   const arrive   = (parseInt(document.getElementById('set-arrive-h').value)||0)*60 + (parseInt(document.getElementById('set-arrive-m').value)||0);
@@ -3198,20 +3192,13 @@ function openDiaNumpad(dateKey, currentDia) {
   document.getElementById('dia-numpad-overlay').classList.remove('hidden');
 }
 
-// 設定画面から呼ぶ（type: 'dia' or 'cycle'）
+// 設定画面から呼ぶ（type: 'dia'）
 function openDiaNumpadForSetting(type) {
   diaNumpadMode = type;
   diaNumpadDateKey = null;
-  if (type === 'dia') {
-    var currentCycle = parseInt(document.getElementById('set-cycle')?.textContent) || getCycle();
-    diaNumpadVal = String(parseInt(document.getElementById('set-dia').textContent) || SETTINGS.baseDia || 1);
-    document.getElementById('dia-numpad-title').textContent = '基準日のダイヤ番号';
-    document.getElementById('dia-numpad-date').textContent = '1〜' + currentCycle + ' の範囲で入力';
-  } else {
-    diaNumpadVal = String(parseInt(document.getElementById('set-cycle').textContent) || SETTINGS.cycle || 57);
-    document.getElementById('dia-numpad-title').textContent = '総ダイヤ数（サイクル）';
-    document.getElementById('dia-numpad-date').textContent = '1〜999 の範囲で入力';
-  }
+  diaNumpadVal = String(parseInt(document.getElementById('set-dia').textContent) || SETTINGS.baseDia || 1);
+  document.getElementById('dia-numpad-title').textContent = '基準日のダイヤ番号';
+  document.getElementById('dia-numpad-date').textContent = '1〜57 の範囲で入力';
   document.getElementById('dia-numpad-reset').style.display = 'none';
   document.getElementById('dia-numpad-display').textContent = diaNumpadVal;
   document.getElementById('dia-numpad-overlay').classList.remove('hidden');
@@ -3222,8 +3209,7 @@ function closeDiaNumpad() {
 }
 
 function diaNumpadKey(k) {
-  const currentCycle = parseInt(document.getElementById('set-cycle')?.textContent) || getCycle();
-  const maxVal = diaNumpadMode === 'cycle' ? 999 : 99;
+  const maxVal = 99;
   if (k === 'C') { diaNumpadVal = ''; }
   else if (k === 'del') { diaNumpadVal = diaNumpadVal.length > 1 ? diaNumpadVal.slice(0,-1) : ''; }
   else {
@@ -3244,17 +3230,7 @@ function diaNumpadReset() {
 
 function diaNumpadOk() {
   const val = parseInt(diaNumpadVal);
-  if (diaNumpadMode === 'cycle') {
-    // cycle変更：1〜999の範囲チェック
-    if (isNaN(val) || val < 1 || val > 999) {
-      document.getElementById('dia-numpad-display').textContent = '!';
-      setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
-      return;
-    }
-    document.getElementById('set-cycle').textContent = val;
-    closeDiaNumpad();
-    markSettingsDirty();
-  } else if (diaNumpadMode === 'master') {
+  if (diaNumpadMode === 'master') {
     // masterモード：1〜getCycle()の範囲チェック
     if (isNaN(val) || val < 1 || val > getCycle()) {
       document.getElementById('dia-numpad-display').textContent = '!';
@@ -3954,7 +3930,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260601-007';
+const APP_VERSION = '20260601-012';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
