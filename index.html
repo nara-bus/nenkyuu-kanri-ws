@@ -1410,12 +1410,7 @@ function isDefaultSettings(s) {
 function loadSettings() {
   try {
     const s = localStorage.getItem('shiftSettings');
-    if (s) {
-      const parsed = JSON.parse(s);
-      parsed.showSpecialDays = false;
-      parsed.showDisplayItems = false;
-      return parsed;
-    }
+    if (s) return JSON.parse(s);
   } catch(e) {}
   return Object.assign({}, DEFAULT_SETTINGS);
 }
@@ -1424,6 +1419,8 @@ function saveSettings(s) {
 }
 
 let SETTINGS = loadSettings();
+SETTINGS.showSpecialDays = false;
+SETTINGS.showDisplayItems = false;
 
 function getBaseDate() {
   const parts = (SETTINGS.baseDate || '2026-01-01').split('-');
@@ -1712,7 +1709,7 @@ function switchTab(view, dir) {
   const toIdx = TABS.indexOf(view);
 
   if (prev === 'settings') { clearSettingsDirty(); }
-  if (view === 'settings') { _initSettingsDraft(); renderSettings(); }
+  if (view === 'settings') { if (!_settingsDraft) _initSettingsDraft(); renderSettings(); }
   if (view === 'ichiran') renderIchiran();
 
   const viewMap = {
@@ -3957,7 +3954,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260601-005';
+const APP_VERSION = '20260601-007';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
