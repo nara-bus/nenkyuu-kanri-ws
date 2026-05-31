@@ -508,6 +508,15 @@
   .apply-btn:active {
     box-shadow: inset 0 2px 6px rgba(0,0,0,0.12), 0 1px 0 #c8b878;
   }
+  @keyframes applyBtnGlow {
+    0%   { box-shadow: 0 4px 0 #5449c4, 0 0  0px rgba(140,120,255,0.0); transform: scale(1); }
+    50%  { box-shadow: 0 4px 0 #5449c4, 0 0 18px rgba(140,120,255,0.9), 0 0 36px rgba(120,100,255,0.45); transform: scale(1.025); }
+    100% { box-shadow: 0 4px 0 #5449c4, 0 0  0px rgba(140,120,255,0.0); transform: scale(1); }
+  }
+  .apply-btn.dirty {
+    animation: applyBtnGlow 1.4s ease-in-out infinite;
+    border-color: rgba(192,24,90,0.45);
+  }
   .save-msg {
     text-align: center;
     font-size: 13px;
@@ -1697,6 +1706,7 @@ function switchTab(view, dir) {
   const TABS = ['week', 'ichiran', 'settings'];
   const toIdx = TABS.indexOf(view);
 
+  if (prev === 'settings') { clearSettingsDirty(); }
   if (view === 'settings') { _initSettingsDraft(); renderSettings(); }
   if (view === 'ichiran') renderIchiran();
 
@@ -1933,8 +1943,6 @@ function renderSettings() {
       今日のダイヤ番号：<strong>${todayDia}</strong>（${getCycle()}日サイクル）
     </div>
 
-    <button class="save-btn apply-btn" onclick="applySettings()">💾 保存して適用</button>
-    <div style="font-size:11px;color:#c05a00;font-weight:600;text-align:center;margin-top:4px;letter-spacing:0.02em">⚠️ 設定変更する場合は、このボタンを押さないと反映しません。</div>
     <div class="save-msg" id="save-msg"></div>
 
     <!-- 1. 基本設定 -->
@@ -1945,7 +1953,7 @@ function renderSettings() {
       <div class="settings-row">
         <div class="settings-row-label">基準日</div>
         <input class="settings-input-date" type="date" id="set-date"
-          value="${s.baseDate || '2026-04-01'}">
+          value="${s.baseDate || '2026-04-01'}" onchange="markSettingsDirty()">
       </div>
 
       <div class="settings-row">
@@ -2175,31 +2183,37 @@ function specialDayMonthChange(i, val) {
   const rules = _getSpecialRules();
   rules[i].month = parseInt(val);
   _saveSpecialRules(rules);
+  markSettingsDirty();
 }
 function specialDayDayChange(i, val) {
   const rules = _getSpecialRules();
   rules[i].day = parseInt(val);
   _saveSpecialRules(rules);
+  markSettingsDirty();
 }
 function specialDayTypeChange(i, type) {
   const rules = _getSpecialRules();
   rules[i].dayType = type;
   _saveSpecialRules(rules);
+  markSettingsDirty();
 }
 function specialDayDelete(i) {
   const rules = _getSpecialRules();
   rules.splice(i, 1);
   _saveSpecialRules(rules);
+  markSettingsDirty();
 }
 function specialDayAdd() {
   const rules = _getSpecialRules();
   rules.push({ month:1, day:1, dayType:'日祝' });
   _saveSpecialRules(rules);
+  markSettingsDirty();
 }
 function specialDayReset() {
   if (!_settingsDraft) return;
   _settingsDraft.specialDayRules = DEFAULT_SETTINGS.specialDayRules.map(r=>Object.assign({},r));
   renderSettings();
+  markSettingsDirty();
 }
 
 function toggleSpecialDays() {
@@ -2208,6 +2222,7 @@ function toggleSpecialDays() {
   _settingsDraft.showSpecialDays = checked;
   const body = document.getElementById('special-days-body');
   if (body) body.style.display = checked ? 'block' : 'none';
+  markSettingsDirty();
 }
 
 function toggleDisplayItems() {
@@ -2216,6 +2231,7 @@ function toggleDisplayItems() {
   _settingsDraft.showDisplayItems = checked;
   const body = document.getElementById('display-items-body');
   if (body) body.style.display = checked ? 'block' : 'none';
+  markSettingsDirty();
 }
 
 function toggleItemBtn(key, btn) {
@@ -2224,6 +2240,16 @@ function toggleItemBtn(key, btn) {
   _settingsDraft[key] = newVal;
   btn.textContent = newVal ? 'ON' : 'OFF';
   btn.className = 'item-mode-btn ' + (newVal ? 'item-mode-btn-on' : 'item-mode-btn-off');
+  markSettingsDirty();
+}
+
+function markSettingsDirty() {
+  const wrap = document.getElementById('apply-float-wrap');
+  if (wrap) wrap.classList.add('visible');
+}
+function clearSettingsDirty() {
+  const wrap = document.getElementById('apply-float-wrap');
+  if (wrap) wrap.classList.remove('visible');
 }
 
 function applySettings() {
@@ -2268,6 +2294,7 @@ function applySettings() {
   };
   saveSettings(SETTINGS);
   _settingsDraft = JSON.parse(JSON.stringify(SETTINGS));
+  clearSettingsDirty();
   render();
   renderSettings();
   document.getElementById('save-msg').textContent = '✅ 保存しました！';
@@ -3102,6 +3129,7 @@ function numpadOk() {
   if (numpadTargetM) numpadTargetM.value = m;
   closeNumpad();
   updateTimeDiffLabels();
+  markSettingsDirty();
 }
 
 function updateTimeDiffLabels() {
@@ -3215,6 +3243,7 @@ function diaNumpadOk() {
     }
     document.getElementById('set-cycle').textContent = val;
     closeDiaNumpad();
+    markSettingsDirty();
   } else if (diaNumpadMode === 'master') {
     // masterモード：1〜getCycle()の範囲チェック
     if (isNaN(val) || val < 1 || val > getCycle()) {
@@ -3256,6 +3285,7 @@ function diaNumpadOk() {
       // dia モード（設定画面の基準ダイヤ番号）
       document.getElementById('set-dia').textContent = val;
       closeDiaNumpad();
+      markSettingsDirty();
     }
   }
 }
@@ -3800,8 +3830,62 @@ setInterval(updateClock, 30000);
   <button onclick="installPWA()" style="background:#3d9e6e;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">追加する</button>
 </div>
 
+<!-- 設定変更時 固定フローティング保存ボタン -->
+<style>
+#apply-float-wrap {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  pointer-events: none;
+}
+#apply-float-wrap.visible {
+  display: block;
+  pointer-events: auto;
+}
+#apply-float-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px 12px;
+  background: linear-gradient(170deg, #e8e5ff 0%, #d4cfff 60%, #bdb5f8 100%);
+  color: #3d2fa0;
+  border: 1.5px solid rgba(108,92,231,0.08);
+  border-bottom: 4px solid #c4bcff;
+  border-radius: 99px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+  white-space: nowrap;
+  text-align: center;
+  box-shadow:
+    0 4px 0 #3d34a5,
+    0 8px 24px rgba(108,92,231,0.35),
+    0 2px 8px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.25);
+  animation: applyBtnGlow 2.2s ease-in-out infinite;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+#apply-float-btn:active {
+  border-bottom-width: 1px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.18), 0 1px 0 #3d34a5;
+  transform: translateY(3px);
+}
+</style>
+<div id="apply-float-wrap">
+  <button id="apply-float-btn" onclick="applySettings()">
+    <span style="display:block;font-size:15px;font-weight:700">💾 保存して適用</span>
+    <span style="display:block;font-size:10px;font-weight:600;margin-top:3px;opacity:0.75;letter-spacing:0.02em">⚠️ 押さないと設定が反映されません</span>
+  </button>
+</div>
+
 <script>
-// ── PWA インストールバー ──
+
 var _installPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
