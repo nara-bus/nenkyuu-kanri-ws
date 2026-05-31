@@ -3901,13 +3901,13 @@ setInterval(updateClock, 30000);
   transform: translateY(3px);
 }
 #apply-cancel-btn {
-  padding: 8px 20px;
+  padding: 12px 28px;
   background: linear-gradient(170deg, #ffffff 0%, #f0f0f0 100%);
   color: #2d5a47;
   border: 1.5px solid rgba(0,0,0,0.08);
   border-bottom: 4px solid #ddd;
   border-radius: 99px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -3922,7 +3922,7 @@ setInterval(updateClock, 30000);
 }
 </style>
 <div id="apply-float-wrap">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%">
+  <div style="display:flex;align-items:center;justify-content:center;gap:28px;width:100%">
     <button id="apply-float-btn" onclick="applySettings()">
       <span style="display:block;font-size:15px;font-weight:700">💾 保存して適用</span>
       <span style="display:block;font-size:10px;font-weight:600;margin-top:3px;opacity:0.75;letter-spacing:0.02em">⚠️ 押さないと設定が反映されません</span>
@@ -3952,7 +3952,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260601-001';
+const APP_VERSION = '20260601-003';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
