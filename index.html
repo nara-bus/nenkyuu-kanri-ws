@@ -419,7 +419,6 @@
     font-family: inherit;
     width: 80px;
     -webkit-appearance: none;
-    inputmode: numeric;
     box-shadow: inset 0 2px 5px rgba(40,100,70,0.13), 0 1px 0 rgba(255,255,255,0.8);
   }
   .settings-input:focus { outline: none; border-color: #3d9e6e; box-shadow: 0 0 0 2px rgba(61,158,110,0.25); }
@@ -2160,15 +2159,6 @@ function renderSettings() {
   }
 }
 
-function togglePreview() {
-  if (!_settingsDraft) return;
-  _settingsDraft.showOkibo       = document.getElementById('tog-okibo').checked;
-  _settingsDraft.showShukkin     = document.getElementById('tog-shukkin').checked;
-  _settingsDraft.showTochaku     = document.getElementById('tog-tochaku').checked;
-  _settingsDraft.showShukkinTime = document.getElementById('tog-shukkinTime').checked;
-  _settingsDraft.showTaikinTime  = document.getElementById('tog-taikinTime').checked;
-  _settingsDraft.showKikaku      = document.getElementById('tog-kikaku').checked;
-}
 
 // ===== 特別指定日ルール操作 =====
 function _getSpecialRules() {
@@ -2232,7 +2222,6 @@ function toggleItemBtn(key, btn) {
   _settingsDraft[key] = newVal;
   btn.textContent = newVal ? 'ON' : 'OFF';
   btn.className = 'item-mode-btn ' + (newVal ? 'item-mode-btn-on' : 'item-mode-btn-off');
-  togglePreview();
 }
 
 function applySettings() {
@@ -2656,25 +2645,6 @@ function openMasterDiaNumpad() {
   document.getElementById('dia-numpad-overlay').classList.remove('hidden');
 }
 
-// diaNumpadOk に master モードを追記するため上書き
-const _origDiaNumpadOk = diaNumpadOk;
-diaNumpadOk = function() {
-  if (diaNumpadMode === 'master') {
-    const val = parseInt(diaNumpadVal);
-    if (isNaN(val) || val < 1 || val > getCycle()) {
-      document.getElementById('dia-numpad-display').textContent = '!';
-      setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
-      return;
-    }
-    _mDia = val;
-    document.getElementById('master-dia-btn').textContent = val + '番';
-    closeDiaNumpad();
-    _refreshTeireSwitch();
-    _refreshMasterFields();
-  } else {
-    _origDiaNumpadOk();
-  }
-};
 
 // マスター時刻テンキー
 let _mtField = null, _mtLabel = '', _mtSeg = 'h', _mtH = '0', _mtM = '00';
@@ -2900,19 +2870,6 @@ function toggleIchiranBtn() {
   );
 }
 
-function toggleWithPassword(checkbox, settingKey) {
-  const newVal = checkbox.checked;
-  checkbox.checked = !newVal;
-  openPwNumpad('一覧表モード 切替',
-    function() {
-      checkbox.checked = newVal;
-      SETTINGS.ichiranCalcMode = newVal;
-      saveSettings(SETTINGS);
-      if (currentView === 'ichiran') renderIchiran();
-    },
-    function() {}
-  );
-}
 
 // ========== ファイル保存・読込 ==========
 async function doExport() {
@@ -3247,39 +3204,22 @@ function diaNumpadReset() {
 
 function diaNumpadOk() {
   const val = parseInt(diaNumpadVal);
-  // cycle変更は数値範囲チェック、spot/masterはICHIRAN_DATA存在チェック + 99(臨時)
   if (diaNumpadMode === 'cycle') {
+    // cycle変更：1〜999の範囲チェック
     if (isNaN(val) || val < 1 || val > 999) {
       document.getElementById('dia-numpad-display').textContent = '!';
       setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
       return;
     }
-  } else {
-    const validDias = new Set(ICHIRAN_DATA.map(r => r.dia));
-    validDias.add(99); // 臨時ダイヤ
-    if (isNaN(val) || !validDias.has(val)) {
+    document.getElementById('set-cycle').textContent = val;
+    closeDiaNumpad();
+  } else if (diaNumpadMode === 'master') {
+    // masterモード：1〜getCycle()の範囲チェック
+    if (isNaN(val) || val < 1 || val > getCycle()) {
       document.getElementById('dia-numpad-display').textContent = '!';
       setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
       return;
     }
-  }
-  if (diaNumpadMode === 'spot') {
-    if (val === 99) {
-      // 臨時ダイヤ：全日 or 中間を選択させる
-      closeDiaNumpad();
-      _rinjiDateKey = diaNumpadDateKey;
-      document.getElementById('rinji-type-overlay').classList.remove('hidden');
-      return;
-    }
-    if (val === diaNumpadOriginal) {
-      delete DIA_OVERRIDES[diaNumpadDateKey];
-    } else {
-      DIA_OVERRIDES[diaNumpadDateKey] = val;
-    }
-    saveDiaOverrides();
-    closeDiaNumpad();
-    render();
-  } else if (diaNumpadMode === 'master') {
     _mDia = val;
     const btn = document.getElementById('master-dia-btn');
     if (btn) btn.textContent = val + '番';
@@ -3287,8 +3227,34 @@ function diaNumpadOk() {
     _refreshTeireSwitch();
     _refreshMasterFields();
   } else {
-    document.getElementById(diaNumpadMode === 'dia' ? 'set-dia' : 'set-cycle').textContent = val;
-    closeDiaNumpad();
+    // spot / dia モード：ICHIRAN_DATA存在チェック + 99(臨時)
+    const validDias = new Set(ICHIRAN_DATA.map(r => r.dia));
+    validDias.add(99);
+    if (isNaN(val) || !validDias.has(val)) {
+      document.getElementById('dia-numpad-display').textContent = '!';
+      setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
+      return;
+    }
+    if (diaNumpadMode === 'spot') {
+      if (val === 99) {
+        closeDiaNumpad();
+        _rinjiDateKey = diaNumpadDateKey;
+        document.getElementById('rinji-type-overlay').classList.remove('hidden');
+        return;
+      }
+      if (val === diaNumpadOriginal) {
+        delete DIA_OVERRIDES[diaNumpadDateKey];
+      } else {
+        DIA_OVERRIDES[diaNumpadDateKey] = val;
+      }
+      saveDiaOverrides();
+      closeDiaNumpad();
+      render();
+    } else {
+      // dia モード（設定画面の基準ダイヤ番号）
+      document.getElementById('set-dia').textContent = val;
+      closeDiaNumpad();
+    }
   }
 }
 
@@ -3853,7 +3819,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260530-001';
+const APP_VERSION = '20260531-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
