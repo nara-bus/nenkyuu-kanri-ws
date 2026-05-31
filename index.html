@@ -2222,7 +2222,6 @@ function toggleSpecialDays() {
   _settingsDraft.showSpecialDays = checked;
   const body = document.getElementById('special-days-body');
   if (body) body.style.display = checked ? 'block' : 'none';
-  markSettingsDirty();
 }
 
 function toggleDisplayItems() {
@@ -2231,7 +2230,6 @@ function toggleDisplayItems() {
   _settingsDraft.showDisplayItems = checked;
   const body = document.getElementById('display-items-body');
   if (body) body.style.display = checked ? 'block' : 'none';
-  markSettingsDirty();
 }
 
 function toggleItemBtn(key, btn) {
@@ -3954,7 +3952,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260531-001';
+const APP_VERSION = '20260601-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
