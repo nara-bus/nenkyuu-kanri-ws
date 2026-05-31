@@ -366,6 +366,44 @@
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.14), 0 1px 0 rgba(80,110,95,0.20);
     transform: translateY(3px);
   }
+  .item-mode-btn {
+    min-width: 42px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    font-family: inherit;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    user-select: none;
+  }
+  .item-mode-btn-on {
+    background: linear-gradient(170deg, #4fc38a 0%, #3a9e6e 100%);
+    color: #fff;
+    border: 1px solid rgba(40,130,80,0.5);
+    border-bottom: 3px solid rgba(30,100,60,0.6);
+    box-shadow: 0 2px 0 rgba(30,100,60,0.32), 0 3px 8px rgba(40,130,80,0.18), inset 0 1px 0 rgba(255,255,255,0.28);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+  }
+  .item-mode-btn-on:active {
+    border-bottom-width: 1px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.16), 0 1px 0 rgba(30,100,60,0.22);
+    transform: translateY(2px);
+  }
+  .item-mode-btn-off {
+    background: linear-gradient(170deg, #d0d8d4 0%, #b8c4be 100%);
+    color: #6a8878;
+    border: 1px solid rgba(100,140,120,0.35);
+    border-bottom: 3px solid rgba(80,110,95,0.40);
+    box-shadow: 0 2px 0 rgba(80,110,95,0.25), 0 3px 8px rgba(80,110,95,0.10), inset 0 1px 0 rgba(255,255,255,0.48);
+    text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+  }
+  .item-mode-btn-off:active {
+    border-bottom-width: 1px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.12), 0 1px 0 rgba(80,110,95,0.18);
+    transform: translateY(2px);
+  }
   .settings-row-label { font-size: 13px; color: #3a6e55; font-weight: 500; }
   .settings-row-sub { font-size: 11px; color: #80aa92; margin-top: 2px; }
   .settings-input {
@@ -996,22 +1034,23 @@
 
   .ich-card-chevron {
     font-size: 12px; color: #90b8a0;
-    transition: transform 0.2s ease;
+
     flex-shrink: 0;
   }
   .ich-card.open .ich-card-chevron { transform: rotate(180deg); }
 
   /* 展開エリア */
   .ich-card-body {
-    max-height: 0; overflow: hidden;
-    transition: max-height 0.28s ease;
-    border-top: 0px solid rgba(100,180,140,0.18);
+    display: none;
   }
   .ich-card.open .ich-card-body {
-    max-height: 900px;
-    border-top-width: 1px;
+    display: block;
   }
-  .ich-card-body-inner { padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .ich-card-body-inner {
+    padding: 8px 12px 12px;
+    display: flex; flex-direction: column; gap: 6px;
+    border-top: 1px solid rgba(100,180,140,0.18);
+  }
 
   /* 曜日セクション */
   .ich-dow-block {
@@ -1626,6 +1665,13 @@ function buildDayBlock(date, isToday) {
 
 let currentView = 'week';
 
+// ===== 設定一時バッファ =====
+let _settingsDraft = null;
+
+function _initSettingsDraft() {
+  _settingsDraft = JSON.parse(JSON.stringify(SETTINGS));
+}
+
 function switchTab(view, dir) {
   if (view === currentView) return;
   const prev = currentView;
@@ -1641,7 +1687,7 @@ function switchTab(view, dir) {
   const TABS = ['week', 'ichiran', 'settings'];
   const toIdx = TABS.indexOf(view);
 
-  if (view === 'settings') renderSettings();
+  if (view === 'settings') { _initSettingsDraft(); renderSettings(); }
   if (view === 'ichiran') renderIchiran();
 
   const viewMap = {
@@ -1668,7 +1714,7 @@ function switchTab(view, dir) {
   }
 }
 
-function chk(key) { return SETTINGS[key] ? 'checked' : ''; }
+function chk(key) { return (_settingsDraft || SETTINGS)[key] ? 'checked' : ''; }
 
 
 // ===== 一覧表レンダリング =====
@@ -1866,9 +1912,10 @@ function toggleIchCard(dia) {
 }
 
 function renderSettings() {
+  if (!_settingsDraft) _initSettingsDraft();
   const today = new Date(); today.setHours(0,0,0,0);
   const todayDia = getDiaForDate(today);
-  const s = SETTINGS;
+  const s = _settingsDraft;
   document.getElementById('view-settings').innerHTML = `
     <div class="section-label">⚙️ 設定</div>
 
@@ -1969,27 +2016,19 @@ function renderSettings() {
         <div id="display-items-body" style="display:${s.showDisplayItems ? 'block' : 'none'}">
           <div class="settings-row">
             <span class="settings-row-label">🥱 ① 起床時刻</span>
-            <label class="toggle-wrap"><input type="checkbox" id="tog-okibo" ${chk('showOkibo')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
+            <button class="item-mode-btn ${s.showOkibo ? 'item-mode-btn-on' : 'item-mode-btn-off'}" onclick="toggleItemBtn('showOkibo',this)">${s.showOkibo ? 'ON' : 'OFF'}</button>
           </div>
           <div class="settings-row">
             <span class="settings-row-label">🚙 ② 出社時刻（家を出る）</span>
-            <label class="toggle-wrap"><input type="checkbox" id="tog-shukkin" ${chk('showShukkin')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
+            <button class="item-mode-btn ${s.showShukkin ? 'item-mode-btn-on' : 'item-mode-btn-off'}" onclick="toggleItemBtn('showShukkin',this)">${s.showShukkin ? 'ON' : 'OFF'}</button>
           </div>
           <div class="settings-row">
             <span class="settings-row-label">🏢 ③ 到着時刻（会社）</span>
-            <label class="toggle-wrap"><input type="checkbox" id="tog-tochaku" ${chk('showTochaku')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
+            <button class="item-mode-btn ${s.showTochaku ? 'item-mode-btn-on' : 'item-mode-btn-off'}" onclick="toggleItemBtn('showTochaku',this)">${s.showTochaku ? 'ON' : 'OFF'}</button>
           </div>
           <div class="settings-row">
-            <span class="settings-row-label">▶️ ④ 出勤時間（勤務開始）</span>
-            <label class="toggle-wrap"><input type="checkbox" id="tog-shukkinTime" ${chk('showShukkinTime')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
-          </div>
-          <div class="settings-row">
-            <span class="settings-row-label">⏹️ ⑤ 退勤時間（勤務終了）</span>
-            <label class="toggle-wrap"><input type="checkbox" id="tog-taikinTime" ${chk('showTaikinTime')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
-          </div>
-          <div class="settings-row">
-            <span class="settings-row-label">🏠 ⑥ 帰宅時刻（家に到着）</span>
-            <label class="toggle-wrap"><input type="checkbox" id="tog-kikaku" ${chk('showKikaku')} onchange="togglePreview()"><span class="toggle-slider"></span></label>
+            <span class="settings-row-label">🏠 ④ 帰宅時刻（家に到着）</span>
+            <button class="item-mode-btn ${s.showKikaku ? 'item-mode-btn-on' : 'item-mode-btn-off'}" onclick="toggleItemBtn('showKikaku',this)">${s.showKikaku ? 'ON' : 'OFF'}</button>
           </div>
         </div>
       </div>
@@ -2112,23 +2151,22 @@ function renderSettings() {
 }
 
 function togglePreview() {
-  // トグル変更を即時にSETTINGSに反映して保存
-  SETTINGS.showOkibo       = document.getElementById('tog-okibo').checked;
-  SETTINGS.showShukkin     = document.getElementById('tog-shukkin').checked;
-  SETTINGS.showTochaku     = document.getElementById('tog-tochaku').checked;
-  SETTINGS.showShukkinTime = document.getElementById('tog-shukkinTime').checked;
-  SETTINGS.showTaikinTime  = document.getElementById('tog-taikinTime').checked;
-  SETTINGS.showKikaku      = document.getElementById('tog-kikaku').checked;
-  saveSettings(SETTINGS);
+  if (!_settingsDraft) return;
+  _settingsDraft.showOkibo       = document.getElementById('tog-okibo').checked;
+  _settingsDraft.showShukkin     = document.getElementById('tog-shukkin').checked;
+  _settingsDraft.showTochaku     = document.getElementById('tog-tochaku').checked;
+  _settingsDraft.showShukkinTime = document.getElementById('tog-shukkinTime').checked;
+  _settingsDraft.showTaikinTime  = document.getElementById('tog-taikinTime').checked;
+  _settingsDraft.showKikaku      = document.getElementById('tog-kikaku').checked;
 }
 
 // ===== 特別指定日ルール操作 =====
 function _getSpecialRules() {
-  return SETTINGS.specialDayRules || DEFAULT_SETTINGS.specialDayRules.map(r=>Object.assign({},r));
+  return (_settingsDraft || SETTINGS).specialDayRules || DEFAULT_SETTINGS.specialDayRules.map(r=>Object.assign({},r));
 }
 function _saveSpecialRules(rules) {
-  SETTINGS.specialDayRules = rules;
-  saveSettings(SETTINGS);
+  if (!_settingsDraft) return;
+  _settingsDraft.specialDayRules = rules;
   renderSettings();
 }
 function specialDayMonthChange(i, val) {
@@ -2157,28 +2195,38 @@ function specialDayAdd() {
   _saveSpecialRules(rules);
 }
 function specialDayReset() {
-  SETTINGS.specialDayRules = DEFAULT_SETTINGS.specialDayRules.map(r=>Object.assign({},r));
-  saveSettings(SETTINGS);
+  if (!_settingsDraft) return;
+  _settingsDraft.specialDayRules = DEFAULT_SETTINGS.specialDayRules.map(r=>Object.assign({},r));
   renderSettings();
 }
 
 function toggleSpecialDays() {
+  if (!_settingsDraft) return;
   const checked = document.getElementById('tog-specialDays').checked;
-  SETTINGS.showSpecialDays = checked;
-  saveSettings(SETTINGS);
+  _settingsDraft.showSpecialDays = checked;
   const body = document.getElementById('special-days-body');
   if (body) body.style.display = checked ? 'block' : 'none';
 }
 
 function toggleDisplayItems() {
+  if (!_settingsDraft) return;
   const checked = document.getElementById('tog-displayItems').checked;
-  SETTINGS.showDisplayItems = checked;
-  saveSettings(SETTINGS);
+  _settingsDraft.showDisplayItems = checked;
   const body = document.getElementById('display-items-body');
   if (body) body.style.display = checked ? 'block' : 'none';
 }
 
+function toggleItemBtn(key, btn) {
+  if (!_settingsDraft) return;
+  const newVal = !_settingsDraft[key];
+  _settingsDraft[key] = newVal;
+  btn.textContent = newVal ? 'ON' : 'OFF';
+  btn.className = 'item-mode-btn ' + (newVal ? 'item-mode-btn-on' : 'item-mode-btn-off');
+  togglePreview();
+}
+
 function applySettings() {
+  if (!_settingsDraft) return;
   const dateVal  = document.getElementById('set-date').value;
   const dia      = parseInt(document.getElementById('set-dia').textContent);
   const cycle    = parseInt(document.getElementById('set-cycle').textContent);
@@ -2206,20 +2254,19 @@ function applySettings() {
     leaveBeforeWork:   leave,
     arriveBeforeStart: arrive,
     returnAfterEnd:    ret,
-    showOkibo:       document.getElementById('tog-okibo').checked,
-    showShukkin:     document.getElementById('tog-shukkin').checked,
-    showTochaku:     document.getElementById('tog-tochaku').checked,
-    showShukkinTime: document.getElementById('tog-shukkinTime').checked,
-    showTaikinTime:  document.getElementById('tog-taikinTime').checked,
-    showKikaku:      document.getElementById('tog-kikaku').checked,
+    showOkibo:       _settingsDraft.showOkibo,
+    showShukkin:     _settingsDraft.showShukkin,
+    showTochaku:     _settingsDraft.showTochaku,
+    showShukkinTime: _settingsDraft.showShukkinTime,
+    showTaikinTime:  _settingsDraft.showTaikinTime,
+    showKikaku:      _settingsDraft.showKikaku,
     ichiranCalcMode: SETTINGS.ichiranCalcMode,
-    showSpecialDays: document.getElementById('tog-specialDays').checked,
-    showDisplayItems: document.getElementById('tog-displayItems').checked,
-    specialDayRules: SETTINGS.specialDayRules || DEFAULT_SETTINGS.specialDayRules.map(r=>Object.assign({},r)),
+    showSpecialDays:  _settingsDraft.showSpecialDays,
+    showDisplayItems: _settingsDraft.showDisplayItems,
+    specialDayRules:  _settingsDraft.specialDayRules || DEFAULT_SETTINGS.specialDayRules.map(r=>Object.assign({},r)),
   };
   saveSettings(SETTINGS);
-  // 設定変更済みフラグをクリア（警告を次回から出さないようにする）
-  // ただしデフォルト値のままなら次回起動時にまた警告
+  _settingsDraft = JSON.parse(JSON.stringify(SETTINGS));
   render();
   renderSettings();
   document.getElementById('save-msg').textContent = '✅ 保存しました！';
@@ -2237,10 +2284,9 @@ function getAppPassword() {
   return localStorage.getItem('appPassword') || '0924';
 }
 
-let _pwSessionKey = null;  // セッションキー
+let _pwSessionKey = null;
 
 function openPwNumpad(title, onSuccess, onCancel, sessionKey) {
-  // セッション中に既に認証済みならスキップ
   if (sessionKey && sessionStorage.getItem('pwUnlocked_' + sessionKey) === '1') {
     if (onSuccess) onSuccess();
     return;
@@ -2403,7 +2449,7 @@ function toggleMasterEdit() {
         _refreshTeireSwitch();
         _refreshMasterFields();
       },
-      () => {}, // 取消：チェックは既にfalse
+      () => {},
       'master'
     );
   } else {
@@ -2833,6 +2879,8 @@ function toggleIchiranBtn() {
     function() {
       SETTINGS.ichiranCalcMode = newVal;
       saveSettings(SETTINGS);
+      // _settingsDraftにも同期
+      if (_settingsDraft) _settingsDraft.ichiranCalcMode = newVal;
       btn.textContent = newVal ? 'ON' : 'OFF';
       btn.className = 'ichiran-mode-btn ' + (newVal ? 'ichiran-mode-btn-on' : 'ichiran-mode-btn-off');
       if (currentView === 'ichiran') renderIchiran();
