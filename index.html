@@ -113,65 +113,6 @@
     text-transform: uppercase;
     padding: 8px 4px 4px;
   }
-  .day-block {
-    border-radius: 18px;
-    padding: 0 0 4px;
-    border: 1px solid rgba(100,180,140,0.25);
-    border-bottom: 3px solid rgba(80,150,110,0.35);
-    margin-bottom: 10px;
-    background: linear-gradient(170deg, #fffef5 0%, rgba(255,252,235,0.95) 100%);
-    box-shadow:
-      0 4px 0 rgba(90,150,115,0.22),
-      0 6px 16px rgba(60,120,90,0.10),
-      inset 0 1px 0 rgba(255,255,255,0.85);
-  }
-  .day-block.today {
-    background: linear-gradient(170deg, #fffff0 0%, rgba(255,250,225,0.98) 100%);
-    border-color: rgba(60,155,105,0.5);
-    border-bottom-color: rgba(40,130,85,0.5);
-    box-shadow:
-      0 5px 0 rgba(40,130,85,0.28),
-      0 8px 20px rgba(60,155,105,0.16),
-      inset 0 1px 0 rgba(255,255,255,0.9);
-  }
-  .day-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px 8px;
-  }
-  .day-num-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 42px;
-  }
-  .day-num {
-    font-size: 22px;
-    font-weight: 800;
-    color: #2d5a47;
-    line-height: 1;
-  }
-  .day-block.today .day-num { color: #2d8a5e; }
-  .day-dow { font-size: 13px; font-weight: 700; }
-  .today-badge {
-    display: inline-block;
-    font-size: 10px;
-    background: #3d9e6e;
-    color: #fff;
-    border-radius: 99px;
-    padding: 1px 7px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-bottom: 3px;
-  }
-  .tags { display: flex; align-items: center; gap: 6px; }
-  .daytype-tag {
-    font-size: 11px;
-    border-radius: 99px;
-    padding: 1px 8px;
-    font-weight: 600;
-  }
   .dia-tag {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 13px; color: #2d6e50; font-weight: 700;
@@ -212,7 +153,6 @@
     text-align: center; font-size: 11px; color: #777;
     margin-bottom: 8px; cursor: pointer; text-decoration: underline;
   }
-  .shift-area { padding: 0 12px 4px; }
   .shift-cards { display: flex; flex-direction: column; gap: 8px; }
   .shift-card {
     background: linear-gradient(170deg, #ffffff 0%, rgba(255,252,238,0.98) 100%);
@@ -1203,14 +1143,14 @@
     </div>
   </div>
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('week')">📋 予定</button>
+    <button class="tab-btn active" onclick="switchTab('calendar')">📅 カレンダー</button>
     <button class="tab-btn" onclick="switchTab('ichiran')">📄 一覧表</button>
     <button class="tab-btn" onclick="switchTab('settings')">⚙️ 設定</button>
   </div>
 </div>
 
 <div class="content">
-  <div id="view-today-tomorrow"></div>
+  <div id="view-calendar"></div>
   <div id="view-ichiran" class="hidden"></div>
   <div id="view-settings" class="hidden"></div>
 </div>
@@ -1490,6 +1430,13 @@ function saveDiaOverrides() {
   try { localStorage.setItem('diaOverrides', JSON.stringify(DIA_OVERRIDES)); } catch(e) {}
 }
 
+// 年休・指定公休（その日だけのフラグ。ダイヤ番号自体は変更しない）: { "2026-06-20": "年休"|"指定公休" }
+let SPECIAL_DAY_OVERRIDES = {};
+try { SPECIAL_DAY_OVERRIDES = JSON.parse(localStorage.getItem('specialDayOverrides') || '{}'); } catch(e) {}
+function saveSpecialDayOverrides() {
+  try { localStorage.setItem('specialDayOverrides', JSON.stringify(SPECIAL_DAY_OVERRIDES)); } catch(e) {}
+}
+
 // DIADATAの時刻文字列（24:xx / 25:xx）をSCHEDULES形式（+00:xx）に変換
 function _convTime(t) {
   if (!t) return null;
@@ -1514,6 +1461,13 @@ function _diaRowToShifts(row, dateKey) {
 }
 
 function getSchedule(date) {
+  const sched = _getScheduleRaw(date);
+  const sp = SPECIAL_DAY_OVERRIDES[getDateKey(date)];
+  if (sp) sched.special = sp;
+  return sched;
+}
+
+function _getScheduleRaw(date) {
   const key = getDateKey(date);
   const dayType = getDayType(date);
   const overrideVal = DIA_OVERRIDES[key];
@@ -1589,7 +1543,8 @@ function calcTime(baseTime, offsetMin) {
   return base + offsetMin;
 }
 
-function buildShiftCard(shifts, isKyukyu, isYobi, isRinji) {
+function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel) {
+  if (specialLabel) return `<div class="kyukyu-card"><span class="kyukyu-text" style="color:#ff21a8">${specialLabel}</span></div>`;
   if (isYobi) return `<div class="kyukyu-card"><span class="yobi-text">予　備</span></div>`;
   if (isKyukyu) {
     return `<div class="kyukyu-card"><span class="kyukyu-icon">🏖️</span><span class="kyukyu-text">公　休</span></div>`;
@@ -1659,41 +1614,7 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji) {
   }).join('')}</div>`;
 }
 
-function buildDayBlock(date, isToday) {
-  const dateKey = getDateKey(date);
-  const sched = getSchedule(date);
-  const dow = DOWSTR[date.getDay()];
-  const isHoliday = HOLIDAYS.has(dateKey);
-  const isSat = date.getDay() === 6;
-  const isSunHol = date.getDay() === 0 || isHoliday;
-  const dowColor = isSunHol ? '#f87171' : isSat ? '#60a5fa' : '#94a3b8';
-  const dayTypeLabel = sched.dayType;
-  const dayTypeBg = sched.dayType === '日祝' ? 'rgba(239,80,80,0.18)' : sched.dayType === '土曜' ? 'rgba(60,130,220,0.18)' : 'rgba(80,180,120,0.22)';
-  const dayTypeColor = sched.dayType === '日祝' ? '#cc2020' : sched.dayType === '土曜' ? '#1a50aa' : '#1a1a1a';
-  const isOverride = DIA_OVERRIDES[dateKey] !== undefined;
-  return `
-  <div class="day-block${isToday ? ' today' : ''}">
-    <div class="day-header">
-      <div class="day-num-block">
-        <span class="day-num">${date.getDate()}</span>
-        <span class="day-dow" style="color:${dowColor}">${dow}</span>
-      </div>
-      <div style="flex:1">
-        ${isToday ? '<span class="today-badge">TODAY</span>' : ''}
-        <div class="tags">
-          <span class="daytype-tag" style="background:${dayTypeBg};color:${dayTypeColor}">${dayTypeLabel}</span>
-          <button class="dia-tag${isOverride ? ' dia-override' : ''}"
-            onclick="openDiaNumpad('${dateKey}', ${sched.dia})"
-            title="タップでダイヤ番号を変更">ダイヤ ${sched.dia}${isOverride ? ' ✎' : ''}</button>
-
-        </div>
-      </div>
-    </div>
-    <div class="shift-area">${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji)}</div>
-  </div>`;
-}
-
-let currentView = 'week';
+let currentView = 'calendar';
 
 // ===== 設定一時バッファ =====
 let _settingsDraft = null;
@@ -1708,23 +1629,24 @@ function switchTab(view, dir) {
   currentView = view;
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
     b.classList.toggle('active',
-      (i===0 && view==='week') ||
+      (i===0 && view==='calendar') ||
       (i===1 && view==='ichiran') ||
       (i===2 && view==='settings')
     );
   });
 
-  const TABS = ['week', 'ichiran', 'settings'];
+  const TABS = ['calendar', 'ichiran', 'settings'];
   const toIdx = TABS.indexOf(view);
 
   if (prev === 'settings') { clearSettingsDirty(); }
   if (view === 'settings') { if (!_settingsDraft) _initSettingsDraft(); renderSettings(); }
   if (view === 'ichiran') renderIchiran();
+  if (view === 'calendar') renderCalendarTab();
 
   const viewMap = {
-    week:     document.getElementById('view-today-tomorrow'),
     ichiran:  document.getElementById('view-ichiran'),
     settings: document.getElementById('view-settings'),
+    calendar: document.getElementById('view-calendar'),
   };
 
   Object.entries(viewMap).forEach(([k, el]) => {
@@ -1746,6 +1668,183 @@ function switchTab(view, dir) {
 }
 
 function chk(key) { return (_settingsDraft || SETTINGS)[key] ? 'checked' : ''; }
+
+// ===== カレンダータブ（月表示＋Googleカレンダー反映） =====
+
+let _calTabDate = new Date(); _calTabDate.setDate(1); _calTabDate.setHours(0,0,0,0);
+
+function _calPrevMonth() { _calTabDate.setMonth(_calTabDate.getMonth() - 1); renderCalendarTab(); }
+function _calNextMonth() { _calTabDate.setMonth(_calTabDate.getMonth() + 1); renderCalendarTab(); }
+
+function renderCalendarTab() {
+  const el = document.getElementById('view-calendar');
+  if (!el) return;
+
+  const y = _calTabDate.getFullYear();
+  const m = _calTabDate.getMonth(); // 0-11
+  const monthLabel = `${y}年${m + 1}月`;
+
+  const firstDow = (new Date(y, m, 1).getDay() + 6) % 7; // 0=月始まり
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const baseDate = getBaseDate(); baseDate.setHours(0,0,0,0);
+
+  const dowLabels = ['月','火','水','木','金','土','日'];
+  const dowHeaderHtml = dowLabels.map((l, i) =>
+    `<div class="cal-dow-label${i===6?' nch':''}${i===5?' doy':''}">${l}</div>`
+  ).join('');
+
+  let cells = '';
+  for (let i = 0; i < firstDow; i++) cells += `<div class="cal-cell cal-cell-empty"></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(y, m, day);
+    const dow = date.getDay();
+    const isToday = date.getTime() === today.getTime();
+
+    let bodyHtml, typeCls, tapAttr = '';
+    if (date.getTime() < baseDate.getTime()) {
+      bodyHtml = '';
+      typeCls = '';
+    } else {
+      const dayType = getDayType(date);
+      const sched = getSchedule(date);
+      typeCls = dayType === '土曜' ? 'doy' : dayType === '日祝' ? 'nch' : 'hei';
+      tapAttr = ` onclick="openCalDayCard('${getDateKey(date)}')"`;
+      const dateKey0 = getDateKey(date);
+      const diaOv = DIA_OVERRIDES[dateKey0] !== undefined ? ' cal-ov' : '';
+
+      if (sched.special) {
+        bodyHtml = `<div class="cal-cell-dia">B${sched.dia}</div><div class="cal-cell-tag cal-tag-special">${sched.special}</div>`;
+      } else if (sched.kyukyu) {
+        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">公休</div>`;
+      } else if (sched.yobi) {
+        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-yobi">予備</div>`;
+      } else if (sched.rinji) {
+        bodyHtml = `<div class="cal-cell-tag cal-tag-rinji">臨${sched.rinjiType || ''}</div>`;
+      } else {
+        const sh = sched.shifts && sched.shifts[0];
+        const dia = sched.dia;
+        const ovKey = dateKey0 + '_0';
+        const skOv = SHUKKIN_OVERRIDES[ovKey];
+        const tkOv = TAIKIN_OVERRIDES[ovKey];
+        const t  = skOv !== undefined ? minToTime(skOv) : (sh ? fmtTime(sh.shukkinTime) : '—');
+        const tk = tkOv !== undefined ? minToTime(tkOv) : (sh ? fmtTime(sh.taikinTime) : '—');
+        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${dia}</div><div class="cal-cell-time${skOv !== undefined ? ' cal-ov' : ''}">${t}</div><div class="cal-cell-time${tkOv !== undefined ? ' cal-ov' : ''}">${tk}</div>`;
+      }
+    }
+
+    cells += `<div class="cal-cell ${typeCls}${isToday ? ' cal-cell-today' : ''}"${tapAttr}>
+      <div class="cal-cell-date">${day}</div>
+      ${bodyHtml}
+    </div>`;
+  }
+
+  el.innerHTML = `
+    <style>
+      .cal-tab-wrap { padding: 10px 4px 90px; }
+      .cal-nav-row { display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:10px; }
+      .cal-nav-btn { border:none; background:#f0f0f0; border-radius:10px; width:38px; height:38px; font-size:18px; font-weight:700; cursor:pointer; }
+      .cal-nav-btn:active { background:#e0e0e0; }
+      .cal-month-label { font-size:17px; font-weight:800; }
+      .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+      .cal-dow-label { text-align:center; font-size:11px; font-weight:700; color:#888; padding-bottom:4px; }
+      .cal-dow-label.doy { color:#1a5caa; }
+      .cal-dow-label.nch { color:#cc3333; }
+      .cal-cell { border-radius:9px; background:linear-gradient(170deg, #ffffff 0%, rgba(255,252,238,0.98) 100%); min-height:74px; padding:4px 3px; position:relative; border:1px solid rgba(100,180,140,0.22); border-bottom:2px solid rgba(80,150,110,0.28); box-shadow:0 3px 0 rgba(90,150,115,0.18), 0 5px 12px rgba(60,120,90,0.08), inset 0 1px 0 rgba(255,255,255,0.9); }
+      .cal-cell-empty { background:transparent; box-shadow:none; border:none; }
+      .cal-cell.doy { background:linear-gradient(170deg, rgba(150,195,255,0.28) 0%, rgba(110,165,255,0.18) 100%); }
+      .cal-cell.nch { background:linear-gradient(170deg, rgba(255,165,165,0.28) 0%, rgba(255,125,125,0.18) 100%); }
+      .cal-cell-today { border-color:#2d7a50; box-shadow:0 3px 0 rgba(90,150,115,0.18), 0 5px 12px rgba(60,120,90,0.08), inset 0 0 0 1.5px #2d7a50; }
+      .cal-cell-date { font-size:13px; font-weight:700; color:#666; }
+      .cal-cell-dia { font-size:14px; font-weight:800; color:#2d7a50; margin-top:2px; }
+      .cal-cell-time { font-size:10px; color:#555; }
+      .cal-cell-dia.cal-ov, .cal-cell-time.cal-ov { color:#ff21a8; }
+      .cal-cell-tag { font-size:11px; font-weight:700; margin-top:6px; text-align:center; }
+      .cal-tag-kyukyu { color:#cc3333; font-weight:700; }
+      .cal-tag-yobi { color:#b8860b; }
+      .cal-tag-rinji { color:#a04040; }
+      .cal-tag-special { color:#ff21a8; }
+      .cal-cell[onclick] { cursor:pointer; }
+      .cal-day-card-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:150; display:flex; align-items:center; justify-content:center; padding:16px; }
+      .cal-day-card-overlay.hidden { display:none; }
+      .cal-day-card-box { background:#fff; border-radius:16px; max-width:340px; width:100%; max-height:80vh; overflow-y:auto; padding:18px 16px 16px; box-shadow:0 10px 40px rgba(0,0,0,0.25); }
+      .cal-day-card-header { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
+      .cal-day-card-date { font-size:18px; font-weight:800; }
+      .cal-day-card-dow { font-size:13px; font-weight:700; }
+      .cal-day-card-dia-row { text-align:center; margin-bottom:10px; }
+      .cal-day-card-dia-row .dia-tag { font-size:18px; }
+      .cal-day-card-close { margin-top:14px; width:100%; padding:12px; border:none; border-radius:10px; background:#eee; color:#333; font-size:14px; font-weight:700; cursor:pointer; }
+      .cal-day-card-close:active { background:#ddd; }
+      #cal-day-card-box .shift-card {
+        background: #fdfaef;
+        border: 1px solid rgba(90,150,115,0.45);
+        border-bottom: 3px solid rgba(70,130,95,0.5);
+        box-shadow:
+          0 4px 0 rgba(80,140,105,0.30),
+          0 8px 18px rgba(50,100,75,0.18),
+          inset 0 1px 0 rgba(255,255,255,0.9);
+      }
+    </style>
+    <div class="cal-tab-wrap">
+      <div class="cal-nav-row">
+        <button class="cal-nav-btn" onclick="_calPrevMonth()">‹</button>
+        <div class="cal-month-label">${monthLabel}</div>
+        <button class="cal-nav-btn" onclick="_calNextMonth()">›</button>
+      </div>
+      <div class="cal-grid">
+        ${dowHeaderHtml}
+        ${cells}
+      </div>
+    </div>
+    <div id="cal-day-card-overlay" class="cal-day-card-overlay hidden" onclick="if(event.target===this) closeCalDayCard()">
+      <div class="cal-day-card-box" id="cal-day-card-box"></div>
+    </div>
+  `;
+}
+
+let _calCardOpenDateKey = null;
+
+function openCalDayCard(dateKey) {
+  _calCardOpenDateKey = dateKey;
+  const parts = dateKey.split('-').map(Number);
+  const date = new Date(parts[0], parts[1] - 1, parts[2]);
+  const dow = ['日','月','火','水','木','金','土'][date.getDay()];
+  const dowColor = date.getDay() === 0 ? '#cc3333' : date.getDay() === 6 ? '#1a5caa' : '#666';
+  const sched = getSchedule(date);
+  const isDiaOverride = DIA_OVERRIDES[dateKey] !== undefined;
+
+  const box = document.getElementById('cal-day-card-box');
+  if (!box) return;
+  box.innerHTML = `
+    <div class="cal-day-card-header">
+      <span class="cal-day-card-date">${parts[1]}/${parts[2]}</span>
+      <span class="cal-day-card-dow" style="color:${dowColor}">（${dow}）</span>
+    </div>
+    <div class="cal-day-card-dia-row">
+      <button class="dia-tag${isDiaOverride ? ' dia-override' : ''}"
+        onclick="openDiaNumpad('${dateKey}', ${sched.dia})"
+        title="タップでダイヤ番号を変更">B${sched.dia}${isDiaOverride ? ' ✎' : ''}</button>
+    </div>
+    ${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji, sched.special)}
+    <button class="cal-day-card-close" onclick="closeCalDayCard()">閉じる</button>
+  `;
+  document.getElementById('cal-day-card-overlay').classList.remove('hidden');
+}
+
+function closeCalDayCard() {
+  _calCardOpenDateKey = null;
+  const ov = document.getElementById('cal-day-card-overlay');
+  if (ov) ov.classList.add('hidden');
+}
+
+// override編集（ダイヤ/出勤/退勤）の確定・リセット後、カレンダー本体＋開いているカードを再描画
+function _calRefreshAfterEdit() {
+  const reopenKey = _calCardOpenDateKey;
+  renderCalendarTab();
+  if (reopenKey) openCalDayCard(reopenKey);
+}
+
 
 
 // ===== 一覧表レンダリング =====
@@ -2308,7 +2407,7 @@ function applySettings() {
   saveSettings(SETTINGS);
   _settingsDraft = JSON.parse(JSON.stringify(SETTINGS));
   clearSettingsDirty();
-  render();
+  if (currentView === 'calendar') renderCalendarTab();
   renderSettings();
   document.getElementById('save-msg').textContent = '✅ 保存しました！';
   document.getElementById('save-msg').style.color = '#34d399';
@@ -2530,7 +2629,7 @@ function onTeireToggle() {
     MASTER_OVERRIDES[flagKey] = isTeire;
   }
   saveMasterOverrides();
-  render();
+  if (currentView === 'calendar') renderCalendarTab();
   if (currentView === 'ichiran') renderIchiran();
 }
 
@@ -2798,7 +2897,7 @@ function masterConfirmOk() {
     msg.style.color = '#34d399';
     setTimeout(() => { if (msg) msg.textContent = ''; }, 2500);
   }
-  render();
+  if (currentView === 'calendar') renderCalendarTab();
   if (currentView === 'ichiran') renderIchiran();
 }
 
@@ -2823,7 +2922,7 @@ function masterInitExecute() {
     msg.style.color = '#818cf8';
     setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
   }
-  render();
+  if (currentView === 'calendar') renderCalendarTab();
   if (currentView === 'ichiran') renderIchiran();
 }
 
@@ -2887,7 +2986,7 @@ function masterResetAllExecute() {
     msg.style.color = '#f87171';
     setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
   }
-  render();
+  if (currentView === 'calendar') renderCalendarTab();
   if (currentView === 'ichiran') renderIchiran();
 }
 
@@ -3008,7 +3107,7 @@ function _applyImport(text, fname) {
     try { MASTER_OVERRIDES  = JSON.parse(localStorage.getItem('masterOverrides') || '{}'); } catch(e) { MASTER_OVERRIDES = {}; }
     try { TAIKIN_OVERRIDES  = JSON.parse(localStorage.getItem('taikinOverrides') || '{}'); } catch(e) { TAIKIN_OVERRIDES = {}; }
     applyMasterOverrides();
-    render();
+    if (currentView === 'calendar') renderCalendarTab();
     if (currentView === 'ichiran') renderIchiran();
     if (currentView === 'settings') renderSettings();
     alert('📂 読込完了しました！\nファイル: ' + (fname || ''));
@@ -3049,19 +3148,6 @@ function updateClock() {
   const now = new Date();
   document.getElementById('headerTime').textContent = now.toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
   document.getElementById('headerDate').textContent = now.toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
-}
-
-function render() {
-  const today = new Date(); today.setHours(0,0,0,0);
-  let html = '';
-  for (let i = 0; i < 8; i++) {
-    const d = new Date(today); d.setDate(d.getDate()+i);
-    if (i === 0) html += '<div class="section-label" style="padding:4px 4px 4px">今日</div>';
-    if (i === 1) html += '<div class="section-label" style="padding:12px 4px 4px">明日</div>';
-    if (i === 2) html += '<div class="section-label" style="padding:12px 4px 4px">今後の予定</div>';
-    html += buildDayBlock(d, i===0);
-  }
-  document.getElementById('view-today-tomorrow').innerHTML = html;
 }
 
 // テンキーダイアログ制御
@@ -3224,17 +3310,39 @@ function diaNumpadKey(k) {
   else {
     const next = diaNumpadVal === '' ? k : diaNumpadVal + k;
     let val = parseInt(next);
-    if (val > maxVal) val = maxVal;
-    diaNumpadVal = val > 0 ? String(val) : '';
+    if (isNaN(val)) val = 0;
+    if (val > maxVal) {
+      // 桁あふれ：99に丸めず弾く（エラー表示して元の値に戻す）
+      const disp = document.getElementById('dia-numpad-display');
+      if (disp) {
+        disp.textContent = '!';
+        setTimeout(() => { disp.textContent = diaNumpadVal || ''; }, 400);
+      }
+      return;
+    }
+    if (val === 0 && diaNumpadMode !== 'spot') {
+      diaNumpadVal = '';
+    } else {
+      diaNumpadVal = next.length > 0 ? String(val) : '';
+    }
   }
   document.getElementById('dia-numpad-display').textContent = diaNumpadVal || '';
 }
 
 function diaNumpadReset() {
   delete DIA_OVERRIDES[diaNumpadDateKey];
+  delete SPECIAL_DAY_OVERRIDES[diaNumpadDateKey];
+  // ダイヤを元に戻すので、同じ日の出勤・退勤の臨時変更も一緒に元に戻す
+  delete SHUKKIN_OVERRIDES[diaNumpadDateKey + '_0'];
+  delete SHUKKIN_OVERRIDES[diaNumpadDateKey + '_1'];
+  delete TAIKIN_OVERRIDES[diaNumpadDateKey + '_0'];
+  delete TAIKIN_OVERRIDES[diaNumpadDateKey + '_1'];
   saveDiaOverrides();
+  saveSpecialDayOverrides();
+  saveShukkinOverrides();
+  saveTaikinOverrides();
   closeDiaNumpad();
-  render();
+  _calRefreshAfterEdit();
 }
 
 function diaNumpadOk() {
@@ -3253,20 +3361,31 @@ function diaNumpadOk() {
     _refreshTeireSwitch();
     _refreshMasterFields();
   } else {
-    // spot / dia モード：ICHIRAN_DATA存在チェック + 99(臨時)
+    // spot / dia モード：ICHIRAN_DATA存在チェック + 99(臨時) + 0(年休/指定公休・spotのみ)
     const validDias = new Set(ICHIRAN_DATA.map(r => r.dia));
     validDias.add(99);
+    if (diaNumpadMode === 'spot') validDias.add(0);
     if (isNaN(val) || !validDias.has(val)) {
       document.getElementById('dia-numpad-display').textContent = '!';
       setTimeout(() => { document.getElementById('dia-numpad-display').textContent = diaNumpadVal || ''; }, 600);
       return;
     }
     if (diaNumpadMode === 'spot') {
+      if (val === 0) {
+        closeDiaNumpad();
+        _specialDayDateKey = diaNumpadDateKey;
+        document.getElementById('special-day-type-overlay').classList.remove('hidden');
+        return;
+      }
       if (val === 99) {
         closeDiaNumpad();
         _rinjiDateKey = diaNumpadDateKey;
         document.getElementById('rinji-type-overlay').classList.remove('hidden');
         return;
+      }
+      if (SPECIAL_DAY_OVERRIDES[diaNumpadDateKey] !== undefined) {
+        delete SPECIAL_DAY_OVERRIDES[diaNumpadDateKey];
+        saveSpecialDayOverrides();
       }
       if (val === diaNumpadOriginal) {
         delete DIA_OVERRIDES[diaNumpadDateKey];
@@ -3275,7 +3394,7 @@ function diaNumpadOk() {
       }
       saveDiaOverrides();
       closeDiaNumpad();
-      render();
+      _calRefreshAfterEdit();
     } else {
       // dia モード（設定画面の基準ダイヤ番号）
       document.getElementById('set-dia').textContent = val;
@@ -3286,15 +3405,15 @@ function diaNumpadOk() {
 }
 
 updateClock();
-render();
-switchTab('week');
+renderCalendarTab();
+switchTab('calendar');
 
 // ── スワイプで予定⇔設定を切り替え ──
 (function() {
   const el = document.querySelector('.content');
   if (!el) return;
 
-  const TABS = ['week', 'ichiran', 'settings'];
+  const TABS = ['calendar', 'ichiran', 'settings'];
   let startX = 0, startY = 0, startTime = 0, startScrollLeft = 0;
 
   el.addEventListener('touchstart', function(e) {
@@ -3403,7 +3522,7 @@ function skReset() {
   delete SHUKKIN_OVERRIDES[_skDateKey + '_' + _skIdx];
   saveShukkinOverrides();
   document.getElementById('sk-np-overlay').classList.add('hidden');
-  render();
+  _calRefreshAfterEdit();
 }
 function skCancel() {
   document.getElementById('sk-np-overlay').classList.add('hidden');
@@ -3425,7 +3544,7 @@ function skOk() {
   else { SHUKKIN_OVERRIDES[okey] = newMin; }
   saveShukkinOverrides();
   document.getElementById('sk-np-overlay').classList.add('hidden');
-  render();
+  _calRefreshAfterEdit();
 }
 
 // ===== 臨時ダイヤ種別選択 =====
@@ -3434,11 +3553,27 @@ function selectRinjiType(type) {
   // type: '全日' or '中間'
   DIA_OVERRIDES[_rinjiDateKey] = { dia: 99, type: type };
   saveDiaOverrides();
+  if (SPECIAL_DAY_OVERRIDES[_rinjiDateKey] !== undefined) {
+    delete SPECIAL_DAY_OVERRIDES[_rinjiDateKey];
+    saveSpecialDayOverrides();
+  }
   document.getElementById('rinji-type-overlay').classList.add('hidden');
-  render();
+  _calRefreshAfterEdit();
 }
 function cancelRinjiType() {
   document.getElementById('rinji-type-overlay').classList.add('hidden');
+}
+
+let _specialDayDateKey = '';
+function selectSpecialDayType(type) {
+  // type: '年休' or '指定公休'（ダイヤ番号は変更しない）
+  SPECIAL_DAY_OVERRIDES[_specialDayDateKey] = type;
+  saveSpecialDayOverrides();
+  document.getElementById('special-day-type-overlay').classList.add('hidden');
+  _calRefreshAfterEdit();
+}
+function cancelSpecialDayType() {
+  document.getElementById('special-day-type-overlay').classList.add('hidden');
 }
 
 // ===== 退勤時間臨時変更テンキー =====
@@ -3490,7 +3625,7 @@ function tkReset() {
   delete TAIKIN_OVERRIDES[_tkDateKey + '_' + _tkIdx];
   saveTaikinOverrides();
   document.getElementById('tk-np-overlay').classList.add('hidden');
-  render();
+  _calRefreshAfterEdit();
 }
 function tkCancel() {
   document.getElementById('tk-np-overlay').classList.add('hidden');
@@ -3512,7 +3647,7 @@ function tkOk() {
   else { TAIKIN_OVERRIDES[okey] = newMin; }
   saveTaikinOverrides();
   document.getElementById('tk-np-overlay').classList.add('hidden');
-  render();
+  _calRefreshAfterEdit();
 }
 setInterval(updateClock, 30000);
 
@@ -3521,7 +3656,8 @@ setInterval(updateClock, 30000);
   var now = new Date();
   var msToMidnight = (new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)) - now + 500;
   setTimeout(function() {
-    render();
+    if (currentView === 'calendar') renderCalendarTab();
+    if (currentView === 'ichiran') renderIchiran();
     scheduleMidnightRender();
   }, msToMidnight);
 })();
@@ -3676,6 +3812,20 @@ setInterval(updateClock, 30000);
     </div>
     <div style="margin-top:10px">
       <button class="master-confirm-cancel" style="width:100%;font-size:12px" onclick="cancelRinjiType()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<div id="special-day-type-overlay" class="alert-overlay hidden">
+  <div class="master-confirm-box">
+    <div class="master-confirm-title">この日の種別を選択</div>
+    <div class="master-confirm-sub">ダイヤ番号は変更せず表示されます</div>
+    <div class="master-confirm-btns">
+      <button class="master-confirm-ok" style="flex:1;background:linear-gradient(170deg,#ff5fc4,#ff21a8);border-color:#d4148a;border-bottom-color:#b30f74" onclick="selectSpecialDayType('年休')">年休</button>
+      <button class="master-confirm-ok" style="flex:1;background:linear-gradient(170deg,#ff5fc4,#ff21a8);border-color:#d4148a;border-bottom-color:#b30f74" onclick="selectSpecialDayType('指定公休')">指定公休</button>
+    </div>
+    <div style="margin-top:10px">
+      <button class="master-confirm-cancel" style="width:100%;font-size:12px" onclick="cancelSpecialDayType()">キャンセル</button>
     </div>
   </div>
 </div>
@@ -3939,7 +4089,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260601-012';
+const APP_VERSION = '20260619-024';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
