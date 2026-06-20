@@ -153,6 +153,10 @@
     text-align: center; font-size: 11px; color: #777;
     margin-bottom: 8px; cursor: pointer; text-decoration: underline;
   }
+  .dia-numpad-hint {
+    text-align: center; font-size: 10.5px; color: #888;
+    margin-top: 10px; line-height: 1.5;
+  }
   .shift-cards { display: flex; flex-direction: column; gap: 8px; }
   .shift-card {
     background: linear-gradient(170deg, #ffffff 0%, rgba(255,252,238,0.98) 100%);
@@ -2782,6 +2786,7 @@ function openMasterDiaNumpad() {
   document.getElementById('dia-numpad-title').textContent = '編集するダイヤ番号';
   document.getElementById('dia-numpad-date').textContent = '1〜' + getCycle() + ' の範囲で入力';
   document.getElementById('dia-numpad-reset').style.display = 'none';
+  document.getElementById('dia-numpad-hint').style.display = 'none';
   document.getElementById('dia-numpad-display').textContent = diaNumpadVal;
   document.getElementById('dia-numpad-overlay').classList.remove('hidden');
 }
@@ -3283,6 +3288,7 @@ function openDiaNumpad(dateKey, currentDia) {
   document.getElementById('dia-numpad-date').textContent =
     d.toLocaleDateString('ja-JP', { month:'long', day:'numeric', weekday:'short' });
   document.getElementById('dia-numpad-reset').style.display = '';
+  document.getElementById('dia-numpad-hint').style.display = '';
   document.getElementById('dia-numpad-display').textContent = diaNumpadVal;
   document.getElementById('dia-numpad-overlay').classList.remove('hidden');
 }
@@ -3295,6 +3301,7 @@ function openDiaNumpadForSetting(type) {
   document.getElementById('dia-numpad-title').textContent = '基準日のダイヤ番号';
   document.getElementById('dia-numpad-date').textContent = '1〜57 の範囲で入力';
   document.getElementById('dia-numpad-reset').style.display = 'none';
+  document.getElementById('dia-numpad-hint').style.display = 'none';
   document.getElementById('dia-numpad-display').textContent = diaNumpadVal;
   document.getElementById('dia-numpad-overlay').classList.remove('hidden');
 }
@@ -3723,6 +3730,7 @@ setInterval(updateClock, 30000);
       <button class="nk-cancel" onclick="closeDiaNumpad()">キャン<br>セル</button>
       <button class="nk-ok" onclick="diaNumpadOk()">確定</button>
     </div>
+    <div class="dia-numpad-hint" id="dia-numpad-hint">※ 99で臨時ダイヤ（フリー設定）、0で年休・指定公休になります</div>
   </div>
 </div>
 
@@ -4089,7 +4097,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260619-027';
+const APP_VERSION = '20260619-028';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
