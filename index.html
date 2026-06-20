@@ -1143,7 +1143,7 @@
     </div>
   </div>
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('calendar')">📅 カレンダー</button>
+    <button class="tab-btn active" onclick="switchTab('calendar')">🗓️ 予定</button>
     <button class="tab-btn" onclick="switchTab('ichiran')">📄 一覧表</button>
     <button class="tab-btn" onclick="switchTab('settings')">⚙️ 設定</button>
   </div>
@@ -4089,7 +4089,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260619-024';
+const APP_VERSION = '20260619-027';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
