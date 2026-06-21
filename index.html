@@ -1734,7 +1734,7 @@ function renderCalendarTab() {
         const tkOv = TAIKIN_OVERRIDES[ovKey];
         const t  = skOv !== undefined ? minToTime(skOv) : (sh ? fmtTime(sh.shukkinTime) : '—');
         const tk = tkOv !== undefined ? minToTime(tkOv) : (sh ? fmtTime(sh.taikinTime) : '—');
-        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${dia}</div><div class="cal-cell-time${skOv !== undefined ? ' cal-ov' : ''}">${t}</div><div class="cal-cell-time${tkOv !== undefined ? ' cal-ov' : ''}">${tk}</div>`;
+        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${dia}</div><div class="cal-cell-time${skOv !== undefined ? ' cal-ov' : ''}">${t}</div><div class="cal-cell-time cal-cell-time-tk${tkOv !== undefined ? ' cal-ov' : ''}">${tk}</div>`;
       }
     }
 
@@ -1762,8 +1762,9 @@ function renderCalendarTab() {
       .cal-cell.nch { background:linear-gradient(170deg, rgba(255,175,175,0.40) 0%, rgba(255,135,135,0.28) 100%); }
       .cal-cell-today { border-color:#2d7a50; box-shadow:0 5px 0 rgba(80,140,105,0.28), 0 7px 16px rgba(50,100,75,0.16), inset 0 0 0 1.5px #2d7a50; }
       .cal-cell-date { font-size:13px; font-weight:700; color:#666; }
-      .cal-cell-dia { font-size:14px; font-weight:800; color:#2d7a50; margin-top:2px; }
+      .cal-cell-dia { font-size:14px; font-weight:800; color:#2d7a50; margin-top:2px; text-align:center; }
       .cal-cell-time { font-size:10px; color:#555; }
+      .cal-cell-time-tk { text-align:right; }
       .cal-cell-dia.cal-ov, .cal-cell-time.cal-ov { color:#ff21a8; }
       .cal-cell-tag { font-size:11px; font-weight:700; margin-top:6px; text-align:center; }
       .cal-tag-kyukyu { color:#cc3333; font-weight:700; }
@@ -4105,7 +4106,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260621-009';
+const APP_VERSION = '20260621-011';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
