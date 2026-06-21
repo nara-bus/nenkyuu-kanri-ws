@@ -489,6 +489,14 @@
     margin-bottom: 14px;
   }
   .today-dia-display strong { color: #2d8a5e; font-size: 20px; margin: 0 4px; }
+  .app-version-footer {
+    text-align: center;
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 18px;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
   .numpad-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.35);
     z-index: 200; display: flex; align-items: center; justify-content: center;
@@ -2297,6 +2305,8 @@ function renderSettings() {
         </div>
       </div>
     </div>
+
+    <div class="app-version-footer">出勤管理 v${APP_VERSION}</div>
 
     <br>
   `;
@@ -4132,7 +4142,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260621-030';
+const APP_VERSION = '20260621-031';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
