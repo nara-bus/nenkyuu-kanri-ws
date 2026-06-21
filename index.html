@@ -2979,12 +2979,13 @@ function masterResetAllExecute() {
   const backupData = {
     version: 1,
     savedAt: now.toISOString(),
-    shiftSettings:     localStorage.getItem('shiftSettings')     || null,
-    diaOverrides:      localStorage.getItem('diaOverrides')      || null,
-    shukkinOverrides:  localStorage.getItem('shukkinOverrides')  || null,
-    taikinOverrides:   localStorage.getItem('taikinOverrides')   || null,
-    masterOverrides:   localStorage.getItem('masterOverrides')   || null,
-    warningSuppressed: localStorage.getItem('warningSuppressed') || null,
+    shiftSettings:       localStorage.getItem('shiftSettings')       || null,
+    diaOverrides:        localStorage.getItem('diaOverrides')        || null,
+    shukkinOverrides:    localStorage.getItem('shukkinOverrides')    || null,
+    taikinOverrides:     localStorage.getItem('taikinOverrides')     || null,
+    specialDayOverrides: localStorage.getItem('specialDayOverrides') || null,
+    masterOverrides:     localStorage.getItem('masterOverrides')     || null,
+    warningSuppressed:   localStorage.getItem('warningSuppressed')   || null,
   };
   const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -3055,12 +3056,13 @@ async function doExport() {
   const appData = {
     version: 1,
     savedAt: now.toISOString(),
-    shiftSettings:     localStorage.getItem('shiftSettings')     || null,
-    diaOverrides:      localStorage.getItem('diaOverrides')      || null,
-    shukkinOverrides:  localStorage.getItem('shukkinOverrides')  || null,
-    taikinOverrides:   localStorage.getItem('taikinOverrides')   || null,
-    warningSuppressed: localStorage.getItem('warningSuppressed') || null,
-    masterOverrides:   localStorage.getItem('masterOverrides')   || null,
+    shiftSettings:       localStorage.getItem('shiftSettings')       || null,
+    diaOverrides:        localStorage.getItem('diaOverrides')        || null,
+    shukkinOverrides:    localStorage.getItem('shukkinOverrides')    || null,
+    taikinOverrides:     localStorage.getItem('taikinOverrides')     || null,
+    specialDayOverrides: localStorage.getItem('specialDayOverrides') || null,
+    warningSuppressed:   localStorage.getItem('warningSuppressed')   || null,
+    masterOverrides:     localStorage.getItem('masterOverrides')     || null,
   };
   const json = JSON.stringify(appData, null, 2);
 
@@ -3135,13 +3137,15 @@ function _applyImport(text, fname) {
     // masterOverrides: null でも '{}' で上書きしてリセット状態を確実に反映
     localStorage.setItem('masterOverrides', data.masterOverrides || '{}');
     localStorage.setItem('taikinOverrides', data.taikinOverrides || '{}');
+    localStorage.setItem('specialDayOverrides', data.specialDayOverrides || '{}');
 
     // データ再読み込み
     SETTINGS = loadSettings();
-    try { DIA_OVERRIDES     = JSON.parse(localStorage.getItem('diaOverrides') || '{}'); } catch(e) { DIA_OVERRIDES = {}; }
-    try { SHUKKIN_OVERRIDES = JSON.parse(localStorage.getItem('shukkinOverrides') || '{}'); } catch(e) { SHUKKIN_OVERRIDES = {}; }
-    try { MASTER_OVERRIDES  = JSON.parse(localStorage.getItem('masterOverrides') || '{}'); } catch(e) { MASTER_OVERRIDES = {}; }
-    try { TAIKIN_OVERRIDES  = JSON.parse(localStorage.getItem('taikinOverrides') || '{}'); } catch(e) { TAIKIN_OVERRIDES = {}; }
+    try { DIA_OVERRIDES        = JSON.parse(localStorage.getItem('diaOverrides') || '{}'); } catch(e) { DIA_OVERRIDES = {}; }
+    try { SHUKKIN_OVERRIDES    = JSON.parse(localStorage.getItem('shukkinOverrides') || '{}'); } catch(e) { SHUKKIN_OVERRIDES = {}; }
+    try { MASTER_OVERRIDES     = JSON.parse(localStorage.getItem('masterOverrides') || '{}'); } catch(e) { MASTER_OVERRIDES = {}; }
+    try { TAIKIN_OVERRIDES     = JSON.parse(localStorage.getItem('taikinOverrides') || '{}'); } catch(e) { TAIKIN_OVERRIDES = {}; }
+    try { SPECIAL_DAY_OVERRIDES = JSON.parse(localStorage.getItem('specialDayOverrides') || '{}'); } catch(e) { SPECIAL_DAY_OVERRIDES = {}; }
     applyMasterOverrides();
     if (currentView === 'calendar') renderCalendarTab();
     if (currentView === 'ichiran') renderIchiran();
@@ -4128,7 +4132,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260621-029';
+const APP_VERSION = '20260621-030';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
