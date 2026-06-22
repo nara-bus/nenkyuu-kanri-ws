@@ -717,7 +717,7 @@
     box-shadow: 0 0 0 2px rgba(61,158,110,0.25);
   }
 
-  /* マスター編集用 時刻テンキー */
+  /* マスタ編集用 時刻テンキー */
   .master-time-numpad-box {
     background: linear-gradient(170deg,#f8f8f8 0%,#efefef 100%);
     border-radius: 20px; padding: 18px 14px 14px; width: 300px;
@@ -1318,7 +1318,7 @@ const ICHIRAN_DATA = [
     { dia:57, type:'公休',   hei:null, doy:null, nch:null },
 ];
 
-// ===== マスターデータ上書き管理 =====
+// ===== マスタデータ上書き管理 =====
 // 初期値のディープコピー（applyMasterOverridesで毎回ここからリセット）
 const _ICHIRAN_DATA_ORIG = JSON.parse(JSON.stringify(ICHIRAN_DATA));
 
@@ -2259,13 +2259,13 @@ function renderSettings() {
       </div>
     </div>
 
-    <!-- 6. マスターデータ編集 -->
+    <!-- 6. マスタデータ編集 -->
     <div class="settings-section">
-      <div class="settings-title">🗂️ マスターデータ編集</div>
+      <div class="settings-title">🗂️ マスタデータ編集</div>
       <div class="settings-section-body">
         <div class="master-edit-toggle-row">
           <div>
-            <div class="master-edit-toggle-label">ダイヤマスターを編集</div>
+            <div class="master-edit-toggle-label">ダイヤマスタを編集</div>
             <div class="master-edit-toggle-sub">時刻データを直接変更できます</div>
           </div>
           <label class="toggle-wrap">
@@ -2298,9 +2298,9 @@ function renderSettings() {
               </div>
             </div>
             <div id="master-field-area"></div>
-            <button class="save-btn" style="margin-top:4px" onclick="masterSaveConfirm()">💾 マスターデータを保存</button>
+            <button class="save-btn" style="margin-top:4px" onclick="masterSaveConfirm()">💾 マスタデータを保存</button>
             <button class="master-reset-all-btn" onclick="masterResetAllConfirm()">🔄 起床・出社・到着・帰宅を全リセット</button>
-            <button class="master-init-btn" onclick="masterInitConfirm()">🔁 マスターデータを初期値に戻す</button>
+            <button class="master-init-btn" onclick="masterInitConfirm()">🔁 マスタデータを初期値に戻す</button>
           </div>
         </div>
       </div>
@@ -2311,7 +2311,7 @@ function renderSettings() {
     <br>
   `;
   updateTimeDiffLabels();
-  // マスターフォームが開いている場合は再描画
+  // マスタフォームが開いている場合は再描画
   if (document.getElementById('tog-master-edit')?.checked) {
     _refreshMasterDowBtns();
     _refreshMasterFields();
@@ -2529,7 +2529,7 @@ function pwCancel() {
   if (_pwCancel) _pwCancel();
 }
 
-// ========== マスターデータ編集 ==========
+// ========== マスタデータ編集 ==========
 let MASTER_OVERRIDES = {};
 try { MASTER_OVERRIDES = JSON.parse(localStorage.getItem('masterOverrides') || '{}'); } catch(e) {}
 function saveMasterOverrides() {
@@ -2568,7 +2568,7 @@ const _MASTER_FIELDS2 = [
   { key:'rosen2',   label:'路線', isRosen: true },
 ];
 
-// ===== マスターデータ上書き適用 =====
+// ===== マスタデータ上書き適用 =====
 function applyMasterOverrides() {
   // まずICHIRAN_DATAを元データに完全リセット
   _ICHIRAN_DATA_ORIG.forEach((orig, i) => {
@@ -2623,7 +2623,7 @@ function toggleMasterEdit() {
   if (on) {
     // ONにする時はパスワード確認
     document.getElementById('tog-master-edit').checked = false; // 一旦戻す
-    openPwNumpad('🔒 マスターデータ編集',
+    openPwNumpad('🔒 マスタデータ編集',
       () => {
         document.getElementById('tog-master-edit').checked = true;
         document.getElementById('master-edit-body').style.display = '';
@@ -2833,7 +2833,7 @@ function openMasterDiaNumpad() {
 }
 
 
-// マスター時刻テンキー
+// マスタ時刻テンキー
 let _mtField = null, _mtLabel = '', _mtSeg = 'h', _mtH = '0', _mtM = '00';
 
 function openMasterTimeNumpad(fieldKey, label) {
@@ -2947,7 +2947,7 @@ function masterConfirmOk() {
   if (currentView === 'ichiran') renderIchiran();
 }
 
-// ===== マスターデータ初期化 =====
+// ===== マスタデータ初期化 =====
 function masterInitConfirm() {
   document.getElementById('master-init-confirm-overlay').classList.remove('hidden');
 }
@@ -2964,7 +2964,7 @@ function masterInitExecute() {
   _refreshMasterFields();
   const msg = document.getElementById('save-msg');
   if (msg) {
-    msg.textContent = '🔁 マスターデータを初期値に戻しました';
+    msg.textContent = '🔁 マスタデータを初期値に戻しました';
     msg.style.color = '#818cf8';
     setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
   }
@@ -2972,7 +2972,7 @@ function masterInitExecute() {
   if (currentView === 'ichiran') renderIchiran();
 }
 
-// ===== マスターデータ全削除 =====
+// ===== マスタデータ全削除 =====
 // リセット対象フィールド（出勤・退勤・路線 以外を 00:00 にする）
 const _MASTER_RESET_FIELDS = ['okibo','shukkin','tochaku','kitan','okibo2','shukkin2','tochaku2','kitan2'];
 
@@ -3910,7 +3910,7 @@ setInterval(updateClock, 30000);
   </div>
 </div>
 
-<!-- マスターデータ編集：時刻テンキー -->
+<!-- マスタデータ編集：時刻テンキー -->
 <div id="mt-np-overlay" class="numpad-overlay hidden">
   <div class="master-time-numpad-box">
     <div class="master-time-numpad-title">⏰ 時刻を編集</div>
@@ -3947,13 +3947,13 @@ setInterval(updateClock, 30000);
   </div>
 </div>
 
-<!-- マスターデータ保存確認ダイアログ -->
+<!-- マスタデータ保存確認ダイアログ -->
 <div id="master-confirm-overlay" class="alert-overlay hidden">
   <div class="master-confirm-box">
     <div class="master-confirm-icon">💾</div>
-    <div class="master-confirm-title">マスターデータを保存しますか？</div>
+    <div class="master-confirm-title">マスタデータを保存しますか？</div>
     <div class="master-confirm-sub" id="master-confirm-info"></div>
-    <div class="master-confirm-sub">変更内容をアプリに反映します。<br>元のデータに戻すには「マスターデータを初期値に戻す」を使ってください。</div>
+    <div class="master-confirm-sub">変更内容をアプリに反映します。<br>元のデータに戻すには「マスタデータを初期値に戻す」を使ってください。</div>
     <div class="master-confirm-btns">
       <button class="master-confirm-cancel" onclick="masterConfirmCancel()">Cancel</button>
       <button class="master-confirm-ok" onclick="masterConfirmOk()">OK</button>
@@ -3961,12 +3961,12 @@ setInterval(updateClock, 30000);
   </div>
 </div>
 
-<!-- マスターデータ初期化確認ダイアログ -->
+<!-- マスタデータ初期化確認ダイアログ -->
 <div id="master-init-confirm-overlay" class="alert-overlay hidden">
   <div class="master-confirm-box">
     <div class="master-confirm-icon">🔁</div>
-    <div class="master-confirm-title">マスターデータを初期値に戻しますか？</div>
-    <div class="master-confirm-sub">マスター編集で変更した全データを削除して、アプリの初期値に完全リセットします。<br>この操作は元に戻せません。</div>
+    <div class="master-confirm-title">マスタデータを初期値に戻しますか？</div>
+    <div class="master-confirm-sub">マスタ編集で変更した全データを削除して、アプリの初期値に完全リセットします。<br>この操作は元に戻せません。</div>
     <div class="master-confirm-btns">
       <button class="master-confirm-cancel" onclick="masterInitCancel()">Cancel</button>
       <button class="master-confirm-ok" onclick="masterInitExecute()">🔁 初期値に戻す</button>
@@ -3974,7 +3974,7 @@ setInterval(updateClock, 30000);
   </div>
 </div>
 
-<!-- マスターデータ全削除確認ダイアログ -->
+<!-- マスタデータ全削除確認ダイアログ -->
 <div id="master-reset-confirm-overlay" class="alert-overlay hidden">
   <div class="master-reset-confirm-box">
     <div class="master-reset-confirm-icon">🗑️</div>
@@ -4142,7 +4142,7 @@ function installPWA() {
 
 <script>
 // ── PWA: Service Worker 登録 ──
-const APP_VERSION = '20260621-031';
+const APP_VERSION = '20260621-032';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
