@@ -1595,7 +1595,7 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel) {
       ${shifts.length > 1 ? `<div class="shift-sublabel">${i === 0 ? '中間前半' : '中間後半'}</div>` : ''}
       ${isRinji ? `<div class="rinji-badge">🚨 臨時ダイヤ</div>` : ''}
       ${s.showOkibo ? `<div class="shift-row">
-        <span class="shift-icon">🥱</span>
+        <span class="shift-icon">⏰️</span>
         <span class="shift-label">起床</span>
         <span class="shift-time" style="color:#1a1a1a">${minToTime(okiboMin)}</span>
       </div>` : ''}
@@ -2184,7 +2184,7 @@ function renderSettings() {
         </div>
         <div id="display-items-body" style="display:${s.showDisplayItems ? 'block' : 'none'}">
           <div class="settings-row">
-            <span class="settings-row-label">🥱 起床時刻</span>
+            <span class="settings-row-label">⏰️ 起床時刻</span>
             <button class="item-mode-btn ${s.showOkibo ? 'item-mode-btn-on' : 'item-mode-btn-off'}" onclick="toggleItemBtn('showOkibo',this)">${s.showOkibo ? 'ON' : 'OFF'}</button>
           </div>
           <div class="settings-row">
