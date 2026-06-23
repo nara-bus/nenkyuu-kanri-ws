@@ -186,6 +186,8 @@
   }
   .shift-row:last-of-type { border-bottom: none; }
   .shift-icon { font-size: 18px; min-width: 26px; text-align: center; }
+  .car-icon { display: inline-block; transform: translateY(-4px); }
+  .building-icon { display: inline-block; transform: translateY(-3px); }
   .shift-label { flex: 1; font-size: 13px; color: #5a8a72; font-weight: 500; letter-spacing: 0.02em; }
   .shift-time { font-size: 18px; font-weight: 700; letter-spacing: 0.05em; padding: 4px 10px; }
   /* 出勤時間・ダイヤ番号のタップボタン */
@@ -220,7 +222,7 @@
     padding: 7px 0;
     border-bottom: none;
   }
-  .rosen-icon { font-size: 18px; min-width: 26px; text-align: center; }
+  .rosen-icon { font-size: 18px; min-width: 26px; text-align: center; display: inline-block; transform: translateY(-4px); }
   .rosen-label { font-size: 13px; color: #5a8a72; font-weight: 500; }
   .rosen-val { font-size: 13px; color: #2d8a5e; font-weight: 600; }
   .kyukyu-card {
@@ -1115,6 +1117,7 @@
     color: #2d6e50;
     text-align: left;
   }
+  .ich-rosen-icon { display: inline-block; transform: translateY(-4px); }
 
   /* 中間ダイヤの区切り */
   .ich-middle-sep {
@@ -1600,12 +1603,12 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel) {
         <span class="shift-time" style="color:#1a1a1a">${minToTime(okiboMin)}</span>
       </div>` : ''}
       ${s.showShukkin ? `<div class="shift-row">
-        <span class="shift-icon">🚙</span>
+        <span class="shift-icon car-icon">🚙</span>
         <span class="shift-label">出社（家を出る）</span>
         <span class="shift-time" style="color:#1a1a1a">${minToTime(shusshaMin)}</span>
       </div>` : ''}
       ${s.showTochaku ? `<div class="shift-row">
-        <span class="shift-icon">🏢</span>
+        <span class="shift-icon building-icon">🏢</span>
         <span class="shift-label">到着（会社）</span>
         <span class="shift-time" style="color:#1a1a1a">${minToTime(tochakuMin)}</span>
       </div>` : ''}
@@ -2004,7 +2007,7 @@ function renderIchiran() {
       ? `<div class="ich-time-row" style="grid-template-columns:repeat(${row1.length},1fr)">${row1.map(cell).join('')}</div>` : '';
     const row2Html = row2.length
       ? `<div class="ich-time-row" style="grid-template-columns:repeat(${row2.length},1fr)">${row2.map(cell).join('')}</div>` : '';
-    const row3Html = `<div class="ich-rosen-row3">🚌 ${rs||'—'}</div>`;
+    const row3Html = `<div class="ich-rosen-row3"><span class="ich-rosen-icon">🚌</span> ${rs||'—'}</div>`;
     return `<div class="ich-time-rows">${row1Html}${row2Html}${row3Html}</div>`;
   }
 
@@ -4143,7 +4146,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260622-001';
+const APP_VERSION = '20260623-005';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
