@@ -3323,6 +3323,9 @@ let diaNumpadDateKey = null;
 let diaNumpadVal = '1';
 let diaNumpadOriginal = 1;
 let diaNumpadMode = 'spot'; // 'spot' | 'dia' | 'cycle'
+// true の間は、最初の数字キー入力で「表示中の値」を消してから新規入力を開始する
+// （テンキーを開いた直後・確定後の状態）。C/削除操作をすれば通常の追記モードに戻る。
+let diaNumpadFresh = true;
 
 // スポット変更（予定画面から呼ぶ既存API）
 function openDiaNumpad(dateKey, currentDia) {
@@ -3331,6 +3334,7 @@ function openDiaNumpad(dateKey, currentDia) {
   diaNumpadOriginal = getDiaForDate(new Date(dateKey.replace(/-/g,'/')));
   const _ov = DIA_OVERRIDES[dateKey];
   diaNumpadVal = String((_ov !== undefined ? (typeof _ov === 'object' ? _ov.dia : _ov) : currentDia));
+  diaNumpadFresh = true;
   const d = new Date(dateKey.replace(/-/g,'/'));
   document.getElementById('dia-numpad-title').textContent = 'ダイヤ番号を変更';
   document.getElementById('dia-numpad-date').textContent =
@@ -3346,6 +3350,7 @@ function openDiaNumpadForSetting(type) {
   diaNumpadMode = type;
   diaNumpadDateKey = null;
   diaNumpadVal = String(parseInt(document.getElementById('set-dia').textContent) || SETTINGS.baseDia || 1);
+  diaNumpadFresh = true;
   document.getElementById('dia-numpad-title').textContent = '基準日のダイヤ番号';
   document.getElementById('dia-numpad-date').textContent = '1〜57 の範囲で入力';
   document.getElementById('dia-numpad-reset').style.display = 'none';
@@ -3356,14 +3361,27 @@ function openDiaNumpadForSetting(type) {
 
 function closeDiaNumpad() {
   document.getElementById('dia-numpad-overlay').classList.add('hidden');
+  diaNumpadFresh = true;
 }
 
 function diaNumpadKey(k) {
   const maxVal = 99;
-  if (k === 'C') { diaNumpadVal = ''; }
-  else if (k === 'del') { diaNumpadVal = diaNumpadVal.length > 1 ? diaNumpadVal.slice(0,-1) : ''; }
-  else {
-    const next = diaNumpadVal === '' ? k : diaNumpadVal + k;
+  if (k === 'C') {
+    diaNumpadVal = '';
+    diaNumpadFresh = false;
+  } else if (k === 'del') {
+    if (diaNumpadFresh) {
+      // まだ何も打ってない状態でのdelは、プリセット値を丸ごと消すのと同義にする
+      diaNumpadVal = '';
+      diaNumpadFresh = false;
+    } else {
+      diaNumpadVal = diaNumpadVal.length > 1 ? diaNumpadVal.slice(0,-1) : '';
+    }
+  } else {
+    // フレッシュ状態での最初の数字入力は、表示中の値を消してから打った数字だけにする
+    const base = diaNumpadFresh ? '' : diaNumpadVal;
+    diaNumpadFresh = false;
+    const next = base === '' ? k : base + k;
     let val = parseInt(next);
     if (isNaN(val)) val = 0;
     if (val > maxVal) {
@@ -4151,7 +4169,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260702-001';
+const APP_VERSION = '20260702-002';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
