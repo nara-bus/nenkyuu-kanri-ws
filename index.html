@@ -1733,7 +1733,7 @@ function renderCalendarTab() {
       const diaOv = DIA_OVERRIDES[dateKey0] !== undefined ? ' cal-ov' : '';
 
       if (sched.special) {
-        bodyHtml = `<div class="cal-cell-dia">B${sched.dia}</div><div class="cal-cell-tag cal-tag-special">${sched.special}</div>`;
+        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-special">${sched.special}</div>`;
       } else if (sched.kyukyu) {
         bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">公休</div>`;
       } else if (sched.yobi) {
@@ -3621,7 +3621,12 @@ function cancelRinjiType() {
 
 let _specialDayDateKey = '';
 function selectSpecialDayType(type) {
-  // type: '年休' or '指定公休'（ダイヤ番号は変更しない）
+  // type: '年休' or '指定公休'
+  // ダイヤ番号のスポット上書きが残っていた場合は解除し、本来の（57日ローテーションの）番号に戻す
+  if (DIA_OVERRIDES[_specialDayDateKey] !== undefined) {
+    delete DIA_OVERRIDES[_specialDayDateKey];
+    saveDiaOverrides();
+  }
   SPECIAL_DAY_OVERRIDES[_specialDayDateKey] = type;
   saveSpecialDayOverrides();
   document.getElementById('special-day-type-overlay').classList.add('hidden');
@@ -4146,7 +4151,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260623-006';
+const APP_VERSION = '20260702-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
