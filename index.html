@@ -120,6 +120,11 @@
     overscroll-behavior: contain;
     position: relative;
     padding: 8px 16px 24px;
+    scrollbar-width: none; /* Firefox: スクロールバー分の横幅を予約させない */
+    -ms-overflow-style: none; /* 旧Edge/IE */
+  }
+  .content::-webkit-scrollbar {
+    display: none; /* Chrome/Android WebView系。スクロール自体は引き続き効く */
   }
   .section-label {
     font-size: 11px;
@@ -1811,19 +1816,19 @@ function renderCalendarTab() {
 
   el.innerHTML = `
     <style>
-      .cal-tab-wrap { padding: 6px 4px 24px; margin: 0 -16px; }
-      .cal-nav-row { display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:6px; }
+      .cal-tab-wrap { padding: 10px 4px 24px; margin: 0 -16px; }
+      .cal-nav-row { display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:10px; }
       .cal-nav-btn { border:none; background:#f0f0f0; border-radius:10px; width:38px; height:38px; font-size:18px; font-weight:700; cursor:pointer; }
       .cal-nav-btn:active { background:#e0e0e0; }
       .cal-month-label { font-size:17px; font-weight:800; }
-      .cal-dow-row { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:2px; }
+      .cal-dow-row { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
       .cal-dow-label { text-align:center; font-size:11px; font-weight:700; color:#888; padding-bottom:4px; }
       .cal-dow-label.doy { color:#1a5caa; }
       .cal-dow-label.nch { color:#cc3333; }
       .cal-slider-viewport { overflow:hidden; position:relative; }
       .cal-slider-track { display:flex; align-items:flex-start; gap:20px; will-change:transform; }
       .cal-panel { flex:0 0 auto; box-sizing:border-box; padding:0 8px 24px; display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-      .cal-cell { border-radius:9px; background:linear-gradient(170deg, #ffffff 0%, rgba(255,252,238,0.98) 100%); min-height:58px; padding:3px 3px; position:relative; border:1px solid rgba(100,180,140,0.28); border-bottom:3px solid rgba(70,135,98,0.42); box-shadow:0 5px 0 rgba(80,140,105,0.28), 0 7px 16px rgba(50,100,75,0.16), inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -1px 2px rgba(80,140,105,0.10); transition: transform 0.18s ease, box-shadow 0.18s ease; }
+      .cal-cell { border-radius:9px; background:linear-gradient(170deg, #ffffff 0%, rgba(255,252,238,0.98) 100%); min-height:74px; padding:4px 3px; position:relative; border:1px solid rgba(100,180,140,0.28); border-bottom:3px solid rgba(70,135,98,0.42); box-shadow:0 5px 0 rgba(80,140,105,0.28), 0 7px 16px rgba(50,100,75,0.16), inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -1px 2px rgba(80,140,105,0.10); transition: transform 0.18s ease, box-shadow 0.18s ease; }
       .cal-cell.cal-cell-pressed { transform: translateY(4px) scale(0.97); box-shadow: inset 0 3px 6px rgba(50,90,70,0.32), inset 0 1px 3px rgba(0,0,0,0.16); border-bottom-width: 1px; transition: transform 0.05s ease, box-shadow 0.05s ease; }
       .cal-cell-empty { background:transparent; box-shadow:none; border:none; }
       .cal-cell.doy { background:#dcecfa; }
@@ -4348,7 +4353,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260707-003';
+const APP_VERSION = '20260707-004';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
