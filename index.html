@@ -1690,27 +1690,21 @@ function chk(key) { return (_settingsDraft || SETTINGS)[key] ? 'checked' : ''; }
 // ===== カレンダータブ（月表示＋Googleカレンダー反映） =====
 
 let _calTabDate = new Date(); _calTabDate.setDate(1); _calTabDate.setHours(0,0,0,0);
+const CAL_SLIDE_GAP = 20; // フリック中、月と月の境界に入れる隙間(px)
 
 function _calPrevMonth() { _calTabDate.setMonth(_calTabDate.getMonth() - 1); renderCalendarTab(); }
 function _calNextMonth() { _calTabDate.setMonth(_calTabDate.getMonth() + 1); renderCalendarTab(); }
 
-function renderCalendarTab() {
-  const el = document.getElementById('view-calendar');
-  if (!el) return;
-
-  const y = _calTabDate.getFullYear();
-  const m = _calTabDate.getMonth(); // 0-11
-  const monthLabel = `${y}年${m + 1}月`;
+// 指定した月（monthDate＝その月の1日のDate）の日付セルHTMLを生成する。
+// 前月・当月・翌月の3パネル分をそれぞれ同じロジックで作れるように分離。
+function _calBuildCellsHTML(monthDate) {
+  const y = monthDate.getFullYear();
+  const m = monthDate.getMonth(); // 0-11
 
   const firstDow = (new Date(y, m, 1).getDay() + 6) % 7; // 0=月始まり
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const today = new Date(); today.setHours(0,0,0,0);
   const baseDate = getBaseDate(); baseDate.setHours(0,0,0,0);
-
-  const dowLabels = ['月','火','水','木','金','土','日'];
-  const dowHeaderHtml = dowLabels.map((l, i) =>
-    `<div class="cal-dow-label${i===6?' nch':''}${i===5?' doy':''}">${l}</div>`
-  ).join('');
 
   let cells = '';
   for (let i = 0; i < firstDow; i++) cells += `<div class="cal-cell cal-cell-empty"></div>`;
@@ -1769,6 +1763,29 @@ function renderCalendarTab() {
       ${bodyHtml}
     </div>`;
   }
+  return cells;
+}
+
+function renderCalendarTab() {
+  const el = document.getElementById('view-calendar');
+  if (!el) return;
+
+  const dowLabels = ['月','火','水','木','金','土','日'];
+  const dowHeaderHtml = dowLabels.map((l, i) =>
+    `<div class="cal-dow-label${i===6?' nch':''}${i===5?' doy':''}">${l}</div>`
+  ).join('');
+
+  const curDate  = new Date(_calTabDate);
+  const prevDate = new Date(_calTabDate); prevDate.setMonth(prevDate.getMonth() - 1);
+  const nextDate = new Date(_calTabDate); nextDate.setMonth(nextDate.getMonth() + 1);
+
+  const y = curDate.getFullYear();
+  const m = curDate.getMonth(); // 0-11
+  const monthLabel = `${y}年${m + 1}月`;
+
+  const prevCellsHtml = _calBuildCellsHTML(prevDate);
+  const curCellsHtml  = _calBuildCellsHTML(curDate);
+  const nextCellsHtml = _calBuildCellsHTML(nextDate);
 
   el.innerHTML = `
     <style>
@@ -1777,10 +1794,13 @@ function renderCalendarTab() {
       .cal-nav-btn { border:none; background:#f0f0f0; border-radius:10px; width:38px; height:38px; font-size:18px; font-weight:700; cursor:pointer; }
       .cal-nav-btn:active { background:#e0e0e0; }
       .cal-month-label { font-size:17px; font-weight:800; }
-      .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+      .cal-dow-row { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
       .cal-dow-label { text-align:center; font-size:11px; font-weight:700; color:#888; padding-bottom:4px; }
       .cal-dow-label.doy { color:#1a5caa; }
       .cal-dow-label.nch { color:#cc3333; }
+      .cal-slider-viewport { overflow:hidden; position:relative; }
+      .cal-slider-track { display:flex; align-items:flex-start; gap:20px; will-change:transform; }
+      .cal-panel { flex:0 0 auto; display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
       .cal-cell { border-radius:9px; background:linear-gradient(170deg, #ffffff 0%, rgba(255,252,238,0.98) 100%); min-height:74px; padding:4px 3px; position:relative; border:1px solid rgba(100,180,140,0.28); border-bottom:3px solid rgba(70,135,98,0.42); box-shadow:0 5px 0 rgba(80,140,105,0.28), 0 7px 16px rgba(50,100,75,0.16), inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -1px 2px rgba(80,140,105,0.10); transition: transform 0.18s ease, box-shadow 0.18s ease; }
       .cal-cell.cal-cell-pressed { transform: translateY(4px) scale(0.97); box-shadow: inset 0 3px 6px rgba(50,90,70,0.32), inset 0 1px 3px rgba(0,0,0,0.16); border-bottom-width: 1px; transition: transform 0.05s ease, box-shadow 0.05s ease; }
       .cal-cell-empty { background:transparent; box-shadow:none; border:none; }
@@ -1829,15 +1849,38 @@ function renderCalendarTab() {
         <div class="cal-month-label">${monthLabel}</div>
         <button class="cal-nav-btn" onclick="_calNextMonth()">›</button>
       </div>
-      <div class="cal-grid">
-        ${dowHeaderHtml}
-        ${cells}
+      <div class="cal-dow-row">${dowHeaderHtml}</div>
+      <div class="cal-slider-viewport" id="cal-slider-viewport">
+        <div class="cal-slider-track" id="cal-slider-track">
+          <div class="cal-panel" id="cal-panel-prev">${prevCellsHtml}</div>
+          <div class="cal-panel" id="cal-panel-cur">${curCellsHtml}</div>
+          <div class="cal-panel" id="cal-panel-next">${nextCellsHtml}</div>
+        </div>
       </div>
     </div>
     <div id="cal-day-card-overlay" class="cal-day-card-overlay hidden" onclick="if(event.target===this) closeCalDayCard()">
       <div class="cal-day-card-box" id="cal-day-card-box"></div>
     </div>
   `;
+
+  // ビューポート・トラック・各パネルの幅をpx単位で固定し、当月パネルの実高さに合わせる。
+  // （%とcalc()を毎フレーム計算させるとドラッグ時にカクつくため、pxで一度だけ計算する）
+  const viewport = document.getElementById('cal-slider-viewport');
+  const track = document.getElementById('cal-slider-track');
+  const prevPanel = document.getElementById('cal-panel-prev');
+  const curPanel = document.getElementById('cal-panel-cur');
+  const nextPanel = document.getElementById('cal-panel-next');
+  if (viewport && track && curPanel) {
+    const vw = viewport.clientWidth;
+    const pitch = vw + CAL_SLIDE_GAP; // 1パネル分の移動量（パネル幅＋境界の隙間）
+    track.style.width = (vw * 3 + CAL_SLIDE_GAP * 2) + 'px';
+    [prevPanel, curPanel, nextPanel].forEach(p => { if (p) p.style.width = vw + 'px'; });
+    track.style.transition = 'none';
+    track.style.transform = `translateX(${-pitch}px)`;
+
+    viewport.style.transition = 'none';
+    viewport.style.height = curPanel.offsetHeight + 'px';
+  }
 }
 
 let _calCardOpenDateKey = null;
@@ -3481,36 +3524,138 @@ updateClock();
 renderCalendarTab();
 switchTab('calendar');
 
-// ── 予定タブ：左右フリックで年月切替 ──
+// ── 予定タブ：左右フリックで月を切替（指の動きに追従してリアルタイムにスライド） ──
 (function() {
   const el = document.getElementById('view-calendar');
   if (!el) return;
 
-  let startX = 0, startY = 0, startTime = 0;
+  let startX = 0, startY = 0;
+  let lastX = 0, lastTime = 0;
+  let axis = null;      // 'h'（横スワイプ確定）/ 'v'（縦スクロール）/ null（未確定）
+  let sliding = false;  // スナップ演出（確定アニメーション）中はジェスチャーを無視
+  let vw0 = 0;          // touchstart時点でキャッシュしたビューポート幅(px)。ドラッグ中は読み直さない
+  let pitch0 = 0;       // 1パネル分の移動量(px) = vw0 + CAL_SLIDE_GAP
+  let basePx = 0;       // 現在の基準位置(px)。常に -pitch0
+  let pendingDx = null; // rAFで書き出す前のtransform用オフセット
+  let rafId = null;
+
+  function isCardOpen() {
+    const overlay = document.getElementById('cal-day-card-overlay');
+    return overlay && !overlay.classList.contains('hidden');
+  }
+  function getTrack() { return document.getElementById('cal-slider-track'); }
+  function getViewport() { return document.getElementById('cal-slider-viewport'); }
+
+  function flushTransform() {
+    rafId = null;
+    if (pendingDx === null) return;
+    const track = getTrack();
+    if (track) track.style.transform = `translateX(${basePx + pendingDx}px)`;
+    pendingDx = null;
+  }
 
   el.addEventListener('touchstart', function(e) {
+    if (sliding || isCardOpen()) { axis = null; return; }
     const t = e.touches[0];
-    startX = t.clientX;
+    startX = lastX = t.clientX;
     startY = t.clientY;
-    startTime = Date.now();
+    lastTime = Date.now();
+    axis = null;
+
+    // ビューポート幅はここで一度だけ測って以後使い回す（touchmove中のレイアウト再計算を避ける）
+    const vp = getViewport();
+    vw0 = vp ? vp.clientWidth : el.clientWidth;
+    pitch0 = vw0 + CAL_SLIDE_GAP;
+    basePx = -pitch0;
   }, { passive: true });
 
+  el.addEventListener('touchmove', function(e) {
+    if (sliding || isCardOpen()) return;
+
+    const t = e.touches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+
+    if (axis === null) {
+      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) axis = 'h';
+      else if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) axis = 'v';
+    }
+    if (axis !== 'h') return; // 縦スクロールの可能性がある間はブラウザ標準動作に任せる
+
+    e.preventDefault(); // 横ドラッグ確定後はページの縦バウンス等を抑止
+
+    let clamped = dx;
+    if (clamped > pitch0) clamped = pitch0;
+    if (clamped < -pitch0) clamped = -pitch0;
+
+    // 実際のstyle書き換えは次の描画フレームにまとめる（1タッチイベント毎に書かない）
+    pendingDx = clamped;
+    if (rafId === null) rafId = requestAnimationFrame(flushTransform);
+
+    lastX = t.clientX;
+    lastTime = Date.now();
+  }, { passive: false });
+
   el.addEventListener('touchend', function(e) {
-    // 日付カード（モーダル）表示中はフリック無効
-    const overlay = document.getElementById('cal-day-card-overlay');
-    if (overlay && !overlay.classList.contains('hidden')) return;
+    if (sliding || isCardOpen()) { axis = null; return; }
+    if (axis !== 'h') { axis = null; return; } // ドラッグしてなければ通常のタップとして処理させる
+
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    pendingDx = null;
+
+    const track = getTrack();
+    const viewport = getViewport();
+    if (!track) { axis = null; return; }
 
     const t = e.changedTouches[0];
     const dx = t.clientX - startX;
-    const dy = t.clientY - startY;
-    const dt = Date.now() - startTime;
+    // 直近のtouchmoveからの瞬間速度（px/ms）。小さい移動量でも勢いがあれば確定させる。
+    const dtLast = Math.max(1, Date.now() - lastTime);
+    const velocity = (t.clientX - lastX) / dtLast;
 
-    // 水平方向が主体 / 50px以上 / 400ms以内
-    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.8 || dt > 400) return;
+    const DIST_THRESHOLD = Math.min(90, vw0 * 0.28);
+    const VELOCITY_THRESHOLD = 0.55;
 
-    if (dx < 0) _calNextMonth();
-    else        _calPrevMonth();
-  }, { passive: true });
+    let target = 'cur';
+    if (dx <= -DIST_THRESHOLD || velocity <= -VELOCITY_THRESHOLD) target = 'next';
+    else if (dx >= DIST_THRESHOLD || velocity >= VELOCITY_THRESHOLD) target = 'prev';
+
+    e.preventDefault(); // ドラッグ確定後に余計なclickが発火するのを防ぐ
+
+    sliding = true;
+    track.style.transition = 'transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1)';
+    if (viewport) viewport.style.transition = 'height 0.26s cubic-bezier(0.22, 0.61, 0.36, 1)';
+
+    const finish = () => {
+      track.removeEventListener('transitionend', finish);
+      if (target === 'next') {
+        _calTabDate.setMonth(_calTabDate.getMonth() + 1);
+        renderCalendarTab();
+      } else if (target === 'prev') {
+        _calTabDate.setMonth(_calTabDate.getMonth() - 1);
+        renderCalendarTab();
+      } else {
+        track.style.transition = 'none';
+        track.style.transform = `translateX(${basePx}px)`;
+        if (viewport) viewport.style.transition = 'none';
+      }
+      sliding = false;
+      axis = null;
+    };
+    track.addEventListener('transitionend', finish);
+
+    if (target === 'next') {
+      const nextPanel = document.getElementById('cal-panel-next');
+      if (viewport && nextPanel) viewport.style.height = nextPanel.offsetHeight + 'px';
+      track.style.transform = `translateX(${basePx - pitch0}px)`;
+    } else if (target === 'prev') {
+      const prevPanel = document.getElementById('cal-panel-prev');
+      if (viewport && prevPanel) viewport.style.height = prevPanel.offsetHeight + 'px';
+      track.style.transform = `translateX(${basePx + pitch0}px)`;
+    } else {
+      track.style.transform = `translateX(${basePx}px)`;
+    }
+  }, { passive: false });
 })();
 
 
@@ -4164,7 +4309,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260706-001';
+const APP_VERSION = '20260706-004';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
