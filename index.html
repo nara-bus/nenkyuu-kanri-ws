@@ -1754,7 +1754,8 @@ function _calBuildCellsHTML(monthDate) {
       const diaOv = DIA_OVERRIDES[dateKey0] !== undefined ? ' cal-ov' : '';
 
       if (sched.special) {
-        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-special">${sched.special}</div>`;
+        const specialCls = sched.special === '年休' ? 'cal-tag-nenkyu' : 'cal-tag-special';
+        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag ${specialCls}">${sched.special}</div>`;
       } else if (sched.kyukyu) {
         bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">公休</div>`;
       } else if (sched.yobi) {
@@ -1845,10 +1846,11 @@ function renderCalendarTab() {
       .cal-cell-time-tk { text-align:right; }
       .cal-cell-dia.cal-ov, .cal-cell-time.cal-ov, .cal-cell-tag.cal-ov { color:#ff21a8; }
       .cal-cell-tag { font-size:11px; font-weight:700; margin-top:6px; text-align:center; }
-      .cal-tag-kyukyu { color:#cc3333; font-weight:700; }
-      .cal-tag-yobi { color:#b8860b; }
+      .cal-tag-kyukyu { color:#cc3333; font-weight:700; font-size:12px; }
+      .cal-tag-yobi { color:#b8860b; font-size:12px; }
       .cal-tag-rinji { color:#a04040; font-size:14px; font-weight:800; margin-top:2px; }
       .cal-tag-special { color:#ff21a8; }
+      .cal-tag-nenkyu { color:#ff21a8; font-size:12px; }
       .cal-cell[onclick] { cursor:pointer; }
       .cal-day-card-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:150; display:flex; align-items:center; justify-content:center; padding:16px; }
       .cal-day-card-overlay.hidden { display:none; }
