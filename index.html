@@ -1113,7 +1113,7 @@
   }
   .ich-time-cell-lbl { font-size: 13px; color: #90b0a0; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
   .ich-time-cell-val { font-size: 16px; font-weight: 700; color: #2d4a3e; white-space: nowrap; }
-  .ich-time-cell-val.start { color: #ff5cb8; }
+  .ich-time-cell-val.start { color: #ff6a00; }
   .ich-time-cell-val.taikin { color: #2979ff; }
   .ich-rosen-row {
     padding: 4px 10px 6px;
@@ -1604,7 +1604,7 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel) {
     const overrideMin = SHUKKIN_OVERRIDES[overrideKey];
     const isOverride = overrideMin !== undefined;
     const workStartMin  = isOverride ? overrideMin : timeToMin(sh.shukkinTime);
-    const workStartColor = isOverride ? '#b8355a' : '#ff5cb8';
+    const workStartColor = isOverride ? '#b8355a' : '#ff6a00';
     const shukkinOverrideFlag = isOverride ? ' ✎' : '';
     const taikinOverrideMin = TAIKIN_OVERRIDES[overrideKey];
     const isTaikinOverride = taikinOverrideMin !== undefined;
@@ -4355,7 +4355,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260707-005';
+const APP_VERSION = '20260712-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
