@@ -3281,6 +3281,8 @@ let numpadTargetM = null;  // 分inputEl
 let numpadSeg = 'h';       // 現在編集中: 'h' or 'm'
 let numpadValH = '0';
 let numpadValM = '00';
+// true の間は、最初の数字キー入力で「表示中の値」を消してから新規入力を開始する
+let numpadFreshH = true, numpadFreshM = true;
 
 function openNumpad(hInput, mInput, title) {
   numpadTargetH = hInput;
@@ -3288,6 +3290,8 @@ function openNumpad(hInput, mInput, title) {
   numpadValH = hInput.value || '0';
   numpadValM = String(parseInt(mInput.value) || 0).padStart(2, '0');
   numpadSeg = 'h';
+  numpadFreshH = true;
+  numpadFreshM = true;
   document.getElementById('numpad-title').textContent = title || '時間を設定';
   updateNumpadDisplay();
   selectSeg('h');
@@ -3312,17 +3316,29 @@ function updateNumpadDisplay() {
 
 function numpadKey(k) {
   if (numpadSeg === 'h') {
-    if (k === 'C') { numpadValH = ''; }
-    else if (k === 'del') { numpadValH = numpadValH.length > 1 ? numpadValH.slice(0,-1) : ''; }
+    if (k === 'C') { numpadValH = ''; numpadFreshH = false; }
+    else if (k === 'del') {
+      if (numpadFreshH) { numpadValH = ''; }
+      else { numpadValH = numpadValH.length > 1 ? numpadValH.slice(0,-1) : ''; }
+      numpadFreshH = false;
+    }
     else {
-      const next = numpadValH === '' ? k : numpadValH + k;
+      const base = numpadFreshH ? '' : numpadValH;
+      numpadFreshH = false;
+      const next = base === '' ? k : base + k;
       numpadValH = next.length > 2 ? next.slice(-2) : next;
     }
   } else {
-    if (k === 'C') { numpadValM = ''; }
-    else if (k === 'del') { numpadValM = numpadValM.length > 1 ? numpadValM.slice(0,-1) : ''; }
+    if (k === 'C') { numpadValM = ''; numpadFreshM = false; }
+    else if (k === 'del') {
+      if (numpadFreshM) { numpadValM = ''; }
+      else { numpadValM = numpadValM.length > 1 ? numpadValM.slice(0,-1) : ''; }
+      numpadFreshM = false;
+    }
     else {
-      const next = (numpadValM === '' || numpadValM === '0') ? k : numpadValM + k;
+      const base2 = numpadFreshM ? '' : (numpadValM === '0' ? '' : numpadValM);
+      numpadFreshM = false;
+      const next = base2 === '' ? k : base2 + k;
       let val = parseInt(next);
       if (val > 59) val = 59;
       numpadValM = String(val);
@@ -3733,6 +3749,8 @@ checkDefaultWarning();
 // ===== 出勤時間（勤務開始）臨時変更テンキー =====
 let _skDateKey = null, _skIdx = 0, _skOrigTime = '', _skSeg = 'h';
 let _skH = '0', _skM = '00';
+// true の間は、最初の数字キー入力で「表示中の値」を消してから新規入力を開始する
+let _skFreshH = true, _skFreshM = true;
 
 function openShukkinNumpad(dateKey, idx, origTime) {
   _skDateKey = dateKey;
@@ -3745,6 +3763,8 @@ function openShukkinNumpad(dateKey, idx, origTime) {
   _skH = String(Math.floor(baseMin / 60));
   _skM = String(baseMin % 60).padStart(2, '0');
   _skSeg = 'h';
+  _skFreshH = true;
+  _skFreshM = true;
   var d = new Date(dateKey.replace(/-/g, '/'));
   document.getElementById('sk-np-date').textContent =
     d.toLocaleDateString('ja-JP', {month:'long', day:'numeric', weekday:'short'});
@@ -3763,14 +3783,29 @@ function _skUpdateDisplay() {
 }
 function skKey(k) {
   if (_skSeg === 'h') {
-    if (k === 'C') { _skH = ''; }
-    else if (k === 'del') { _skH = _skH.length > 1 ? _skH.slice(0,-1) : ''; }
-    else { var n = (_skH === '' ? k : _skH + k); _skH = n.length > 2 ? n.slice(-2) : n; }
-  } else {
-    if (k === 'C') { _skM = ''; }
-    else if (k === 'del') { _skM = _skM.length > 1 ? _skM.slice(0,-1) : ''; }
+    if (k === 'C') { _skH = ''; _skFreshH = false; }
+    else if (k === 'del') {
+      if (_skFreshH) { _skH = ''; }
+      else { _skH = _skH.length > 1 ? _skH.slice(0,-1) : ''; }
+      _skFreshH = false;
+    }
     else {
-      var n2 = (_skM === '' || _skM === '0') ? k : _skM + k;
+      var base = _skFreshH ? '' : _skH;
+      _skFreshH = false;
+      var n = (base === '' ? k : base + k);
+      _skH = n.length > 2 ? n.slice(-2) : n;
+    }
+  } else {
+    if (k === 'C') { _skM = ''; _skFreshM = false; }
+    else if (k === 'del') {
+      if (_skFreshM) { _skM = ''; }
+      else { _skM = _skM.length > 1 ? _skM.slice(0,-1) : ''; }
+      _skFreshM = false;
+    }
+    else {
+      var base2 = _skFreshM ? '' : (_skM === '0' ? '' : _skM);
+      _skFreshM = false;
+      var n2 = (base2 === '' ? k : base2 + k);
       var v = parseInt(n2); if (v > 59) v = 59;
       _skM = String(v);
     }
@@ -3842,6 +3877,8 @@ function cancelSpecialDayType() {
 
 // ===== 退勤時間臨時変更テンキー =====
 let _tkDateKey = '', _tkIdx = 0, _tkOrigTime = '', _tkH = '0', _tkM = '00', _tkSeg = 'h';
+// true の間は、最初の数字キー入力で「表示中の値」を消してから新規入力を開始する
+let _tkFreshH = true, _tkFreshM = true;
 function openTaikinNumpad(dateKey, idx, origTime) {
   _tkDateKey = dateKey;
   _tkIdx = idx;
@@ -3853,6 +3890,8 @@ function openTaikinNumpad(dateKey, idx, origTime) {
   _tkH = String(Math.floor(baseMin / 60));
   _tkM = String(baseMin % 60).padStart(2, '0');
   _tkSeg = 'h';
+  _tkFreshH = true;
+  _tkFreshM = true;
   var d = new Date(dateKey.replace(/-/g, '/'));
   document.getElementById('tk-np-date').textContent =
     d.toLocaleDateString('ja-JP', {month:'long', day:'numeric', weekday:'short'});
@@ -3871,14 +3910,29 @@ function _tkUpdateDisplay() {
 }
 function tkKey(k) {
   if (_tkSeg === 'h') {
-    if (k === 'C') { _tkH = ''; }
-    else if (k === 'del') { _tkH = _tkH.length > 1 ? _tkH.slice(0,-1) : ''; }
-    else { var n = (_tkH === '' ? k : _tkH + k); _tkH = n.length > 2 ? n.slice(-2) : n; }
-  } else {
-    if (k === 'C') { _tkM = ''; }
-    else if (k === 'del') { _tkM = _tkM.length > 1 ? _tkM.slice(0,-1) : ''; }
+    if (k === 'C') { _tkH = ''; _tkFreshH = false; }
+    else if (k === 'del') {
+      if (_tkFreshH) { _tkH = ''; }
+      else { _tkH = _tkH.length > 1 ? _tkH.slice(0,-1) : ''; }
+      _tkFreshH = false;
+    }
     else {
-      var n2 = (_tkM === '' || _tkM === '0') ? k : _tkM + k;
+      var base = _tkFreshH ? '' : _tkH;
+      _tkFreshH = false;
+      var n = (base === '' ? k : base + k);
+      _tkH = n.length > 2 ? n.slice(-2) : n;
+    }
+  } else {
+    if (k === 'C') { _tkM = ''; _tkFreshM = false; }
+    else if (k === 'del') {
+      if (_tkFreshM) { _tkM = ''; }
+      else { _tkM = _tkM.length > 1 ? _tkM.slice(0,-1) : ''; }
+      _tkFreshM = false;
+    }
+    else {
+      var base2 = _tkFreshM ? '' : (_tkM === '0' ? '' : _tkM);
+      _tkFreshM = false;
+      var n2 = (base2 === '' ? k : base2 + k);
       var v = parseInt(n2); if (v > 59) v = 59;
       _tkM = String(v);
     }
@@ -4355,7 +4409,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260712-001';
+const APP_VERSION = '20260712-003';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
