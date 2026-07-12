@@ -259,7 +259,7 @@
   }
   .kyukyu-icon { font-size: 22px; }
   .kyukyu-text { font-size: 18px; font-weight: 700; color: #e03050; }
-  .yobi-text { font-size: 18px; font-weight: 700; color: #6a9e85; }
+  .yobi-text { font-size: 18px; font-weight: 700; color: #2d7a50; }
   .footer {
     flex: 0 0 auto;
     text-align: center;
@@ -1035,7 +1035,7 @@
   }
   .ich-card-preview .pv-time { font-weight: 700; color: #3a6e50; }
   .ich-card-preview .pv-kyukyu { color: #e03a3a; font-weight: 700; }
-  .ich-card-preview .pv-yobi { color: #3a6e50; font-weight: 700; }
+  .ich-card-preview .pv-yobi { color: #2d7a50; font-weight: 700; }
 
   .ich-card-chevron {
     font-size: 12px; color: #90b8a0;
@@ -1585,7 +1585,10 @@ function calcTime(baseTime, offsetMin) {
 }
 
 function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel) {
-  if (specialLabel) return `<div class="kyukyu-card"><span class="kyukyu-text" style="color:#ff21a8">${specialLabel}</span></div>`;
+  if (specialLabel) {
+    const label = specialLabel === '年休' ? '年　休' : specialLabel;
+    return `<div class="kyukyu-card"><span class="kyukyu-text" style="color:#ff21a8">${label}</span></div>`;
+  }
   if (isYobi) return `<div class="kyukyu-card"><span class="yobi-text">予　備</span></div>`;
   if (isKyukyu) {
     return `<div class="kyukyu-card"><span class="kyukyu-icon">🏖️</span><span class="kyukyu-text">公　休</span></div>`;
@@ -1847,7 +1850,7 @@ function renderCalendarTab() {
       .cal-cell-dia.cal-ov, .cal-cell-time.cal-ov, .cal-cell-tag.cal-ov { color:#ff21a8; }
       .cal-cell-tag { font-size:11px; font-weight:700; margin-top:6px; text-align:center; }
       .cal-tag-kyukyu { color:#cc3333; font-weight:700; font-size:12px; }
-      .cal-tag-yobi { color:#b8860b; font-size:12px; }
+      .cal-tag-yobi { color:#2d7a50; font-size:12px; }
       .cal-tag-rinji { color:#a04040; font-size:14px; font-weight:800; margin-top:2px; }
       .cal-tag-special { color:#ff21a8; }
       .cal-tag-nenkyu { color:#ff21a8; font-size:12px; }
@@ -4409,7 +4412,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260712-003';
+const APP_VERSION = '20260712-008';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
