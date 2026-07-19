@@ -1866,7 +1866,7 @@ function renderCalendarTab() {
         50% { border-color:#4fcf90; border-bottom-color:#4fcf90; box-shadow:0 5px 0 rgba(80,140,105,0.28), 0 7px 16px rgba(50,100,75,0.16), inset 0 0 0 1.5px #4fcf90, 0 0 7px 1px rgba(79,207,144,0.5); }
       }
       .cal-cell-date { font-size:13px; font-weight:700; color:#666; display:flex; align-items:center; justify-content:space-between; }
-      .cal-cell-type-badge { font-size:8px; font-weight:700; padding:1px 4px; border-radius:99px; }
+      .cal-cell-type-badge { font-size:9px; font-weight:700; padding:1px 4px; border-radius:99px; }
       .cal-cell-dia { font-size:14px; font-weight:800; color:#2d7a50; margin-top:2px; text-align:center; }
       .cal-cell-time { font-size:10px; color:#555; }
       .cal-cell-time-tk { text-align:right; }
@@ -4435,7 +4435,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260719-020';
+const APP_VERSION = '20260719-021';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
