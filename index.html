@@ -72,15 +72,17 @@
     line-height: 1;
   }
   .tab-bar {
+    flex: 0 0 auto;
     display: flex;
     gap: 6px;
-    background: rgba(255,255,255,0.18);
+    background: rgba(160,215,190,0.94);
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
-    border-radius: 16px;
+    border-radius: 0;
     padding: 5px;
-    margin-bottom: 14px;
-    border: 1px solid rgba(255,255,255,0.45);
+    margin: 6px 0 0;
+    padding-bottom: calc(5px + env(safe-area-inset-bottom, 0px));
+    border: 1px solid rgba(80,160,120,0.2);
     box-shadow:
       0 2px 12px rgba(60,120,90,0.10),
       inset 0 1px 0 rgba(255,255,255,0.6);
@@ -88,29 +90,49 @@
   }
   .tab-btn {
     flex: 1;
-    padding: 9px 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: 0;
+    min-height: 46px;
     border-radius: 11px;
     border: none;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 15px;
     font-family: inherit;
     font-weight: 600;
     color: rgba(60,110,85,0.55);
     background: transparent;
-    transition: color 0.25s, background 0.25s, box-shadow 0.25s;
+    transition: color 0.25s;
     position: relative;
     letter-spacing: 0.05em;
   }
+  .tab-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    border-radius: 0;
+    transition: background 0.25s, box-shadow 0.25s;
+  }
   .tab-btn.active {
-    background: rgba(255,255,255,0.72);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     color: #1e5c3f;
     font-weight: 700;
-    box-shadow:
-      0 2px 8px rgba(60,120,85,0.15),
-      0 1px 2px rgba(60,120,85,0.08),
-      inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+  @keyframes tabGlow {
+    0% {
+      text-shadow: 0 0 0 rgba(45,140,100,0);
+    }
+    45% {
+      text-shadow: 0 0 10px rgba(45,140,100,0.9), 0 0 18px rgba(45,140,100,0.5);
+    }
+    100% {
+      text-shadow: 0 0 0 rgba(45,140,100,0);
+    }
+  }
+  .tab-btn.active .tab-label {
+    border-bottom: 3px solid #1e5c3f;
+    animation: tabGlow 1.3s ease-out;
   }
   .content {
     flex: 1 1 auto;
@@ -1180,11 +1202,6 @@
       <div class="header-time" id="headerTime"></div>
     </div>
   </div>
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('calendar')">🗓️ 予定</button>
-    <button class="tab-btn" onclick="switchTab('ichiran')">📄 一覧表</button>
-    <button class="tab-btn" onclick="switchTab('settings')">⚙️ 設定</button>
-  </div>
 </div>
 
 <div class="content">
@@ -1194,6 +1211,12 @@
 </div>
 
 <div class="footer">Bダイヤ 2026.4.1 ／ 57日サイクル（設定画面で基準日・ダイヤ番号を設定）</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('calendar')"><span class="tab-label">🗓️ 予定</span></button>
+  <button class="tab-btn" onclick="switchTab('ichiran')"><span class="tab-label">📄 一覧表</span></button>
+  <button class="tab-btn" onclick="switchTab('settings')"><span class="tab-label">⚙️ 設定</span></button>
+</div>
 
 <script>
 const ICHIRAN_DATA = [
@@ -4412,7 +4435,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260712-008';
+const APP_VERSION = '20260719-019';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
