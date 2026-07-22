@@ -1970,7 +1970,7 @@ function renderCalendarTab() {
       .cal-day-card-header { display:flex; align-items:center; justify-content:center; margin-bottom:4px; position:relative; min-height:38px; }
       .cal-day-card-date { font-size:20px; font-weight:800; }
       .cal-day-card-dow { font-size:13px; font-weight:700; margin-left:0; }
-      .cal-day-card-dow-ghost { font-size:13px; font-weight:700; margin-right:0; visibility:hidden; }
+      .cal-day-card-mirror { visibility:hidden; }
       .cal-day-card-nav-btn {
         position:absolute; top:50%; transform:translateY(-50%);
         padding:2px 12px; border-radius:9px; font-size:13px; font-weight:700;
@@ -2081,10 +2081,12 @@ function openCalDayCard(dateKey, keepOrigin) {
   box.innerHTML = `
     <div class="cal-day-card-header">
       ${navHtml}
-      <span class="cal-day-card-dow-ghost" aria-hidden="true">（${dow}）</span>
-      <span class="cal-day-card-date">${parts[1]}/${parts[2]}</span>
+      <span class="cal-day-card-mirror" aria-hidden="true"><span class="cal-day-card-date">${String(parts[2]).slice(1)}</span><span class="cal-day-card-dow">（${dow}）</span></span>
+      <span class="cal-day-card-date">${parts[1]}/</span><span class="cal-day-card-date">${String(parts[2])[0]}</span><span class="cal-day-card-date">${String(parts[2]).slice(1)}</span>
       <span class="cal-day-card-dow" style="color:${dowColor}">（${dow}）</span>
+      <span class="cal-day-card-mirror" aria-hidden="true"><span class="cal-day-card-date">${parts[1]}/</span></span>
     </div>
+    
     <div class="cal-day-card-dia-row">
       <button class="dia-tag${isDiaOverride ? ' dia-override' : ''}"
         onclick="openDiaNumpad('${dateKey}', ${sched.dia})"
@@ -4575,7 +4577,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260722-015';
+const APP_VERSION = '20260722-019';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
