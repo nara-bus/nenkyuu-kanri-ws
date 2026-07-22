@@ -233,6 +233,7 @@
   .building-icon { display: inline-block; transform: translateY(-3px); }
   .shift-label { flex: 1; font-size: 13px; color: #5a8a72; font-weight: 500; letter-spacing: 0.02em; }
   .shift-time { font-size: 18px; font-weight: 700; letter-spacing: 0.05em; padding: 4px 10px; }
+  .yoku-prefix { font-size: 0.85em; font-weight: 700; position: relative; top: -0.05em; }
   /* 出勤時間・ダイヤ番号のタップボタン */
   .shukkin-btn {
     display: inline-flex; align-items: center; gap: 3px;
@@ -1645,6 +1646,11 @@ function _boundaryFromSchedule(sched, wantLast) {
 }
 
 function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSched, nextSched) {
+  // カード内の時刻表示：先頭の「翌」だけ数字(HH:MM)と同じ見た目のサイズに縮小して表示
+  function cardTime(min) {
+    const t = minToTime(min);
+    return t.startsWith('翌') ? `<span class="yoku-prefix">翌</span>${t.slice(1)}` : t;
+  }
   if (specialLabel) {
     const label = specialLabel === '年休' ? '年　休' : specialLabel;
     return `<div class="kyukyu-card"><span class="kyukyu-text" style="color:#ff21a8">${label}</span></div>`;
@@ -1718,32 +1724,32 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSch
       ${s.showOkibo ? `<div class="shift-row">
         <span class="shift-icon">⏰️</span>
         <span class="shift-label">起床</span>
-        <span class="shift-time" style="color:#1a1a1a">${minToTime(okiboMin)}</span>
+        <span class="shift-time" style="color:#1a1a1a">${cardTime(okiboMin)}</span>
       </div>` : ''}
       ${s.showShukkin ? `<div class="shift-row">
         <span class="shift-icon car-icon">🚙</span>
         <span class="shift-label">出社（家を出る）</span>
-        <span class="shift-time" style="color:#1a1a1a">${minToTime(shusshaMin)}</span>
+        <span class="shift-time" style="color:#1a1a1a">${cardTime(shusshaMin)}</span>
       </div>` : ''}
       ${s.showTochaku ? `<div class="shift-row">
         <span class="shift-icon building-icon">🏢</span>
         <span class="shift-label">到着（会社）</span>
-        <span class="shift-time" style="color:#1a1a1a">${minToTime(tochakuMin)}</span>
+        <span class="shift-time" style="color:#1a1a1a">${cardTime(tochakuMin)}</span>
       </div>` : ''}
       ${s.showShukkinTime ? `<div class="shift-row">
         <span class="shift-icon">▶️</span>
         <span class="shift-label">出勤時間（${intervalBeforeText}）</span>
-        <button class="shukkin-btn${isOverride ? ' override' : ''}" style="color:${workStartColor}" onclick="openShukkinNumpad('${dateKey}',${shiftIdx},'${sh.shukkinTime}')">${minToTime(workStartMin)}${shukkinOverrideFlag}</button>
+        <button class="shukkin-btn${isOverride ? ' override' : ''}" style="color:${workStartColor}" onclick="openShukkinNumpad('${dateKey}',${shiftIdx},'${sh.shukkinTime}')">${cardTime(workStartMin)}${shukkinOverrideFlag}</button>
       </div>` : ''}
       ${s.showTaikinTime ? `<div class="shift-row">
         <span class="shift-icon">⏹️</span>
         <span class="shift-label">退勤時間（${intervalAfterText}）</span>
-        <button class="shukkin-btn${isTaikinOverride ? ' override' : ''}" style="color:${taikinColor}" onclick="openTaikinNumpad('${dateKey}',${shiftIdx},'${sh.taikinTime}')">${minToTime(taikinTimeMin)}${taikinOverrideFlag}</button>
+        <button class="shukkin-btn${isTaikinOverride ? ' override' : ''}" style="color:${taikinColor}" onclick="openTaikinNumpad('${dateKey}',${shiftIdx},'${sh.taikinTime}')">${cardTime(taikinTimeMin)}${taikinOverrideFlag}</button>
       </div>` : ''}
       ${s.showKikaku ? `<div class="shift-row">
         <span class="shift-icon">🏠</span>
         <span class="shift-label">帰宅（家に到着）</span>
-        <span class="shift-time" style="color:#1a1a1a">${minToTime(kikakuMin)}</span>
+        <span class="shift-time" style="color:#1a1a1a">${cardTime(kikakuMin)}</span>
       </div>` : ''}
       ${sh.rosen !== undefined ? `<div class="rosen-row"><span class="rosen-icon">🚌</span><span class="rosen-label">路線:</span><span class="rosen-val">${sh.rosen || '—'}</span></div>` : ''}
     </div>`;
@@ -1950,9 +1956,24 @@ function renderCalendarTab() {
       .cal-day-card-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:150; display:flex; align-items:center; justify-content:center; padding:16px; }
       .cal-day-card-overlay.hidden { display:none; }
       .cal-day-card-box { background:#fff; border-radius:16px; max-width:340px; width:100%; max-height:80vh; overflow-y:auto; padding:18px 16px 16px; box-shadow:0 10px 40px rgba(0,0,0,0.25); }
-      .cal-day-card-header { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
-      .cal-day-card-date { font-size:18px; font-weight:800; }
+      .cal-day-card-header { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px; position:relative; min-height:38px; }
+      .cal-day-card-date { font-size:20px; font-weight:800; }
       .cal-day-card-dow { font-size:13px; font-weight:700; }
+      .cal-day-card-nav-btn {
+        position:absolute; top:50%; transform:translateY(-50%);
+        padding:4px 12px; border-radius:9px; font-size:13px; font-weight:700;
+        color:#0b7285; cursor:pointer; white-space:nowrap;
+        font-family:inherit; transition:all 0.12s ease;
+        background: linear-gradient(170deg, #fffae8 0%, #f5edcc 60%, #ede0b0 100%);
+        border: 1px solid #e0d4a0;
+        box-shadow: 0 4px 0 #c8b878, 0 6px 10px rgba(160,130,40,0.25);
+      }
+      .cal-day-card-nav-btn:active {
+        box-shadow: 0 1px 0 #c8b878, inset 0 2px 4px rgba(0,0,0,0.12);
+        transform: translateY(calc(-50% + 3px));
+      }
+      .cal-day-card-nav-btn.left { left:0; }
+      .cal-day-card-nav-btn.right { right:0; }
       .cal-day-card-dia-row { text-align:center; margin-bottom:10px; }
       .cal-day-card-dia-row .dia-tag { font-size:18px; }
       .cal-day-card-close { margin-top:14px; width:100%; padding:12px; border:none; border-radius:10px; background:#eee; color:#333; font-size:14px; font-weight:700; cursor:pointer; }
@@ -2008,6 +2029,7 @@ function renderCalendarTab() {
 }
 
 let _calCardOpenDateKey = null;
+let _calCardOriginDateKey = null;
 
 function _calCellTap(el, dateKey) {
   el.classList.add('cal-cell-pressed');
@@ -2016,7 +2038,8 @@ function _calCellTap(el, dateKey) {
     openCalDayCard(dateKey);
   }, 130);
 }
-function openCalDayCard(dateKey) {
+function openCalDayCard(dateKey, keepOrigin) {
+  if (!keepOrigin) _calCardOriginDateKey = dateKey;
   _calCardOpenDateKey = dateKey;
   const parts = dateKey.split('-').map(Number);
   const date = new Date(parts[0], parts[1] - 1, parts[2]);
@@ -2027,10 +2050,24 @@ function openCalDayCard(dateKey) {
   const origDia = getDiaForDate(date);
   const diaLabel = isDiaOverride ? `<span style="color:#2d7a50">B${origDia}→</span>B${sched.dia}` : `B${sched.dia}`;
 
+  // ナビゲーションボタン：元の日（初回オープン日）なら「前日／翌日」、
+  // 前日側へ移動していれば右詰めの「戻る」、翌日側へ移動していれば左詰めの「戻る」のみ表示。
+  let navHtml = '';
+  if (dateKey === _calCardOriginDateKey) {
+    navHtml = `
+      <button class="cal-day-card-nav-btn left" onclick="_calDayCardNav(-1)">前日</button>
+      <button class="cal-day-card-nav-btn right" onclick="_calDayCardNav(1)">翌日</button>`;
+  } else if (dateKey < _calCardOriginDateKey) {
+    navHtml = `<button class="cal-day-card-nav-btn right" onclick="_calDayCardGoBack()">戻る</button>`;
+  } else {
+    navHtml = `<button class="cal-day-card-nav-btn left" onclick="_calDayCardGoBack()">戻る</button>`;
+  }
+
   const box = document.getElementById('cal-day-card-box');
   if (!box) return;
   box.innerHTML = `
     <div class="cal-day-card-header">
+      ${navHtml}
       <span class="cal-day-card-date">${parts[1]}/${parts[2]}</span>
       <span class="cal-day-card-dow" style="color:${dowColor}">（${dow}）</span>
     </div>
@@ -2045,8 +2082,21 @@ function openCalDayCard(dateKey) {
   document.getElementById('cal-day-card-overlay').classList.remove('hidden');
 }
 
+function _calDayCardNav(deltaDays) {
+  if (!_calCardOpenDateKey) return;
+  const parts = _calCardOpenDateKey.split('-').map(Number);
+  const date = new Date(parts[0], parts[1] - 1, parts[2]);
+  const newKey = getDateKey(addDays(date, deltaDays));
+  openCalDayCard(newKey, true);
+}
+
+function _calDayCardGoBack() {
+  if (_calCardOriginDateKey) openCalDayCard(_calCardOriginDateKey, true);
+}
+
 function closeCalDayCard() {
   _calCardOpenDateKey = null;
+  _calCardOriginDateKey = null;
   const ov = document.getElementById('cal-day-card-overlay');
   if (ov) ov.classList.add('hidden');
 }
@@ -2055,7 +2105,7 @@ function closeCalDayCard() {
 function _calRefreshAfterEdit() {
   const reopenKey = _calCardOpenDateKey;
   renderCalendarTab();
-  if (reopenKey) openCalDayCard(reopenKey);
+  if (reopenKey) openCalDayCard(reopenKey, true);
 }
 
 
@@ -4504,7 +4554,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260722-001';
+const APP_VERSION = '20260722-007';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
