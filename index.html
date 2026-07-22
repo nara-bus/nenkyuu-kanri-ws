@@ -1607,7 +1607,44 @@ function calcTime(baseTime, offsetMin) {
   return base + offsetMin;
 }
 
-function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel) {
+// 分数の差分を "H:MM" の時間表示に変換（前後シフトとの間隔表示用）
+function minToDuration(min) {
+  if (min === null || min === undefined || isNaN(min)) return '—';
+  const total = Math.round(min);
+  const sign = total < 0 ? '-' : '';
+  const abs = Math.abs(total);
+  const hh = Math.floor(abs / 60);
+  const mm = String(abs % 60).padStart(2, '0');
+  return `${sign}${hh}:${mm}`;
+}
+
+// 日付をn日ずらす
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+// 隣接する日のスケジュールから境界時刻（またはラベル）を取得
+// wantLast=true: その日の最後のシフトの退勤時刻／false: その日の最初のシフトの出勤時刻
+function _boundaryFromSchedule(sched, wantLast) {
+  if (!sched) return { label: null };
+  if (sched.special) return { label: sched.special };
+  if (sched.kyukyu) return { label: '公休' };
+  if (sched.yobi) return { label: '予備' };
+  if (!sched.shifts || !sched.shifts.length) return { label: null };
+  const bIdx = wantLast ? sched.shifts.length - 1 : 0;
+  const bSh = sched.shifts[bIdx];
+  const bKey = (bSh._dateKey || '') + '_' + bIdx;
+  if (wantLast) {
+    const ov = TAIKIN_OVERRIDES[bKey];
+    return { min: ov !== undefined ? ov : timeToMin(bSh.taikinTime) };
+  }
+  const ov = SHUKKIN_OVERRIDES[bKey];
+  return { min: ov !== undefined ? ov : timeToMin(bSh.shukkinTime) };
+}
+
+function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSched, nextSched) {
   if (specialLabel) {
     const label = specialLabel === '年休' ? '年　休' : specialLabel;
     return `<div class="kyukyu-card"><span class="kyukyu-text" style="color:#ff21a8">${label}</span></div>`;
@@ -1642,6 +1679,38 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel) {
     const tochakuMin    = workStartMin !== null ? workStartMin - arrive : null;
     const kikakuMin     = taikinTimeMin !== null ? taikinTimeMin + retMin : null;
 
+    // ===== 前後シフト（同日内の別シフト、または前日／翌日）との間隔 =====
+    let leftBoundary;
+    if (i > 0) {
+      const prevSh = shifts[i - 1];
+      const prevKey = (prevSh._dateKey || '') + '_' + (i - 1);
+      const ov = TAIKIN_OVERRIDES[prevKey];
+      leftBoundary = { min: ov !== undefined ? ov : timeToMin(prevSh.taikinTime) };
+    } else {
+      const b = _boundaryFromSchedule(prevSched, true);
+      leftBoundary = b.label ? b : { min: (b.min !== null && b.min !== undefined) ? b.min - 1440 : null };
+    }
+    let rightBoundary;
+    if (i < shifts.length - 1) {
+      const nextSh = shifts[i + 1];
+      const nextKey = (nextSh._dateKey || '') + '_' + (i + 1);
+      const ov = SHUKKIN_OVERRIDES[nextKey];
+      rightBoundary = { min: ov !== undefined ? ov : timeToMin(nextSh.shukkinTime) };
+    } else {
+      const b = _boundaryFromSchedule(nextSched, false);
+      rightBoundary = b.label ? b : { min: (b.min !== null && b.min !== undefined) ? b.min + 1440 : null };
+    }
+    const intervalBeforeText = leftBoundary.label
+      ? leftBoundary.label
+      : (workStartMin !== null && leftBoundary.min !== null && leftBoundary.min !== undefined)
+        ? '⏳' + minToDuration(workStartMin - leftBoundary.min)
+        : '—';
+    const intervalAfterText = rightBoundary.label
+      ? rightBoundary.label
+      : (taikinTimeMin !== null && rightBoundary.min !== null && rightBoundary.min !== undefined)
+        ? '⏳' + minToDuration(rightBoundary.min - taikinTimeMin)
+        : '—';
+
     return `
     <div class="shift-card">
       ${shifts.length > 1 ? `<div class="shift-sublabel">${i === 0 ? '中間前半' : '中間後半'}</div>` : ''}
@@ -1663,12 +1732,12 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel) {
       </div>` : ''}
       ${s.showShukkinTime ? `<div class="shift-row">
         <span class="shift-icon">▶️</span>
-        <span class="shift-label">出勤時間（勤務開始）</span>
+        <span class="shift-label">出勤時間（${intervalBeforeText}）</span>
         <button class="shukkin-btn${isOverride ? ' override' : ''}" style="color:${workStartColor}" onclick="openShukkinNumpad('${dateKey}',${shiftIdx},'${sh.shukkinTime}')">${minToTime(workStartMin)}${shukkinOverrideFlag}</button>
       </div>` : ''}
       ${s.showTaikinTime ? `<div class="shift-row">
         <span class="shift-icon">⏹️</span>
-        <span class="shift-label">退勤時間（勤務終了）</span>
+        <span class="shift-label">退勤時間（${intervalAfterText}）</span>
         <button class="shukkin-btn${isTaikinOverride ? ' override' : ''}" style="color:${taikinColor}" onclick="openTaikinNumpad('${dateKey}',${shiftIdx},'${sh.taikinTime}')">${minToTime(taikinTimeMin)}${taikinOverrideFlag}</button>
       </div>` : ''}
       ${s.showKikaku ? `<div class="shift-row">
@@ -1970,7 +2039,7 @@ function openCalDayCard(dateKey) {
         onclick="openDiaNumpad('${dateKey}', ${sched.dia})"
         title="タップでダイヤ番号を変更">${diaLabel}${isDiaOverride ? ' ✎' : ''}</button>
     </div>
-    ${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji, sched.special)}
+    ${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji, sched.special, getSchedule(addDays(date, -1)), getSchedule(addDays(date, 1)))}
     <button class="cal-day-card-close" onclick="closeCalDayCard()">閉じる</button>
   `;
   document.getElementById('cal-day-card-overlay').classList.remove('hidden');
@@ -4435,7 +4504,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260719-023';
+const APP_VERSION = '20260722-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
