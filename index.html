@@ -3995,11 +3995,15 @@ function skOk() {
   }
   var newMin = h * 60 + m;
   var origMin = timeToMin(_skOrigTime);
-  // 翌日時刻(1440+)の場合は同じ時:分で一致判定（テンキーは0〜23時のみ入力可）
-  var origMinNorm = origMin !== null ? origMin % 1440 : null;
   var okey = _skDateKey + '_' + _skIdx;
-  if (newMin === origMinNorm) { delete SHUKKIN_OVERRIDES[okey]; }
-  else { SHUKKIN_OVERRIDES[okey] = newMin; }
+
+  // テンキーは0〜23時のみ入力可のため、元の出勤時刻がもともと翌日扱い（+表記）だった場合は
+  // 変更後も翌日の時刻として扱う（例: 元が+0:41 → 翌日のまま維持）
+  var isOrigNextDay = origMin !== null && origMin >= 1440;
+  var adjustedMin = newMin + (isOrigNextDay ? 1440 : 0);
+
+  if (origMin !== null && adjustedMin === origMin) { delete SHUKKIN_OVERRIDES[okey]; }
+  else { SHUKKIN_OVERRIDES[okey] = adjustedMin; }
   saveShukkinOverrides();
   document.getElementById('sk-np-overlay').classList.add('hidden');
   _calRefreshAfterEdit();
@@ -4126,11 +4130,23 @@ function tkOk() {
   }
   var newMin = h * 60 + m;
   var origMin = timeToMin(_tkOrigTime);
-  // 翌日時刻(1440+)の場合は同じ時:分で一致判定（テンキーは0〜23時のみ入力可）
-  var origMinNorm = origMin !== null ? origMin % 1440 : null;
   var okey = _tkDateKey + '_' + _tkIdx;
-  if (newMin === origMinNorm) { delete TAIKIN_OVERRIDES[okey]; }
-  else { TAIKIN_OVERRIDES[okey] = newMin; }
+
+  // テンキーは0〜23時のみ入力可のため、出勤時刻（時計時刻）より前の退勤時刻は
+  // 日をまたいだ翌日の時刻とみなして +1440分する（例: 出勤17:30・退勤0:50 → 翌0:50）
+  var dParts = _tkDateKey.split('-').map(Number);
+  var sched = getSchedule(new Date(dParts[0], dParts[1] - 1, dParts[2]));
+  var sh = sched.shifts && sched.shifts[_tkIdx];
+  var startMin = null;
+  if (sh) {
+    var skOv = SHUKKIN_OVERRIDES[_tkDateKey + '_' + _tkIdx];
+    startMin = skOv !== undefined ? skOv : timeToMin(sh.shukkinTime);
+  }
+  var startMinNorm = startMin !== null ? ((startMin % 1440) + 1440) % 1440 : null;
+  var adjustedMin = (startMinNorm !== null && newMin < startMinNorm) ? newMin + 1440 : newMin;
+
+  if (origMin !== null && adjustedMin === origMin) { delete TAIKIN_OVERRIDES[okey]; }
+  else { TAIKIN_OVERRIDES[okey] = adjustedMin; }
   saveTaikinOverrides();
   document.getElementById('tk-np-overlay').classList.add('hidden');
   _calRefreshAfterEdit();
@@ -4577,7 +4593,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260722-019';
+const APP_VERSION = '20260722-020';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
