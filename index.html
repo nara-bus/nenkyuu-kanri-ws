@@ -1499,6 +1499,17 @@ function saveSpecialDayOverrides() {
   try { localStorage.setItem('specialDayOverrides', JSON.stringify(SPECIAL_DAY_OVERRIDES)); } catch(e) {}
 }
 
+// ダイヤ番号の変更（スポット変更／臨時ダイヤ／年休・指定公休）は最優先。
+// その日の出勤・退勤の臨時変更（時刻上書き）は古いダイヤに紐づくものなので一緒に解除する。
+function _clearShukkinTaikinOverridesForDate(dateKey) {
+  delete SHUKKIN_OVERRIDES[dateKey + '_0'];
+  delete SHUKKIN_OVERRIDES[dateKey + '_1'];
+  delete TAIKIN_OVERRIDES[dateKey + '_0'];
+  delete TAIKIN_OVERRIDES[dateKey + '_1'];
+  saveShukkinOverrides();
+  saveTaikinOverrides();
+}
+
 // DIADATAの時刻文字列（24:xx / 25:xx）をSCHEDULES形式（+00:xx）に変換
 function _convTime(t) {
   if (!t) return null;
@@ -3639,14 +3650,9 @@ function diaNumpadReset() {
   delete DIA_OVERRIDES[diaNumpadDateKey];
   delete SPECIAL_DAY_OVERRIDES[diaNumpadDateKey];
   // ダイヤを元に戻すので、同じ日の出勤・退勤の臨時変更も一緒に元に戻す
-  delete SHUKKIN_OVERRIDES[diaNumpadDateKey + '_0'];
-  delete SHUKKIN_OVERRIDES[diaNumpadDateKey + '_1'];
-  delete TAIKIN_OVERRIDES[diaNumpadDateKey + '_0'];
-  delete TAIKIN_OVERRIDES[diaNumpadDateKey + '_1'];
+  _clearShukkinTaikinOverridesForDate(diaNumpadDateKey);
   saveDiaOverrides();
   saveSpecialDayOverrides();
-  saveShukkinOverrides();
-  saveTaikinOverrides();
   closeDiaNumpad();
   _calRefreshAfterEdit();
 }
@@ -3693,10 +3699,18 @@ function diaNumpadOk() {
         delete SPECIAL_DAY_OVERRIDES[diaNumpadDateKey];
         saveSpecialDayOverrides();
       }
+      // 変更前の実効ダイヤ番号（override中ならその値、無ければ本来のローテーション番号）
+      const _prevOv = DIA_OVERRIDES[diaNumpadDateKey];
+      const prevEffectiveDia = _prevOv !== undefined ? (typeof _prevOv === 'object' ? _prevOv.dia : _prevOv) : diaNumpadOriginal;
       if (val === diaNumpadOriginal) {
         delete DIA_OVERRIDES[diaNumpadDateKey];
       } else {
         DIA_OVERRIDES[diaNumpadDateKey] = val;
+      }
+      // ダイヤ番号が実際に変わった場合、その日の出勤・退勤の臨時変更（時刻上書き）は
+      // 古いダイヤに紐づくものなので一緒に解除する（ダイヤ番号変更が最優先）
+      if (val !== prevEffectiveDia) {
+        _clearShukkinTaikinOverridesForDate(diaNumpadDateKey);
       }
       saveDiaOverrides();
       closeDiaNumpad();
@@ -3996,6 +4010,8 @@ function selectRinjiType(type) {
     delete SPECIAL_DAY_OVERRIDES[_rinjiDateKey];
     saveSpecialDayOverrides();
   }
+  // ダイヤ番号（99・臨時）に変わるので、古いダイヤに紐づく出勤・退勤の臨時変更は解除する
+  _clearShukkinTaikinOverridesForDate(_rinjiDateKey);
   document.getElementById('rinji-type-overlay').classList.add('hidden');
   _calRefreshAfterEdit();
 }
@@ -4013,6 +4029,8 @@ function selectSpecialDayType(type) {
   }
   SPECIAL_DAY_OVERRIDES[_specialDayDateKey] = type;
   saveSpecialDayOverrides();
+  // 年休・指定公休になるので、古いダイヤに紐づく出勤・退勤の臨時変更は解除する
+  _clearShukkinTaikinOverridesForDate(_specialDayDateKey);
   document.getElementById('special-day-type-overlay').classList.add('hidden');
   _calRefreshAfterEdit();
 }
@@ -4554,7 +4572,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260722-007';
+const APP_VERSION = '20260722-008';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
