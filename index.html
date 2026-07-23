@@ -2649,7 +2649,7 @@ function applySettings() {
   if (!_settingsDraft) return;
   const dateVal  = document.getElementById('set-date').value;
   const dia      = parseInt(document.getElementById('set-dia').textContent);
-  const cycle    = 57;
+  const cycle    = getCycle();
   const wake     = (parseInt(document.getElementById('set-wake-h').value)||0)*60   + (parseInt(document.getElementById('set-wake-m').value)||0);
   const leave    = (parseInt(document.getElementById('set-leave-h').value)||0)*60  + (parseInt(document.getElementById('set-leave-m').value)||0);
   const arrive   = (parseInt(document.getElementById('set-arrive-h').value)||0)*60 + (parseInt(document.getElementById('set-arrive-m').value)||0);
@@ -3601,7 +3601,7 @@ function openDiaNumpadForSetting(type) {
   diaNumpadVal = String(parseInt(document.getElementById('set-dia').textContent) || SETTINGS.baseDia || 1);
   diaNumpadFresh = true;
   document.getElementById('dia-numpad-title').textContent = '基準日のダイヤ番号';
-  document.getElementById('dia-numpad-date').textContent = '1〜57 の範囲で入力';
+  document.getElementById('dia-numpad-date').textContent = '1〜' + getCycle() + ' の範囲で入力';
   document.getElementById('dia-numpad-reset').style.display = 'none';
   document.getElementById('dia-numpad-hint').style.display = 'none';
   document.getElementById('dia-numpad-display').textContent = diaNumpadVal;
@@ -4593,7 +4593,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260722-024';
+const APP_VERSION = '20260723-002';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
