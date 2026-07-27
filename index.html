@@ -1885,8 +1885,10 @@ function _calBuildCellsHTML(monthDate) {
         bodyHtml = `<div class="cal-cell-tag cal-tag-rinji cal-ov">臨時</div><div class="cal-cell-time cal-ov">${t}</div><div class="cal-cell-time cal-cell-time-tk cal-ov">${tk}</div>`;
       } else {
         const sh = sched.shifts && sched.shifts[0];
+        const sh2 = sched.shifts && sched.shifts[1]; // 中間ダイヤの後半
         const dia = sched.dia;
         const ovKey = dateKey0 + '_0';
+        const ovKey2 = dateKey0 + '_1';
         const skOv = SHUKKIN_OVERRIDES[ovKey];
         const tkOv = TAIKIN_OVERRIDES[ovKey];
         const t  = skOv !== undefined ? minToTime(skOv) : (sh ? fmtTime(sh.shukkinTime) : '—');
@@ -1894,7 +1896,19 @@ function _calBuildCellsHTML(monthDate) {
         const typeBadgeMap = { '中間': ['#d4f0e3','#2d7a50'], '手入': ['#ffe8c0','#8a5500'] };
         const tb = typeBadgeMap[sched.entryType];
         dateBadge = tb ? ` <span class="cal-cell-type-badge" style="background:${tb[0]};color:${tb[1]}">${sched.entryType}</span>` : '';
-        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${dia}</div><div class="cal-cell-time${skOv !== undefined ? ' cal-ov' : ''}">${t}</div><div class="cal-cell-time cal-cell-time-tk${tkOv !== undefined ? ' cal-ov' : ''}">${tk}</div>`;
+
+        let timeHtml;
+        if (sched.entryType === '中間' && sh2) {
+          const skOv2 = SHUKKIN_OVERRIDES[ovKey2];
+          const tkOv2 = TAIKIN_OVERRIDES[ovKey2];
+          const t2  = skOv2 !== undefined ? minToTime(skOv2) : fmtTime(sh2.shukkinTime);
+          const tk2 = tkOv2 !== undefined ? minToTime(tkOv2) : fmtTime(sh2.taikinTime);
+          timeHtml = `<div class="cal-cell-time-row${(skOv !== undefined || tkOv !== undefined) ? ' cal-ov' : ''}">${t}<span class="cal-cell-time-sep">-</span>${tk}</div>` +
+                     `<div class="cal-cell-time-row${(skOv2 !== undefined || tkOv2 !== undefined) ? ' cal-ov' : ''}">${t2}<span class="cal-cell-time-sep">-</span>${tk2}</div>`;
+        } else {
+          timeHtml = `<div class="cal-cell-time${skOv !== undefined ? ' cal-ov' : ''}">${t}</div><div class="cal-cell-time cal-cell-time-tk${tkOv !== undefined ? ' cal-ov' : ''}">${tk}</div>`;
+        }
+        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${dia}</div>${timeHtml}`;
       }
     }
 
@@ -1934,13 +1948,13 @@ function renderCalendarTab() {
       .cal-nav-btn { border:none; background:#f0f0f0; border-radius:10px; width:38px; height:38px; font-size:13px; font-weight:700; color:#666; cursor:pointer; }
       .cal-nav-btn:active { background:#e0e0e0; }
       .cal-month-label { font-size:17px; font-weight:800; }
-      .cal-dow-row { box-sizing:border-box; padding:0 4px; display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
+      .cal-dow-row { box-sizing:border-box; padding:0 4px; display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:4px; }
       .cal-dow-label { text-align:center; font-size:11px; font-weight:700; color:#888; padding-bottom:4px; }
       .cal-dow-label.doy { color:#1a5caa; }
       .cal-dow-label.nch { color:#cc3333; }
       .cal-slider-viewport { overflow:hidden; position:relative; }
       .cal-slider-track { display:flex; align-items:flex-start; gap:20px; will-change:transform; }
-      .cal-panel { flex:0 0 auto; box-sizing:border-box; padding:0 4px 24px; display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+      .cal-panel { flex:0 0 auto; box-sizing:border-box; padding:0 4px 24px; display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
       .cal-cell { border-radius:9px; background:linear-gradient(170deg, #ffffff 0%, rgba(255,252,238,0.98) 100%); min-height:74px; padding:4px 3px; position:relative; border:1px solid rgba(100,180,140,0.28); border-bottom:3px solid rgba(70,135,98,0.42); box-shadow:0 5px 0 rgba(80,140,105,0.28), 0 7px 16px rgba(50,100,75,0.16), inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -1px 2px rgba(80,140,105,0.10); transition: transform 0.18s ease, box-shadow 0.18s ease; }
       .cal-cell.cal-cell-pressed { transform: translateY(4px) scale(0.97); box-shadow: inset 0 3px 6px rgba(50,90,70,0.32), inset 0 1px 3px rgba(0,0,0,0.16); border-bottom-width: 1px; transition: transform 0.05s ease, box-shadow 0.05s ease; }
       .cal-cell-empty { background:transparent; box-shadow:none; border:none; }
@@ -1956,7 +1970,9 @@ function renderCalendarTab() {
       .cal-cell-dia { font-size:14px; font-weight:800; color:#2d7a50; margin-top:2px; text-align:center; }
       .cal-cell-time { font-size:10px; color:#555; }
       .cal-cell-time-tk { text-align:right; }
-      .cal-cell-dia.cal-ov, .cal-cell-time.cal-ov, .cal-cell-tag.cal-ov { color:#ff21a8; }
+      .cal-cell-time-row { font-size:9px; color:#555; text-align:center; line-height:1.3; letter-spacing:-0.3px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+      .cal-cell-time-sep { color:#aaa; margin:0 0.5px; }
+      .cal-cell-dia.cal-ov, .cal-cell-time.cal-ov, .cal-cell-tag.cal-ov, .cal-cell-time-row.cal-ov { color:#ff21a8; }
       .cal-cell-tag { font-size:11px; font-weight:700; margin-top:6px; text-align:center; }
       .cal-tag-kyukyu { color:#cc3333; font-weight:700; font-size:12px; }
       .cal-tag-yobi { color:#2d7a50; font-size:12px; }
@@ -4593,7 +4609,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260723-002';
+const APP_VERSION = '20260728-003';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
