@@ -1903,8 +1903,8 @@ function _calBuildCellsHTML(monthDate) {
           const tkOv2 = TAIKIN_OVERRIDES[ovKey2];
           const t2  = skOv2 !== undefined ? minToTime(skOv2) : fmtTime(sh2.shukkinTime);
           const tk2 = tkOv2 !== undefined ? minToTime(tkOv2) : fmtTime(sh2.taikinTime);
-          timeHtml = `<div class="cal-cell-time-row${(skOv !== undefined || tkOv !== undefined) ? ' cal-ov' : ''}">${t}<span class="cal-cell-time-sep">-</span>${tk}</div>` +
-                     `<div class="cal-cell-time-row cal-cell-time-row2${(skOv2 !== undefined || tkOv2 !== undefined) ? ' cal-ov' : ''}">${t2}<span class="cal-cell-time-sep">-</span>${tk2}</div>`;
+          timeHtml = `<div class="cal-cell-time-row"><span class="${skOv !== undefined ? 'cal-ov' : ''}">${t}</span><span class="cal-cell-time-sep">-</span><span class="${tkOv !== undefined ? 'cal-ov' : ''}">${tk}</span></div>` +
+                     `<div class="cal-cell-time-row cal-cell-time-row2"><span class="${skOv2 !== undefined ? 'cal-ov' : ''}">${t2}</span><span class="cal-cell-time-sep">-</span><span class="${tkOv2 !== undefined ? 'cal-ov' : ''}">${tk2}</span></div>`;
         } else {
           timeHtml = `<div class="cal-cell-time${skOv !== undefined ? ' cal-ov' : ''}">${t}</div><div class="cal-cell-time cal-cell-time-tk${tkOv !== undefined ? ' cal-ov' : ''}">${tk}</div>`;
         }
@@ -1973,7 +1973,7 @@ function renderCalendarTab() {
       .cal-cell-time-row { font-size:9px; color:#555; text-align:left; line-height:12px; letter-spacing:-0.3px; white-space:nowrap; font-variant-numeric:tabular-nums; }
       .cal-cell-time-row2 { text-align:right; margin-top:1px; }
       .cal-cell-time-sep { color:#aaa; margin:0 0.5px; }
-      .cal-cell-dia.cal-ov, .cal-cell-time.cal-ov, .cal-cell-tag.cal-ov, .cal-cell-time-row.cal-ov { color:#ff21a8; }
+      .cal-cell-dia.cal-ov, .cal-cell-time.cal-ov, .cal-cell-tag.cal-ov, .cal-cell-time-row.cal-ov, .cal-cell-time-row .cal-ov { color:#ff21a8; }
       .cal-cell-tag { font-size:11px; font-weight:700; margin-top:6px; text-align:center; }
       .cal-tag-kyukyu { color:#cc3333; font-weight:700; font-size:12px; }
       .cal-tag-yobi { color:#2d7a50; font-size:12px; }
@@ -4610,7 +4610,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260728-012';
+const APP_VERSION = '20260728-013';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
