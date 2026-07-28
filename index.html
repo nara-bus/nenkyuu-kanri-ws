@@ -1968,9 +1968,9 @@ function renderCalendarTab() {
       .cal-cell-date { font-size:13px; font-weight:700; color:#666; display:flex; align-items:center; justify-content:space-between; }
       .cal-cell-type-badge { font-size:9px; font-weight:700; padding:1px 4px; border-radius:99px; }
       .cal-cell-dia { font-size:14px; font-weight:800; color:#2d7a50; margin-top:2px; text-align:center; }
-      .cal-cell-time { font-size:10px; color:#555; }
+      .cal-cell-time { font-size:10px; color:#555; line-height:12px; }
       .cal-cell-time-tk { text-align:right; }
-      .cal-cell-time-row { font-size:9px; color:#555; text-align:left; line-height:1.3; letter-spacing:-0.3px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+      .cal-cell-time-row { font-size:9px; color:#555; text-align:left; line-height:12px; letter-spacing:-0.3px; white-space:nowrap; font-variant-numeric:tabular-nums; }
       .cal-cell-time-row2 { text-align:right; }
       .cal-cell-time-sep { color:#aaa; margin:0 0.5px; }
       .cal-cell-dia.cal-ov, .cal-cell-time.cal-ov, .cal-cell-tag.cal-ov, .cal-cell-time-row.cal-ov { color:#ff21a8; }
@@ -4610,7 +4610,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260728-005';
+const APP_VERSION = '20260728-008';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
