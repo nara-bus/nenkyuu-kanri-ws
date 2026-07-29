@@ -24,6 +24,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html {
     overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   body {
     background: linear-gradient(160deg, #b8e0d2 0%, #dff2ea 50%, #c8e8da 100%);
@@ -4610,7 +4612,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260729-004';
+const APP_VERSION = '20260730-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
