@@ -921,9 +921,22 @@
   .master-confirm-ok:active { border-bottom-width: 1px; transform: translateY(2px); }
   .rinji-badge {
     display: inline-block; background: #ff5252; color: #fff;
-    font-size: 11px; font-weight: 700; padding: 2px 10px;
+    font-size: 14px; font-weight: 700; padding: 3px 12px;
     border-radius: 20px; margin-bottom: 6px; letter-spacing: 0.05em;
   }
+  .rinji-series-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin: 14px 0 4px;
+  }
+  .rinji-series-btn {
+    padding: 14px 4px;
+    background: linear-gradient(170deg,#4db880 0%,#3d9e6e 60%,#2f8a5c 100%);
+    border: 1px solid #2a7a50; border-bottom: 3px solid #1e6040;
+    border-radius: 12px; color: #fff; font-size: 15px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 2px 6px rgba(40,120,70,0.30); transition: all 0.1s;
+  }
+  .rinji-series-btn:active { border-bottom-width: 1px; transform: translateY(2px); }
   .hidden { display: none !important; }
   /* 出勤時間臨時変更テンキー専用スタイル */
   .shukkin-numpad-box {
@@ -1546,11 +1559,12 @@ function _getScheduleRaw(date) {
   const key = getDateKey(date);
   const dayType = getDayType(date);
   const overrideVal = DIA_OVERRIDES[key];
-  let dia, rinjiType = null;
+  let dia, rinjiType = null, rinjiLabel = null;
   if (overrideVal !== undefined) {
     if (typeof overrideVal === 'object' && overrideVal.dia === 99) {
       dia = 99;
       rinjiType = overrideVal.type || '全日';
+      rinjiLabel = overrideVal.label || null;
     } else {
       dia = overrideVal;
     }
@@ -1565,7 +1579,7 @@ function _getScheduleRaw(date) {
     const sh1 = { shukkinTime: '0:00', taikinTime: '0:00', rosen: '', _dateKey: key };
     const sh2 = { shukkinTime: '0:00', taikinTime: '0:00', rosen: '', _dateKey: key };
     const shifts = (rinjiType === '中間') ? [sh1, sh2] : [sh1];
-    return { dia, dayType, shifts, rinji: true, rinjiType: rinjiType || '全日' };
+    return { dia, dayType, shifts, rinji: true, rinjiType: rinjiType || '全日', rinjiLabel };
   }
   const entry = ICHIRAN_DATA.find(r => r.dia === dia);
   if (!entry) return { dia, dayType, kyukyu: true };
@@ -1593,6 +1607,11 @@ function fmtTime(t) {
   if (!t) return '—';
   if (t.startsWith('+')) return '翌' + t.slice(1);
   return t;
+}
+
+// 臨時ダイヤの種別表示（カレンダー・バッジ用の短縮表記。「高速」→「高」）
+function _rinjiSeriesDisp(series) {
+  return series === '高速' ? '高' : series;
 }
 
 // "HH:MM" or "+HH:MM" → 総分数
@@ -1658,7 +1677,7 @@ function _boundaryFromSchedule(sched, wantLast) {
   return { min: ov !== undefined ? ov : timeToMin(bSh.shukkinTime) };
 }
 
-function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSched, nextSched) {
+function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSched, nextSched, rinjiLabel) {
   // カード内の時刻表示：先頭の「翌」だけ数字(HH:MM)と同じ見た目のサイズに縮小して表示
   function cardTime(min) {
     const t = minToTime(min);
@@ -1733,7 +1752,7 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSch
     return `
     <div class="shift-card">
       ${shifts.length > 1 ? `<div class="shift-sublabel">${i === 0 ? '中間前半' : '中間後半'}</div>` : ''}
-      ${isRinji ? `<div class="rinji-badge">🚨 臨時ダイヤ</div>` : ''}
+      ${isRinji ? `<div class="rinji-badge">${rinjiLabel ? `${_rinjiSeriesDisp(rinjiLabel.series)}${rinjiLabel.num}` : '🚨 臨時ダイヤ'}</div>` : ''}
       ${s.showOkibo ? `<div class="shift-row">
         <span class="shift-icon">⏰️</span>
         <span class="shift-label">起床</span>
@@ -1876,15 +1895,27 @@ function _calBuildCellsHTML(monthDate) {
         bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-yobi">予備</div>`;
       } else if (sched.rinji) {
         const sh = sched.shifts && sched.shifts[0];
+        const sh2 = sched.shifts && sched.shifts[1];
         const ovKey = dateKey0 + '_0';
+        const ovKey2 = dateKey0 + '_1';
         const skOv = SHUKKIN_OVERRIDES[ovKey];
         const tkOv = TAIKIN_OVERRIDES[ovKey];
         const t  = skOv !== undefined ? minToTime(skOv) : (sh ? fmtTime(sh.shukkinTime) : '—');
         const tk = tkOv !== undefined ? minToTime(tkOv) : (sh ? fmtTime(sh.taikinTime) : '—');
-        if (sched.rinjiType === '中間') {
+        let rinjiTimeHtml;
+        if (sched.rinjiType === '中間' && sh2) {
           dateBadge = ` <span class="cal-cell-type-badge" style="background:#d4f0e3;color:#2d7a50">中間</span>`;
+          const skOv2 = SHUKKIN_OVERRIDES[ovKey2];
+          const tkOv2 = TAIKIN_OVERRIDES[ovKey2];
+          const t2  = skOv2 !== undefined ? minToTime(skOv2) : fmtTime(sh2.shukkinTime);
+          const tk2 = tkOv2 !== undefined ? minToTime(tkOv2) : fmtTime(sh2.taikinTime);
+          rinjiTimeHtml = `<div class="cal-cell-time-row cal-ov">${t}<span class="cal-cell-time-sep">-</span>${tk}</div>` +
+                          `<div class="cal-cell-time-row cal-cell-time-row2 cal-ov">${t2}<span class="cal-cell-time-sep">-</span>${tk2}</div>`;
+        } else {
+          rinjiTimeHtml = `<div class="cal-cell-time cal-ov">${t}</div><div class="cal-cell-time cal-cell-time-tk cal-ov">${tk}</div>`;
         }
-        bodyHtml = `<div class="cal-cell-tag cal-tag-rinji cal-ov">臨時</div><div class="cal-cell-time cal-ov">${t}</div><div class="cal-cell-time cal-cell-time-tk cal-ov">${tk}</div>`;
+        const rinjiTagText = sched.rinjiLabel ? `${_rinjiSeriesDisp(sched.rinjiLabel.series)}${sched.rinjiLabel.num}` : '臨時';
+        bodyHtml = `<div class="cal-cell-dia cal-ov">${rinjiTagText}</div>${rinjiTimeHtml}`;
       } else {
         const sh = sched.shifts && sched.shifts[0];
         const sh2 = sched.shifts && sched.shifts[1]; // 中間ダイヤの後半
@@ -1979,7 +2010,7 @@ function renderCalendarTab() {
       .cal-cell-tag { font-size:11px; font-weight:700; margin-top:6px; text-align:center; white-space:nowrap; }
       .cal-tag-kyukyu { color:#cc3333; font-weight:700; font-size:12px; }
       .cal-tag-yobi { color:#2d7a50; font-size:12px; }
-      .cal-tag-rinji { color:#a04040; font-size:14px; font-weight:800; margin-top:2px; }
+      .cal-tag-rinji { color:#a04040; font-size:11px; font-weight:800; margin-top:4px; }
       .cal-tag-special { color:#ff21a8; font-size:12px; }
       .cal-tag-nenkyu { color:#ff21a8; font-size:12px; }
       .cal-cell[onclick] { cursor:pointer; }
@@ -2111,7 +2142,7 @@ function openCalDayCard(dateKey, keepOrigin) {
         onclick="openDiaNumpad('${dateKey}', ${sched.dia})"
         title="タップでダイヤ番号を変更">${diaLabel}${isDiaOverride ? ' ✎' : ''}</button>
     </div>
-    ${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji, sched.special, getSchedule(addDays(date, -1)), getSchedule(addDays(date, 1)))}
+    ${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji, sched.special, getSchedule(addDays(date, -1)), getSchedule(addDays(date, 1)), sched.rinjiLabel)}
     <button class="cal-day-card-close" onclick="closeCalDayCard()">閉じる</button>
   `;
   document.getElementById('cal-day-card-overlay').classList.remove('hidden');
@@ -4041,6 +4072,88 @@ function selectRinjiType(type) {
   // ダイヤ番号（99・臨時）に変わるので、古いダイヤに紐づく出勤・退勤の臨時変更は解除する
   _clearShukkinTaikinOverridesForDate(_rinjiDateKey);
   document.getElementById('rinji-type-overlay').classList.add('hidden');
+  // 続けてダイヤ種別（A/C/D/高速/WS）選択へ
+  openRinjiSeriesOverlay();
+}
+
+// ===== 臨時ダイヤ：ダイヤ種別（A/C/D/高速/WS）選択 =====
+let _rinjiSeries = null;
+function openRinjiSeriesOverlay() {
+  _rinjiSeries = null;
+  document.getElementById('rinji-series-overlay').classList.remove('hidden');
+}
+function selectRinjiSeries(series) {
+  _rinjiSeries = series;
+  document.getElementById('rinji-series-overlay').classList.add('hidden');
+  openRinjiNumNumpad();
+}
+function skipRinjiSeries() {
+  document.getElementById('rinji-series-overlay').classList.add('hidden');
+  _calRefreshAfterEdit();
+}
+
+// ===== 臨時ダイヤ：番号入力テンキー（1〜89） =====
+let rinjiNumVal = '';
+let rinjiNumFresh = true;
+function openRinjiNumNumpad() {
+  rinjiNumVal = '';
+  rinjiNumFresh = true;
+  document.getElementById('rinji-num-title').textContent = _rinjiSeries + ' の番号を入力';
+  document.getElementById('rinji-num-display').textContent = '';
+  document.getElementById('rinji-num-numpad-overlay').classList.remove('hidden');
+}
+function closeRinjiNumNumpad() {
+  document.getElementById('rinji-num-numpad-overlay').classList.add('hidden');
+}
+function rinjiNumKey(k) {
+  const maxVal = 89;
+  if (k === 'C') {
+    rinjiNumVal = '';
+    rinjiNumFresh = false;
+  } else if (k === 'del') {
+    if (rinjiNumFresh) {
+      rinjiNumVal = '';
+      rinjiNumFresh = false;
+    } else {
+      rinjiNumVal = rinjiNumVal.length > 1 ? rinjiNumVal.slice(0, -1) : '';
+    }
+  } else {
+    const base = rinjiNumFresh ? '' : rinjiNumVal;
+    rinjiNumFresh = false;
+    const next = base === '' ? k : base + k;
+    let val = parseInt(next);
+    if (isNaN(val)) val = 0;
+    if (val > maxVal) {
+      const disp = document.getElementById('rinji-num-display');
+      if (disp) {
+        disp.textContent = '!';
+        setTimeout(() => { disp.textContent = rinjiNumVal || ''; }, 400);
+      }
+      return;
+    }
+    rinjiNumVal = next.length > 0 ? String(val) : '';
+  }
+  document.getElementById('rinji-num-display').textContent = rinjiNumVal || '';
+}
+function rinjiNumOk() {
+  const val = parseInt(rinjiNumVal);
+  if (isNaN(val) || val < 1 || val > 89) {
+    const disp = document.getElementById('rinji-num-display');
+    if (disp) {
+      disp.textContent = '!';
+      setTimeout(() => { disp.textContent = rinjiNumVal || ''; }, 600);
+    }
+    return;
+  }
+  if (DIA_OVERRIDES[_rinjiDateKey] && typeof DIA_OVERRIDES[_rinjiDateKey] === 'object') {
+    DIA_OVERRIDES[_rinjiDateKey].label = { series: _rinjiSeries, num: val };
+    saveDiaOverrides();
+  }
+  closeRinjiNumNumpad();
+  _calRefreshAfterEdit();
+}
+function skipRinjiNum() {
+  closeRinjiNumNumpad();
   _calRefreshAfterEdit();
 }
 function cancelRinjiType() {
@@ -4338,6 +4451,52 @@ setInterval(updateClock, 30000);
   </div>
 </div>
 
+<!-- 臨時ダイヤ：ダイヤ種別（A/C/D/高速/WS）選択 -->
+<div id="rinji-series-overlay" class="alert-overlay hidden">
+  <div class="master-confirm-box">
+    <div class="master-confirm-icon">🚌</div>
+    <div class="master-confirm-title">ダイヤを選択</div>
+    <div class="master-confirm-sub">未入力なら「臨時ダイヤ」表示のままになります</div>
+    <div class="rinji-series-grid">
+      <button class="rinji-series-btn" onclick="selectRinjiSeries('A')">A</button>
+      <button class="rinji-series-btn" onclick="selectRinjiSeries('C')">C</button>
+      <button class="rinji-series-btn" onclick="selectRinjiSeries('D')">D</button>
+      <button class="rinji-series-btn" onclick="selectRinjiSeries('高速')">高速</button>
+      <button class="rinji-series-btn" onclick="selectRinjiSeries('WS')">WS</button>
+    </div>
+    <div style="margin-top:10px">
+      <button class="master-confirm-cancel" style="width:100%;font-size:12px" onclick="skipRinjiSeries()">スキップ（未入力のまま）</button>
+    </div>
+  </div>
+</div>
+
+<!-- 臨時ダイヤ：番号入力テンキー -->
+<div id="rinji-num-numpad-overlay" class="numpad-overlay hidden">
+  <div class="dia-numpad-box">
+    <div class="dia-numpad-title" id="rinji-num-title">番号を入力</div>
+    <div class="dia-numpad-date">1〜89 の範囲で入力</div>
+    <div class="dia-numpad-display" id="rinji-num-display"></div>
+    <div class="numpad-grid">
+      <button class="nk" onclick="rinjiNumKey('7')">7</button>
+      <button class="nk" onclick="rinjiNumKey('8')">8</button>
+      <button class="nk" onclick="rinjiNumKey('9')">9</button>
+      <button class="nk" onclick="rinjiNumKey('4')">4</button>
+      <button class="nk" onclick="rinjiNumKey('5')">5</button>
+      <button class="nk" onclick="rinjiNumKey('6')">6</button>
+      <button class="nk" onclick="rinjiNumKey('1')">1</button>
+      <button class="nk" onclick="rinjiNumKey('2')">2</button>
+      <button class="nk" onclick="rinjiNumKey('3')">3</button>
+      <button class="nk nk-clear" onclick="rinjiNumKey('C')">C</button>
+      <button class="nk" onclick="rinjiNumKey('0')">0</button>
+      <button class="nk nk-del" onclick="rinjiNumKey('del')">⌫</button>
+    </div>
+    <div class="numpad-actions">
+      <button class="nk-cancel" onclick="skipRinjiNum()">スキップ<br>（未入力）</button>
+      <button class="nk-ok" onclick="rinjiNumOk()">確定</button>
+    </div>
+  </div>
+</div>
+
 <div id="special-day-type-overlay" class="alert-overlay hidden">
   <div class="master-confirm-box">
     <div class="master-confirm-title">この日の種別を選択</div>
@@ -4612,7 +4771,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260730-002';
+const APP_VERSION = '20260802-005';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
