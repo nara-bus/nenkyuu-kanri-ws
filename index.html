@@ -1752,7 +1752,7 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSch
     return `
     <div class="shift-card">
       ${shifts.length > 1 ? `<div class="shift-sublabel">${i === 0 ? '中間前半' : '中間後半'}</div>` : ''}
-      ${isRinji ? `<div class="rinji-badge">${rinjiLabel ? `${_rinjiSeriesDisp(rinjiLabel.series)}${rinjiLabel.num}` : '🚨 臨時ダイヤ'}</div>` : ''}
+      ${isRinji ? `<div class="rinji-badge">${rinjiLabel ? `${_rinjiSeriesDisp(rinjiLabel.series)}${rinjiLabel.num}` : '臨時ダイヤ'}</div>` : ''}
       ${s.showOkibo ? `<div class="shift-row">
         <span class="shift-icon">⏰️</span>
         <span class="shift-label">起床</span>
@@ -4771,7 +4771,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260802-005';
+const APP_VERSION = '20260802-006';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
