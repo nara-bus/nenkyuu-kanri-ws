@@ -177,6 +177,35 @@
     transform: translateY(2px);
   }
   .dia-override { color: rgba(160,40,70,1); background: linear-gradient(170deg, #fff4f7 0%, #fce4ec 100%); border-color: rgba(180,60,90,0.35); border-bottom-color: rgba(160,40,70,0.40); box-shadow: 0 2px 0 rgba(160,40,70,0.18), 0 3px 6px rgba(160,40,70,0.08), inset 0 1px 0 rgba(255,255,255,0.75); }
+  .kyukyu-ng-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px;
+    font-size: 17px;
+    line-height: 1;
+    border-radius: 8px;
+    border: 1px solid rgba(120,120,120,0.35);
+    border-bottom: 3px solid rgba(90,90,90,0.40);
+    background: linear-gradient(170deg, #f4f4f4 0%, #e2e2e2 100%);
+    opacity: 0.55;
+    cursor: pointer;
+    box-shadow: 0 2px 0 rgba(90,90,90,0.18), 0 3px 6px rgba(90,90,90,0.08), inset 0 1px 0 rgba(255,255,255,0.75);
+    transition: all 0.1s ease;
+    user-select: none;
+    transform: translateX(1.6em);
+  }
+  .kyukyu-ng-btn:active {
+    border-bottom-width: 1px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.12), 0 1px 0 rgba(90,90,90,0.20);
+    transform: translateX(1.6em) translateY(2px);
+  }
+  .kyukyu-ng-btn.on {
+    opacity: 1;
+    color: rgba(160,40,40,1);
+    background: linear-gradient(170deg, #fff0f0 0%, #ffd6d6 100%);
+    border-color: rgba(190,50,50,0.45);
+    border-bottom-color: rgba(160,30,30,0.50);
+    box-shadow: 0 2px 0 rgba(160,30,30,0.22), 0 3px 6px rgba(160,30,30,0.10), inset 0 1px 0 rgba(255,255,255,0.75);
+  }
   /* ダイヤ変更テンキー */
   .dia-numpad-box {
     background: linear-gradient(170deg, #f8f8f8 0%, #efefef 100%);
@@ -1514,6 +1543,25 @@ function saveSpecialDayOverrides() {
   try { localStorage.setItem('specialDayOverrides', JSON.stringify(SPECIAL_DAY_OVERRIDES)); } catch(e) {}
 }
 
+// 公休日の「休出できない日（予定あり）」フラグ: { "2026-08-13": true }
+let KYUKYU_NG_OVERRIDES = {};
+try { KYUKYU_NG_OVERRIDES = JSON.parse(localStorage.getItem('kyukyuNgOverrides') || '{}'); } catch(e) {}
+function saveKyukyuNgOverrides() {
+  try { localStorage.setItem('kyukyuNgOverrides', JSON.stringify(KYUKYU_NG_OVERRIDES)); } catch(e) {}
+}
+function toggleKyukyuNg(dateKey) {
+  if (KYUKYU_NG_OVERRIDES[dateKey]) {
+    delete KYUKYU_NG_OVERRIDES[dateKey];
+  } else {
+    KYUKYU_NG_OVERRIDES[dateKey] = true;
+  }
+  saveKyukyuNgOverrides();
+  // cal-day-card-overlay は view-calendar の内側にあるため、renderCalendarTab() 単体では
+  // モーダルごと作り直されて閉じてしまう。_calRefreshAfterEdit() でカレンダー本体を再描画した後、
+  // 開いていたカードを同じ日付で再オープンする（他の編集系と同じ安全なパターン）。
+  _calRefreshAfterEdit();
+}
+
 // ダイヤ番号の変更（スポット変更／臨時ダイヤ／年休・指定公休）は最優先。
 // その日の出勤・退勤の臨時変更（時刻上書き）は古いダイヤに紐づくものなので一緒に解除する。
 function _clearShukkinTaikinOverridesForDate(dateKey) {
@@ -1890,6 +1938,9 @@ function _calBuildCellsHTML(monthDate) {
         const specialCls = sched.special === '年休' ? 'cal-tag-nenkyu' : 'cal-tag-special';
         bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag ${specialCls}">${sched.special}</div>`;
       } else if (sched.kyukyu) {
+        if (KYUKYU_NG_OVERRIDES[dateKey0]) {
+          dateBadge = ` <span class="cal-cell-ng-icon">⛔</span>`;
+        }
         bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">公休</div>`;
       } else if (sched.yobi) {
         bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-yobi">予備</div>`;
@@ -2000,6 +2051,7 @@ function renderCalendarTab() {
       }
       .cal-cell-date { font-size:13px; font-weight:700; color:#666; display:flex; align-items:center; justify-content:space-between; }
       .cal-cell-type-badge { font-size:9px; font-weight:700; padding:1px 4px; border-radius:99px; }
+      .cal-cell-ng-icon { font-size:13px; vertical-align:middle; }
       .cal-cell-dia { font-size:14px; font-weight:800; color:#2d7a50; margin-top:2px; margin-bottom:5px; text-align:center; }
       .cal-cell-time { font-size:10px; color:#555; line-height:12px; }
       .cal-cell-time-tk { text-align:right; margin-top:1px; }
@@ -2037,8 +2089,10 @@ function renderCalendarTab() {
       }
       .cal-day-card-nav-btn.left { left:0; }
       .cal-day-card-nav-btn.right { right:0; }
-      .cal-day-card-dia-row { text-align:center; margin-bottom:10px; }
+      .cal-day-card-dia-row { display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
       .cal-day-card-dia-row .dia-tag { font-size:18px; }
+      .dia-row-side { flex:0 0 34px; display:flex; align-items:center; }
+      .dia-row-side-right { justify-content:flex-start; }
       .cal-day-card-close { margin-top:14px; width:100%; padding:12px; border:none; border-radius:10px; background:#eee; color:#333; font-size:14px; font-weight:700; cursor:pointer; }
       .cal-day-card-close:active { background:#ddd; }
       #cal-day-card-box .shift-card {
@@ -2138,9 +2192,11 @@ function openCalDayCard(dateKey, keepOrigin) {
     </div>
     
     <div class="cal-day-card-dia-row">
+      <span class="dia-row-side" aria-hidden="true"></span>
       <button class="dia-tag${isDiaOverride ? ' dia-override' : ''}"
         onclick="openDiaNumpad('${dateKey}', ${sched.dia})"
         title="タップでダイヤ番号を変更">${diaLabel}${isDiaOverride ? ' ✎' : ''}</button>
+      <span class="dia-row-side dia-row-side-right">${sched.kyukyu ? `<button id="kyukyu-ng-btn" class="kyukyu-ng-btn${KYUKYU_NG_OVERRIDES[dateKey] ? ' on' : ''}" onclick="event.preventDefault(); event.stopPropagation(); toggleKyukyuNg('${dateKey}'); return false;" title="休出できない日（予定あり）">⛔</button>` : ''}</span>
     </div>
     ${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji, sched.special, getSchedule(addDays(date, -1)), getSchedule(addDays(date, 1)), sched.rinjiLabel)}
     <button class="cal-day-card-close" onclick="closeCalDayCard()">閉じる</button>
@@ -3282,6 +3338,7 @@ function masterResetAllExecute() {
     specialDayOverrides: localStorage.getItem('specialDayOverrides') || null,
     masterOverrides:     localStorage.getItem('masterOverrides')     || null,
     warningSuppressed:   localStorage.getItem('warningSuppressed')   || null,
+    kyukyuNgOverrides:   localStorage.getItem('kyukyuNgOverrides')   || null,
   };
   const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -3359,6 +3416,7 @@ async function doExport() {
     specialDayOverrides: localStorage.getItem('specialDayOverrides') || null,
     warningSuppressed:   localStorage.getItem('warningSuppressed')   || null,
     masterOverrides:     localStorage.getItem('masterOverrides')     || null,
+    kyukyuNgOverrides:   localStorage.getItem('kyukyuNgOverrides')   || null,
   };
   const json = JSON.stringify(appData, null, 2);
 
@@ -3434,6 +3492,7 @@ function _applyImport(text, fname) {
     localStorage.setItem('masterOverrides', data.masterOverrides || '{}');
     localStorage.setItem('taikinOverrides', data.taikinOverrides || '{}');
     localStorage.setItem('specialDayOverrides', data.specialDayOverrides || '{}');
+    localStorage.setItem('kyukyuNgOverrides', data.kyukyuNgOverrides || '{}');
 
     // データ再読み込み
     SETTINGS = loadSettings();
@@ -3442,6 +3501,7 @@ function _applyImport(text, fname) {
     try { MASTER_OVERRIDES     = JSON.parse(localStorage.getItem('masterOverrides') || '{}'); } catch(e) { MASTER_OVERRIDES = {}; }
     try { TAIKIN_OVERRIDES     = JSON.parse(localStorage.getItem('taikinOverrides') || '{}'); } catch(e) { TAIKIN_OVERRIDES = {}; }
     try { SPECIAL_DAY_OVERRIDES = JSON.parse(localStorage.getItem('specialDayOverrides') || '{}'); } catch(e) { SPECIAL_DAY_OVERRIDES = {}; }
+    try { KYUKYU_NG_OVERRIDES  = JSON.parse(localStorage.getItem('kyukyuNgOverrides') || '{}'); } catch(e) { KYUKYU_NG_OVERRIDES = {}; }
     applyMasterOverrides();
     if (currentView === 'calendar') renderCalendarTab();
     if (currentView === 'ichiran') renderIchiran();
@@ -4771,7 +4831,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260802-006';
+const APP_VERSION = '20260809-012';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
