@@ -1939,7 +1939,7 @@ function _calBuildCellsHTML(monthDate) {
         bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag ${specialCls}">${sched.special}</div>`;
       } else if (sched.kyukyu) {
         if (KYUKYU_NG_OVERRIDES[dateKey0]) {
-          dateBadge = ` <span class="cal-cell-ng-icon">⛔</span>`;
+          dateBadge = ` <span class="cal-cell-ng-icon">❌</span>`;
         }
         bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">公休</div>`;
       } else if (sched.yobi) {
@@ -2051,7 +2051,7 @@ function renderCalendarTab() {
       }
       .cal-cell-date { font-size:13px; font-weight:700; color:#666; display:flex; align-items:center; justify-content:space-between; }
       .cal-cell-type-badge { font-size:9px; font-weight:700; padding:1px 4px; border-radius:99px; }
-      .cal-cell-ng-icon { font-size:12px; vertical-align:middle; }
+      .cal-cell-ng-icon { font-size:10px; vertical-align:middle; }
       .cal-cell-dia { font-size:14px; font-weight:800; color:#2d7a50; margin-top:2px; margin-bottom:5px; text-align:center; }
       .cal-cell-time { font-size:10px; color:#555; line-height:12px; }
       .cal-cell-time-tk { text-align:right; margin-top:1px; }
@@ -2196,7 +2196,7 @@ function openCalDayCard(dateKey, keepOrigin) {
       <button class="dia-tag${isDiaOverride ? ' dia-override' : ''}"
         onclick="openDiaNumpad('${dateKey}', ${sched.dia})"
         title="タップでダイヤ番号を変更">${diaLabel}${isDiaOverride ? ' ✎' : ''}</button>
-      <span class="dia-row-side dia-row-side-right">${sched.kyukyu ? `<button id="kyukyu-ng-btn" class="kyukyu-ng-btn${KYUKYU_NG_OVERRIDES[dateKey] ? ' on' : ''}" onclick="event.preventDefault(); event.stopPropagation(); toggleKyukyuNg('${dateKey}'); return false;" title="休出できない日（予定あり）">⛔</button>` : ''}</span>
+      <span class="dia-row-side dia-row-side-right">${sched.kyukyu ? `<button id="kyukyu-ng-btn" class="kyukyu-ng-btn${KYUKYU_NG_OVERRIDES[dateKey] ? ' on' : ''}" onclick="event.preventDefault(); event.stopPropagation(); toggleKyukyuNg('${dateKey}'); return false;" title="休出できない日（予定あり）">❌</button>` : ''}</span>
     </div>
     ${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji, sched.special, getSchedule(addDays(date, -1)), getSchedule(addDays(date, 1)), sched.rinjiLabel)}
     <button class="cal-day-card-close" onclick="closeCalDayCard()">閉じる</button>
@@ -4831,7 +4831,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260810-001';
+const APP_VERSION = '20260810-008';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
