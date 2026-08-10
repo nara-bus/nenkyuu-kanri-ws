@@ -179,10 +179,10 @@
   .dia-override { color: rgba(160,40,70,1); background: linear-gradient(170deg, #fff4f7 0%, #fce4ec 100%); border-color: rgba(180,60,90,0.35); border-bottom-color: rgba(160,40,70,0.40); box-shadow: 0 2px 0 rgba(160,40,70,0.18), 0 3px 6px rgba(160,40,70,0.08), inset 0 1px 0 rgba(255,255,255,0.75); }
   .kyukyu-ng-btn {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px;
-    font-size: 17px;
+    width: 30px; height: 30px;
+    font-size: 15px;
     line-height: 1;
-    border-radius: 8px;
+    border-radius: 7px;
     border: 1px solid rgba(120,120,120,0.35);
     border-bottom: 3px solid rgba(90,90,90,0.40);
     background: linear-gradient(170deg, #f4f4f4 0%, #e2e2e2 100%);
@@ -2091,7 +2091,7 @@ function renderCalendarTab() {
       .cal-day-card-nav-btn.right { right:0; }
       .cal-day-card-dia-row { display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
       .cal-day-card-dia-row .dia-tag { font-size:18px; }
-      .dia-row-side { flex:0 0 34px; display:flex; align-items:center; }
+      .dia-row-side { flex:0 0 30px; display:flex; align-items:center; }
       .dia-row-side-right { justify-content:flex-start; }
       .cal-day-card-close { margin-top:14px; width:100%; padding:12px; border:none; border-radius:10px; background:#eee; color:#333; font-size:14px; font-weight:700; cursor:pointer; }
       .cal-day-card-close:active { background:#ddd; }
@@ -4831,7 +4831,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260810-008';
+const APP_VERSION = '20260810-009';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
