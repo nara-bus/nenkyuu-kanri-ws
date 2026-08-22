@@ -1015,6 +1015,17 @@
     box-shadow: 0 1px 0 #c8b878, inset 0 2px 4px rgba(0,0,0,0.12);
     transform: translateY(3px);
   }
+  .hdr-btn-print {
+    background: linear-gradient(170deg, #fffae8 0%, #f5edcc 60%, #ede0b0 100%);
+    color: #2d6e50;
+    border: 1px solid #e0d4a0;
+    box-shadow: 0 4px 0 #c8b878, 0 6px 10px rgba(160,130,40,0.25);
+  }
+  .hdr-btn-print svg { stroke: #2d6e50; }
+  .hdr-btn-print:active {
+    box-shadow: 0 1px 0 #c8b878, inset 0 2px 4px rgba(0,0,0,0.12);
+    transform: translateY(3px);
+  }
   /* 警告モーダル */
   .alert-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.45);
@@ -1221,6 +1232,116 @@
 </head>
 <body>
 
+<div id="print-calendar-area"></div>
+<style>
+  #print-calendar-area { display: none; }
+  @media print {
+    @page { size: A4 portrait; margin: 10mm 11mm; }
+    html, body {
+      height: auto !important;
+      max-width: none !important;
+      overflow: visible !important;
+      background: #fff !important;
+    }
+    body > *:not(#print-calendar-area) { display: none !important; }
+    #print-calendar-area {
+      display: block !important;
+      width: 100%;
+    }
+    #print-calendar-area .print-cal-page {
+      display: flex;
+      flex-direction: column;
+      height: 277mm; /* A4縦(297mm) - 上下マージン(10mm×2) */
+    }
+    #print-calendar-area .print-cal-title {
+      flex: 0 0 auto;
+      text-align: center;
+      font-size: 22pt;
+      font-weight: 800;
+      color: #000;
+      margin-bottom: 5mm;
+      font-family: "Noto Sans JP","Hiragino Kaku Gothic Pro","Yu Gothic",sans-serif;
+    }
+    #print-calendar-area .print-cal-dow-row {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 2mm;
+    }
+    #print-calendar-area .print-cal-dow-label {
+      text-align: center;
+      font-size: 11pt;
+      font-weight: 700;
+      color: #000;
+      border-bottom: 0.5mm solid #000;
+      padding-bottom: 1.5mm;
+    }
+    #print-calendar-area .print-cal-dow-label.doy { color: #1a5caa; }
+    #print-calendar-area .print-cal-dow-label.nch { color: #cc3333; }
+    #print-calendar-area .print-cal-grid {
+      flex: 1 1 auto;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(6, 1fr);
+      gap: 1.5mm;
+      min-height: 0;
+    }
+    /* .cal-cell は画面用JSロジックを流用するため既存クラスを印刷用に上書き */
+    #print-calendar-area .cal-cell {
+      border: 0.35mm solid #999 !important;
+      border-bottom: 0.35mm solid #999 !important;
+      border-radius: 0 !important;
+      background: #fff !important;
+      box-shadow: none !important;
+      min-height: 0 !important;
+      height: 100% !important;
+      padding: 2mm 2.5mm !important;
+      display: block !important;
+      overflow: hidden;
+      box-sizing: border-box;
+      transform: none !important;
+    }
+    #print-calendar-area .cal-cell-empty { border-color: transparent !important; background: transparent !important; }
+    #print-calendar-area .cal-cell-pad { border: none !important; background: transparent !important; }
+    #print-calendar-area .cal-cell.doy,
+    #print-calendar-area .cal-cell.nch { background: #fff !important; }
+    #print-calendar-area .cal-cell.doy { border-color: #29b6d8 !important; }
+    #print-calendar-area .cal-cell.nch { border-color: #eb6101 !important; }
+    #print-calendar-area .cal-cell.doy .cal-cell-date { color: #1a5caa !important; }
+    #print-calendar-area .cal-cell.nch .cal-cell-date { color: #cc3333 !important; }
+    #print-calendar-area .cal-cell-today { outline: none !important; }
+    #print-calendar-area .cal-cell-adjacent { opacity: 1; }
+    #print-calendar-area .cal-cell-date {
+      font-size: 15pt !important;
+      font-weight: 700 !important;
+    }
+    #print-calendar-area .cal-cell-type-badge {
+      font-size: 8.5pt !important;
+      padding: 0.5mm 1.5mm !important;
+    }
+    #print-calendar-area .cal-cell-dia {
+      font-size: 12pt !important;
+      color: #000 !important;
+      margin: 1mm 0 1.5mm !important;
+    }
+    #print-calendar-area .cal-cell-time,
+    #print-calendar-area .cal-cell-time-row {
+      font-size: 10pt !important;
+      line-height: 1.5 !important;
+    }
+    #print-calendar-area .cal-cell-time-tk,
+    #print-calendar-area .cal-cell-time-row2 { margin-top: 1mm !important; }
+    #print-calendar-area .cal-cell-tag { font-size: 10.5pt !important; margin-top: 2mm !important; }
+    #print-calendar-area .cal-cell-ng-icon { font-size: 9pt !important; }
+    #print-calendar-area .cal-cell,
+    #print-calendar-area .cal-cell * {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      color-adjust: exact;
+    }
+  }
+</style>
+
 <div class="header">
   <div class="header-top">
     <div>
@@ -1243,6 +1364,14 @@
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
         読込
+      </button>
+      <button class="hdr-btn hdr-btn-print" id="btn-print" title="表示中の月を印刷" onclick="printCalendarMonth()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="pointer-events:none">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        印刷
       </button>
       <div class="header-time" id="headerTime"></div>
     </div>
@@ -2143,6 +2272,161 @@ function renderCalendarTab() {
     viewport.style.transition = 'none';
     viewport.style.height = curPanel.offsetHeight + 'px';
   }
+}
+
+// 印刷用：1日分のセルHTML生成（画面用 _calBuildCellsHTML のロジックを流用。
+// 前月/翌月の日付にも対応できるよう単体の日付を受け取る形にしたもの）
+function _printBuildDayCellHTML(date, isAdjacent) {
+  const day = date.getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const baseDate = getBaseDate(); baseDate.setHours(0,0,0,0);
+  const isToday = date.getTime() === today.getTime();
+
+  let bodyHtml, typeCls, dateBadge = '';
+  if (date.getTime() < baseDate.getTime()) {
+    bodyHtml = '';
+    typeCls = '';
+  } else {
+    const dayType = getDayType(date);
+    const sched = getSchedule(date);
+    typeCls = dayType === '土曜' ? 'doy' : dayType === '日祝' ? 'nch' : 'hei';
+    const dateKey0 = getDateKey(date);
+    const diaOv = DIA_OVERRIDES[dateKey0] !== undefined ? ' cal-ov' : '';
+
+    if (sched.special) {
+      const specialCls = sched.special === '年休' ? 'cal-tag-nenkyu' : 'cal-tag-special';
+      bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag ${specialCls}">${sched.special}</div>`;
+    } else if (sched.kyukyu) {
+      if (KYUKYU_NG_OVERRIDES[dateKey0]) {
+        dateBadge = ` <span class="cal-cell-ng-icon">❌</span>`;
+      }
+      bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">公休</div>`;
+    } else if (sched.yobi) {
+      bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-yobi">予備</div>`;
+    } else if (sched.rinji) {
+      const sh = sched.shifts && sched.shifts[0];
+      const sh2 = sched.shifts && sched.shifts[1];
+      const ovKey = dateKey0 + '_0';
+      const ovKey2 = dateKey0 + '_1';
+      const skOv = SHUKKIN_OVERRIDES[ovKey];
+      const tkOv = TAIKIN_OVERRIDES[ovKey];
+      const t  = skOv !== undefined ? minToTime(skOv) : (sh ? fmtTime(sh.shukkinTime) : '—');
+      const tk = tkOv !== undefined ? minToTime(tkOv) : (sh ? fmtTime(sh.taikinTime) : '—');
+      let rinjiTimeHtml;
+      if (sched.rinjiType === '中間' && sh2) {
+        dateBadge = ` <span class="cal-cell-type-badge" style="background:#d4f0e3;color:#2d7a50">中間</span>`;
+        const skOv2 = SHUKKIN_OVERRIDES[ovKey2];
+        const tkOv2 = TAIKIN_OVERRIDES[ovKey2];
+        const t2  = skOv2 !== undefined ? minToTime(skOv2) : fmtTime(sh2.shukkinTime);
+        const tk2 = tkOv2 !== undefined ? minToTime(tkOv2) : fmtTime(sh2.taikinTime);
+        rinjiTimeHtml = `<div class="cal-cell-time-row cal-ov">${t}<span class="cal-cell-time-sep">-</span>${tk}</div>` +
+                        `<div class="cal-cell-time-row cal-cell-time-row2 cal-ov">${t2}<span class="cal-cell-time-sep">-</span>${tk2}</div>`;
+      } else {
+        rinjiTimeHtml = `<div class="cal-cell-time cal-ov">${t}</div><div class="cal-cell-time cal-cell-time-tk cal-ov">${tk}</div>`;
+      }
+      const rinjiTagText = sched.rinjiLabel ? `${_rinjiSeriesDisp(sched.rinjiLabel.series)}${sched.rinjiLabel.num}` : '臨時';
+      bodyHtml = `<div class="cal-cell-dia cal-ov">${rinjiTagText}</div>${rinjiTimeHtml}`;
+    } else {
+      const sh = sched.shifts && sched.shifts[0];
+      const sh2 = sched.shifts && sched.shifts[1];
+      const dia = sched.dia;
+      const ovKey = dateKey0 + '_0';
+      const ovKey2 = dateKey0 + '_1';
+      const skOv = SHUKKIN_OVERRIDES[ovKey];
+      const tkOv = TAIKIN_OVERRIDES[ovKey];
+      const t  = skOv !== undefined ? minToTime(skOv) : (sh ? fmtTime(sh.shukkinTime) : '—');
+      const tk = tkOv !== undefined ? minToTime(tkOv) : (sh ? fmtTime(sh.taikinTime) : '—');
+      const typeBadgeMap = { '中間': ['#d4f0e3','#2d7a50'], '手入': ['#ffe8c0','#8a5500'] };
+      const tb = typeBadgeMap[sched.entryType];
+      dateBadge = tb ? ` <span class="cal-cell-type-badge" style="background:${tb[0]};color:${tb[1]}">${sched.entryType}</span>` : '';
+
+      let timeHtml;
+      if (sched.entryType === '中間' && sh2) {
+        const skOv2 = SHUKKIN_OVERRIDES[ovKey2];
+        const tkOv2 = TAIKIN_OVERRIDES[ovKey2];
+        const t2  = skOv2 !== undefined ? minToTime(skOv2) : fmtTime(sh2.shukkinTime);
+        const tk2 = tkOv2 !== undefined ? minToTime(tkOv2) : fmtTime(sh2.taikinTime);
+        timeHtml = `<div class="cal-cell-time-row"><span class="${skOv !== undefined ? 'cal-ov' : ''}">${t}</span><span class="cal-cell-time-sep">-</span><span class="${tkOv !== undefined ? 'cal-ov' : ''}">${tk}</span></div>` +
+                   `<div class="cal-cell-time-row cal-cell-time-row2"><span class="${skOv2 !== undefined ? 'cal-ov' : ''}">${t2}</span><span class="cal-cell-time-sep">-</span><span class="${tkOv2 !== undefined ? 'cal-ov' : ''}">${tk2}</span></div>`;
+      } else {
+        timeHtml = `<div class="cal-cell-time${skOv !== undefined ? ' cal-ov' : ''}">${t}</div><div class="cal-cell-time cal-cell-time-tk${tkOv !== undefined ? ' cal-ov' : ''}">${tk}</div>`;
+      }
+      bodyHtml = `<div class="cal-cell-dia${diaOv}">B${dia}</div>${timeHtml}`;
+    }
+  }
+
+  return `<div class="cal-cell ${typeCls}${isToday ? ' cal-cell-today' : ''}${isAdjacent ? ' cal-cell-adjacent' : ''}">
+    <div class="cal-cell-date">${day}${dateBadge}</div>
+    ${bodyHtml}
+  </div>`;
+}
+
+// 印刷用：月始まり/月末の空欄を前月末/翌月頭の日付で埋めたグリッドHTMLを生成
+// セルの高さを毎月一定にするため、実際の週数(4〜6週)にかかわらず
+// 常に6週分の枠を確保し、余った週は罫線なしの空白セルで埋める。
+const PRINT_CAL_FIXED_ROWS = 6;
+
+function _printBuildMonthGridHTML(monthDate) {
+  const y = monthDate.getFullYear();
+  const m = monthDate.getMonth(); // 0-11
+
+  const firstDow = (new Date(y, m, 1).getDay() + 6) % 7; // 0=月始まり
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const totalDaysShown = firstDow + daysInMonth;
+  const rows = Math.ceil(totalDaysShown / 7);
+  const trailingCount = rows * 7 - totalDaysShown;
+
+  let cells = '';
+  for (let i = firstDow; i >= 1; i--) {
+    const date = new Date(y, m, 1 - i); // 前月分（Dateのロールオーバーを利用）
+    cells += _printBuildDayCellHTML(date, true);
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(y, m, day);
+    cells += _printBuildDayCellHTML(date, false);
+  }
+  for (let j = 1; j <= trailingCount; j++) {
+    const date = new Date(y, m, daysInMonth + j); // 翌月分（Dateのロールオーバーを利用）
+    cells += _printBuildDayCellHTML(date, true);
+  }
+
+  // 実際の週数が6週未満なら、罫線なしの空白セルで6週分まで埋める
+  const padRows = PRINT_CAL_FIXED_ROWS - rows;
+  if (padRows > 0) {
+    for (let k = 0; k < padRows * 7; k++) {
+      cells += `<div class="cal-cell cal-cell-pad"></div>`;
+    }
+  }
+
+  return { cells, rows: PRINT_CAL_FIXED_ROWS };
+}
+
+// 表示中の月をA4縦向けで印刷する（手書き記入欄付き）
+function printCalendarMonth() {
+  const printArea = document.getElementById('print-calendar-area');
+  if (!printArea) return;
+
+  const curDate = new Date(_calTabDate);
+  const y = curDate.getFullYear();
+  const m = curDate.getMonth(); // 0-11
+  const monthLabel = `${y}年${m + 1}月`;
+
+  const dowLabels = ['月','火','水','木','金','土','日'];
+  const dowHeaderHtml = dowLabels.map((l, i) =>
+    `<div class="print-cal-dow-label${i===6?' nch':''}${i===5?' doy':''}">${l}</div>`
+  ).join('');
+
+  const { cells: cellsHtml, rows } = _printBuildMonthGridHTML(curDate);
+
+  printArea.innerHTML = `
+    <div class="print-cal-page">
+      <div class="print-cal-title">${monthLabel}</div>
+      <div class="print-cal-dow-row">${dowHeaderHtml}</div>
+      <div class="print-cal-grid" style="--rows:${rows}">${cellsHtml}</div>
+    </div>
+  `;
+
+  setTimeout(() => window.print(), 50);
 }
 
 let _calCardOpenDateKey = null;
@@ -4831,7 +5115,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260810-009';
+const APP_VERSION = '20260822-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
