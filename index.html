@@ -1301,8 +1301,8 @@
   }
   /* .cal-cell は画面用JSロジックを流用するため既存クラスを印刷用に上書き */
   #print-calendar-area .cal-cell {
-    border: 0.35mm solid #999 !important;
-    border-bottom: 0.35mm solid #999 !important;
+    border: 0.7mm solid #999 !important;
+    border-bottom: 0.7mm solid #999 !important;
     border-radius: 0 !important;
     background: #fff !important;
     box-shadow: none !important;
@@ -1313,6 +1313,7 @@
     overflow: hidden;
     box-sizing: border-box;
     transform: none !important;
+    position: relative !important;
   }
   #print-calendar-area .cal-cell-empty { border-color: transparent !important; background: transparent !important; }
   #print-calendar-area .cal-cell-pad { border: none !important; background: transparent !important; }
@@ -1328,6 +1329,18 @@
     font-size: 15pt !important;
     font-weight: 700 !important;
   }
+  #print-calendar-area .cal-cell-daynum {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.5mm 0.5mm 0;
+    border: none;
+    border-right: 0.7mm solid #999;
+    border-bottom: 0.7mm solid #999;
+    box-sizing: border-box;
+  }
+  #print-calendar-area .cal-cell.doy .cal-cell-daynum { border-color: #29b6d8; }
+  #print-calendar-area .cal-cell.nch .cal-cell-daynum { border-color: #eb6101; }
   #print-calendar-area .cal-cell-type-badge {
     font-size: 8.5pt !important;
     padding: 0.5mm 1.5mm !important;
@@ -2407,7 +2420,7 @@ function _printBuildDayCellHTML(date, isAdjacent) {
   }
 
   return `<div class="cal-cell ${typeCls}${isToday ? ' cal-cell-today' : ''}${isAdjacent ? ' cal-cell-adjacent' : ''}">
-    <div class="cal-cell-date">${day}${dateBadge}</div>
+    <div class="cal-cell-date"><span class="cal-cell-daynum">${day}</span>${dateBadge}</div>
     ${bodyHtml}
   </div>`;
 }
