@@ -1286,11 +1286,16 @@
     font-size: 11pt;
     font-weight: 700;
     color: #000;
-    border-bottom: 0.5mm solid #000;
-    padding-bottom: 1.5mm;
+    border: 0.5mm solid #6b8f3f;
+    background: #e4edd6;
+    padding: 1.5mm 0;
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
   }
-  #print-calendar-area .print-cal-dow-label.doy { color: #1a5caa; }
-  #print-calendar-area .print-cal-dow-label.nch { color: #cc3333; }
+  #print-calendar-area .print-cal-dow-label.doy { color: #1a5caa; border-color: #29b6d8; background: #dcecfa; }
+  #print-calendar-area .print-cal-dow-label.nch { color: #cc3333; border-color: #eb6101; background: #fde4d4; }
   #print-calendar-area .print-cal-grid {
     flex: 1 1 auto;
     display: grid;
