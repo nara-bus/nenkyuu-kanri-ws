@@ -18,6 +18,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="出勤管理">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%233d9e6e'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle' fill='white'%3E%F0%9F%95%90%3C/text%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
 <style>
@@ -1026,6 +1027,17 @@
     box-shadow: 0 1px 0 #c8b878, inset 0 2px 4px rgba(0,0,0,0.12);
     transform: translateY(3px);
   }
+  .hdr-btn-xlsx {
+    background: linear-gradient(170deg, #e8f5e0 0%, #d0ecc0 60%, #b8e0a0 100%);
+    color: #2d6e30;
+    border: 1px solid #a8d090;
+    box-shadow: 0 4px 0 #98c078, 0 6px 10px rgba(80,140,40,0.2);
+  }
+  .hdr-btn-xlsx svg { stroke: #2d6e30; }
+  .hdr-btn-xlsx:active {
+    box-shadow: 0 1px 0 #98c078, inset 0 2px 4px rgba(0,0,0,0.12);
+    transform: translateY(3px);
+  }
   /* 警告モーダル */
   .alert-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.45);
@@ -1401,6 +1413,15 @@
           <rect x="6" y="14" width="12" height="8"/>
         </svg>
         印刷
+      </button>
+      <button class="hdr-btn hdr-btn-xlsx" id="btn-xlsx" title="期間を指定してエクセル出力" onclick="openXlsxRangeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="pointer-events:none">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="8" y1="13" x2="16" y2="19"/>
+          <line x1="16" y1="13" x2="8" y2="19"/>
+        </svg>
+        出力
       </button>
     </div>
   </div>
@@ -2503,6 +2524,131 @@ window.addEventListener('afterprint', () => {
     printArea.innerHTML = '';
   }
 });
+
+// ============================================================
+// エクセル出力機能（期間指定でGoogleカレンダー用データを書き出す）
+// ============================================================
+function openXlsxRangeModal() {
+  const overlay = document.getElementById('xlsx-range-overlay');
+  if (!overlay) return;
+
+  const now = new Date(_calTabDate);
+  const curY = now.getFullYear(), curM = now.getMonth() + 1;
+  const yStart = curY - 1, yEnd = curY + 2;
+
+  const ySel = (id, selectedY) => {
+    let html = '';
+    for (let y = yStart; y <= yEnd; y++) {
+      html += `<option value="${y}"${y === selectedY ? ' selected' : ''}>${y}</option>`;
+    }
+    document.getElementById(id).innerHTML = html;
+  };
+  const mSel = (id, selectedM) => {
+    let html = '';
+    for (let m = 1; m <= 12; m++) {
+      html += `<option value="${m}"${m === selectedM ? ' selected' : ''}>${m}</option>`;
+    }
+    document.getElementById(id).innerHTML = html;
+  };
+
+  ySel('xlsx-start-y', curY);
+  mSel('xlsx-start-m', curM);
+  ySel('xlsx-end-y', curY);
+  mSel('xlsx-end-m', curM);
+
+  overlay.classList.remove('hidden');
+}
+
+function closeXlsxRangeModal() {
+  const overlay = document.getElementById('xlsx-range-overlay');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+// SHUKKIN_OVERRIDES/TAIKIN_OVERRIDESを反映した実際の出退勤「分」を返す
+function _xlsxEffectiveMin(dateKey, idx, isStart, rawTime) {
+  const ovKey = dateKey + '_' + idx;
+  const ov = isStart ? SHUKKIN_OVERRIDES[ovKey] : TAIKIN_OVERRIDES[ovKey];
+  if (ov !== undefined) return ov;
+  return timeToMin(rawTime);
+}
+
+function _xlsxAddDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function _xlsxMinToHM(min) {
+  const m = ((min % 1440) + 1440) % 1440;
+  return { hh: Math.floor(m / 60), mm: m % 60 };
+}
+
+// 指定期間（開始日〜終了日、両端含む）のGoogleカレンダー用行データを組み立てる
+function _xlsxBuildRows(startDate, endDate) {
+  const rows = [];
+  const cur = new Date(startDate);
+  while (cur <= endDate) {
+    const dateKey = getDateKey(cur);
+    const sched = getSchedule(cur);
+
+    if (sched.kyukyu || sched.yobi) {
+      const label = sched.special || (sched.yobi ? '予備' : '公休');
+      rows.push([sched.dia, label, new Date(cur), '', new Date(cur), '', 'off', true]);
+    } else if (sched.shifts) {
+      const subject = sched.rinji
+        ? (sched.rinjiLabel ? `${_rinjiSeriesDisp(sched.rinjiLabel.series)}${sched.rinjiLabel.num}` : '臨時')
+        : sched.dia;
+      sched.shifts.forEach((sh, idx) => {
+        const startMin = _xlsxEffectiveMin(dateKey, idx, true, sh.shukkinTime);
+        const endMin = _xlsxEffectiveMin(dateKey, idx, false, sh.taikinTime);
+        if (startMin === null || endMin === null) return;
+        const sHM = _xlsxMinToHM(startMin), eHM = _xlsxMinToHM(endMin);
+        const startDateObj = _xlsxAddDays(cur, Math.floor(startMin / 1440));
+        const endDateObj = _xlsxAddDays(cur, Math.floor(endMin / 1440));
+        rows.push([
+          subject,
+          sh.rosen || '',
+          startDateObj, `${sHM.hh}:${String(sHM.mm).padStart(2,'0')}`,
+          endDateObj, `${eHM.hh}:${String(eHM.mm).padStart(2,'0')}`,
+          'off', ''
+        ]);
+      });
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+  return rows;
+}
+
+function confirmXlsxExport() {
+  if (!window.XLSX) {
+    alert('⚠️ エクセル出力ライブラリの読み込みに失敗しました。通信環境を確認してもう一度お試しください。');
+    return;
+  }
+  const sy = parseInt(document.getElementById('xlsx-start-y').value, 10);
+  const sm = parseInt(document.getElementById('xlsx-start-m').value, 10);
+  const ey = parseInt(document.getElementById('xlsx-end-y').value, 10);
+  const em = parseInt(document.getElementById('xlsx-end-m').value, 10);
+
+  const startDate = new Date(sy, sm - 1, 1);
+  const endDate = new Date(ey, em, 0); // 終了月の末日
+
+  if (startDate > endDate) {
+    alert('⚠️ 開始年月が終了年月より後になっています');
+    return;
+  }
+
+  const header = ['Subject','Description','Start Date','Start Time','End Date','End Time','Reminder On/Off','All Day Event'];
+  const rows = _xlsxBuildRows(startDate, endDate);
+  const ws = XLSX.utils.aoa_to_sheet([header, ...rows], { cellDates: true });
+  ws['!cols'] = [{wch:8},{wch:14},{wch:12},{wch:9},{wch:12},{wch:9},{wch:8},{wch:9}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+  const fname = `出勤スケジュール_${sy}${String(sm).padStart(2,'0')}-${ey}${String(em).padStart(2,'0')}.xlsx`;
+  XLSX.writeFile(wb, fname);
+
+  closeXlsxRangeModal();
+}
 
 let _calCardOpenDateKey = null;
 let _calCardOriginDateKey = null;
@@ -5054,6 +5200,26 @@ setInterval(updateClock, 30000);
   </div>
 </div>
 
+<div id="xlsx-range-overlay" class="alert-overlay hidden">
+  <div class="alert-box" style="width:280px">
+    <div class="alert-icon">📊</div>
+    <div class="alert-title" style="color:#2d6e30">期間を指定してエクセル出力</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;font-size:13px;font-weight:700;color:#2d5a47">
+      <select id="xlsx-start-y" style="font-size:13px;font-weight:700;color:#2d5a47;background:linear-gradient(170deg,#e8f5ee,#d4ede0);border:1px solid rgba(80,160,120,0.45);border-bottom:2px solid rgba(60,130,95,0.5);border-radius:8px;padding:5px 4px;font-family:inherit"></select>年
+      <select id="xlsx-start-m" style="font-size:13px;font-weight:700;color:#2d5a47;background:linear-gradient(170deg,#e8f5ee,#d4ede0);border:1px solid rgba(80,160,120,0.45);border-bottom:2px solid rgba(60,130,95,0.5);border-radius:8px;padding:5px 4px;font-family:inherit"></select>月
+    </div>
+    <div style="font-size:12px;color:#7a9a88;margin-bottom:6px">〜</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:20px;font-size:13px;font-weight:700;color:#2d5a47">
+      <select id="xlsx-end-y" style="font-size:13px;font-weight:700;color:#2d5a47;background:linear-gradient(170deg,#e8f5ee,#d4ede0);border:1px solid rgba(80,160,120,0.45);border-bottom:2px solid rgba(60,130,95,0.5);border-radius:8px;padding:5px 4px;font-family:inherit"></select>年
+      <select id="xlsx-end-m" style="font-size:13px;font-weight:700;color:#2d5a47;background:linear-gradient(170deg,#e8f5ee,#d4ede0);border:1px solid rgba(80,160,120,0.45);border-bottom:2px solid rgba(60,130,95,0.5);border-radius:8px;padding:5px 4px;font-family:inherit"></select>月
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="alert-ok" style="background:#9aa5a0" onclick="closeXlsxRangeModal()">キャンセル</button>
+      <button class="alert-ok" onclick="confirmXlsxExport()">出力する</button>
+    </div>
+  </div>
+</div>
+
 <!-- PWA インストールバー -->
 <style>
 #pwa-install-bar{
@@ -5189,7 +5355,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260823-006';
+const APP_VERSION = '20260823-007';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
