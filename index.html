@@ -35,8 +35,8 @@
     height: 100vh;
     height: 100dvh;
     height: var(--app-height, 100dvh); /* JSで実測した「本当に見えている高さ」を最優先で使う */
-    max-width: 430px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden; /* bodyそのものはスクロールさせず、.contentの内部だけをスクロールさせる */
@@ -2236,7 +2236,7 @@ function renderCalendarTab() {
 
   el.innerHTML = `
     <style>
-      .cal-tab-wrap { padding: 34px 0 24px; margin: 0 -16px; }
+      .cal-tab-wrap { padding: 34px 0 24px; margin: 0 -12px; }
       .cal-nav-row { display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:10px; }
       .cal-nav-btn { border:none; background:#f0f0f0; border-radius:10px; width:38px; height:38px; font-size:13px; font-weight:700; color:#666; cursor:pointer; }
       .cal-nav-btn:active { background:#e0e0e0; }
@@ -5386,7 +5386,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260826-001';
+const APP_VERSION = '20260826-005';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
