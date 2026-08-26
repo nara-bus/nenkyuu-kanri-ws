@@ -1,5 +1,5 @@
 // ※キャッシュ名の日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。
-const CACHE_NAME = 'shukkin-20260823-009';
+const CACHE_NAME = 'shukkin-20260826-001';
 const ASSETS = [
   './',
   './index.html',

@@ -1487,7 +1487,7 @@ const ICHIRAN_DATA = [
                              nch:{ okibo:'2:45', shukkin:'4:15', tochaku:'4:45', start:'5:17',  taikin:'11:22', rosen:'西大寺',               kitan:'11:55' } },
     { dia:10, type:'公休',   hei:null, doy:null, nch:null },
     { dia:11, type:'',       hei:{ okibo:'2:45', shukkin:'4:15', tochaku:'4:45', start:'5:16',  taikin:'14:34', rosen:'西大寺',          kitan:'15:05' },
-                             doy:{ type:'公休' }, nch:{ type:'公休' } },
+                             doy:{ type:'公休', label:'土日休' }, nch:{ type:'公休', label:'土日休' } },
     { dia:12, type:'中間',   hei:{ okibo:'4:35', shukkin:'6:05', tochaku:'6:35', start:'7:05',  taikin:'10:56', rosen:'山村',            kitan:'11:30',
                                    okibo2:'14:35', shukkin2:'16:05', tochaku2:'16:35', start2:'17:05', taikin2:'21:59', kitan2:'22:30', rosen2:'シャープ' },
                              doy:{ okibo:'6:50', shukkin:'8:20', tochaku:'8:50', start:'9:22',  taikin:'18:40', rosen:'イオン',          kitan:'19:10' },
@@ -1515,7 +1515,7 @@ const ICHIRAN_DATA = [
     { dia:21, type:'公休',   hei:null, doy:null, nch:null },
     { dia:22, type:'中間',   hei:{ okibo:'2:50', shukkin:'4:20', tochaku:'4:50', start:'5:21',  taikin:'8:10',  rosen:'シャープ',         kitan:'8:40',
                                    okibo2:'11:00', shukkin2:'12:30', tochaku2:'13:00', start2:'13:30', taikin2:'19:51', kitan2:'20:25', rosen2:'シャープ' },
-                             doy:{ type:'公休' }, nch:{ type:'公休' } },
+                             doy:{ type:'公休', label:'土日休' }, nch:{ type:'公休', label:'土日休' } },
     { dia:23, type:'',       hei:{ okibo:'4:10', shukkin:'5:40', tochaku:'6:10', start:'6:41',  taikin:'19:15', rosen:'阪奈',            kitan:'19:45' },
                              doy:{ okibo:'6:30', shukkin:'8:00', tochaku:'8:30', start:'9:00',  taikin:'19:15', rosen:'阪奈',               kitan:'19:45' },
                              nch:{ okibo:'6:30', shukkin:'8:00', tochaku:'8:30', start:'9:00',  taikin:'19:15', rosen:'阪奈',               kitan:'19:45' } },
@@ -1528,7 +1528,7 @@ const ICHIRAN_DATA = [
     { dia:26, type:'公休',   hei:null, doy:null, nch:null },
     { dia:27, type:'中間',   hei:{ okibo:'4:55', shukkin:'6:25', tochaku:'6:55', start:'7:25',  taikin:'10:09', rosen:'シャープ',         kitan:'10:40',
                                    okibo2:'14:00', shukkin2:'15:30', tochaku2:'16:00', start2:'16:30', taikin2:'21:41', kitan2:'22:15', rosen2:'天理' },
-                             doy:{ type:'公休' }, nch:{ type:'公休' } },
+                             doy:{ type:'公休', label:'土日休' }, nch:{ type:'公休', label:'土日休' } },
     { dia:28, type:'',       hei:{ okibo:'10:55',shukkin:'12:25',tochaku:'12:55',start:'13:28', taikin:'22:07', rosen:'西大寺',           kitan:'22:40' },
                              doy:{ okibo:'10:45',shukkin:'12:15',tochaku:'12:45',start:'13:18', taikin:'20:43', rosen:'西大寺',               kitan:'21:15' },
                              nch:{ okibo:'10:45',shukkin:'12:15',tochaku:'12:45',start:'13:18', taikin:'20:43', rosen:'西大寺',               kitan:'21:15' } },
@@ -1569,7 +1569,7 @@ const ICHIRAN_DATA = [
                              nch:{ okibo:'10:30',shukkin:'12:00',tochaku:'12:30',start:'13:02', taikin:'22:43', rosen:'シャープ',               kitan:'23:15' } },
     { dia:42, type:'公休',   hei:null, doy:null, nch:null },
     { dia:43, type:'',       hei:{ okibo:'13:00',shukkin:'14:30',tochaku:'15:00',start:'15:30', taikin:'22:18', rosen:'シャープ',         kitan:'22:50' },
-                             doy:{ type:'公休' }, nch:{ type:'公休' } },
+                             doy:{ type:'公休', label:'土日休' }, nch:{ type:'公休', label:'土日休' } },
     { dia:44, type:'',       hei:{ okibo:'12:40',shukkin:'14:10',tochaku:'14:40',start:'15:12', taikin:'24:17', rosen:'イオン',           kitan:'24:50' },
                              doy:{ okibo:'13:00',shukkin:'14:30',tochaku:'15:00',start:'15:32', taikin:'24:13', rosen:'イオン',               kitan:'24:45' },
                              nch:{ okibo:'13:00',shukkin:'14:30',tochaku:'15:00',start:'15:32', taikin:'24:13', rosen:'イオン',               kitan:'24:45' } },
@@ -1611,6 +1611,18 @@ const ICHIRAN_DATA = [
 // ===== マスタデータ上書き管理 =====
 // 初期値のディープコピー（applyMasterOverridesで毎回ここからリセット）
 const _ICHIRAN_DATA_ORIG = JSON.parse(JSON.stringify(ICHIRAN_DATA));
+
+// 指定ダイヤ・曜日区分の「公休」表示名を返す（labelが個別設定されていればそれを、なければ既定の'公休'を返す）
+function getKyukyuLabel(dia, dayType) {
+  const entry = ICHIRAN_DATA.find(r => r.dia === dia);
+  if (!entry) return '公休';
+  if (entry.type === '公休') return entry.label || '公休';
+  const rowKey = dayType === '平日' ? 'hei' : dayType === '土曜' ? 'doy' : 'nch';
+  const row = entry[rowKey];
+  if (row && row.type === '公休') return row.label || '公休';
+  return '公休';
+}
+
 
 
 const HOLIDAYS = new Set(["2024-01-01","2024-01-08","2024-02-11","2024-02-12","2024-02-23","2024-03-20","2024-04-29","2024-05-03","2024-05-04","2024-05-05","2024-05-06","2024-07-15","2024-08-11","2024-08-12","2024-09-16","2024-09-22","2024-09-23","2024-10-14","2024-11-03","2024-11-04","2024-11-23","2025-01-01","2025-01-13","2025-02-11","2025-02-23","2025-02-24","2025-03-20","2025-04-29","2025-05-03","2025-05-04","2025-05-05","2025-05-06","2025-07-21","2025-08-11","2025-09-15","2025-09-23","2025-10-13","2025-11-03","2025-11-23","2025-11-24","2026-01-01","2026-01-12","2026-02-11","2026-02-23","2026-03-20","2026-04-29","2026-05-03","2026-05-04","2026-05-05","2026-05-06","2026-07-20","2026-08-11","2026-09-21","2026-09-22","2026-09-23","2026-10-12","2026-11-03","2026-11-23","2027-01-01","2027-01-11","2027-02-11","2027-02-23","2027-03-20","2027-04-29","2027-05-03","2027-05-04","2027-05-05","2027-07-19","2027-08-11","2027-09-20","2027-09-23","2027-10-11","2027-11-03","2027-11-23"]);
@@ -1826,20 +1838,20 @@ function _getScheduleRaw(date) {
     return { dia, dayType, shifts, rinji: true, rinjiType: rinjiType || '全日', rinjiLabel };
   }
   const entry = ICHIRAN_DATA.find(r => r.dia === dia);
-  if (!entry) return { dia, dayType, kyukyu: true };
-  if (entry.type === '公休') return { dia, dayType, kyukyu: true };
+  if (!entry) return { dia, dayType, kyukyu: true, kyukyuLabel: getKyukyuLabel(dia, dayType) };
+  if (entry.type === '公休') return { dia, dayType, kyukyu: true, kyukyuLabel: getKyukyuLabel(dia, dayType) };
   if (entry.type === '予備') return { dia, dayType, yobi: true };
 
   // 曜日に対応する行を選択
   const rowKey = dayType === '平日' ? 'hei' : dayType === '土曜' ? 'doy' : 'nch';
   const row = entry[rowKey];
 
-  if (!row) return { dia, dayType, kyukyu: true };
-  if (row.type === '公休') return { dia, dayType, kyukyu: true };
+  if (!row) return { dia, dayType, kyukyu: true, kyukyuLabel: getKyukyuLabel(dia, dayType) };
+  if (row.type === '公休') return { dia, dayType, kyukyu: true, kyukyuLabel: getKyukyuLabel(dia, dayType) };
   if (row.yobi) return { dia, dayType, yobi: true };
 
   const shifts = _diaRowToShifts(row, key);
-  if (!shifts) return { dia, dayType, kyukyu: true };
+  if (!shifts) return { dia, dayType, kyukyu: true, kyukyuLabel: getKyukyuLabel(dia, dayType) };
   if (shifts === 'yobi') return { dia, dayType, yobi: true };
   let badgeType = '';
   if (entry.type === '手入') badgeType = '手入';
@@ -1907,7 +1919,7 @@ function addDays(date, n) {
 function _boundaryFromSchedule(sched, wantLast) {
   if (!sched) return { label: null };
   if (sched.special) return { label: sched.special };
-  if (sched.kyukyu) return { label: '公休' };
+  if (sched.kyukyu) return { label: sched.kyukyuLabel || '公休' };
   if (sched.yobi) return { label: '予備' };
   if (!sched.shifts || !sched.shifts.length) return { label: null };
   const bIdx = wantLast ? sched.shifts.length - 1 : 0;
@@ -1921,7 +1933,7 @@ function _boundaryFromSchedule(sched, wantLast) {
   return { min: ov !== undefined ? ov : timeToMin(bSh.shukkinTime) };
 }
 
-function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSched, nextSched, rinjiLabel) {
+function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSched, nextSched, rinjiLabel, kyukyuLabel) {
   // カード内の時刻表示：先頭の「翌」だけ数字(HH:MM)と同じ見た目のサイズに縮小して表示
   function cardTime(min) {
     const t = minToTime(min);
@@ -1933,7 +1945,8 @@ function buildShiftCard(shifts, isKyukyu, isYobi, isRinji, specialLabel, prevSch
   }
   if (isYobi) return `<div class="kyukyu-card"><span class="yobi-text">予　備</span></div>`;
   if (isKyukyu) {
-    return `<div class="kyukyu-card"><span class="kyukyu-icon">🏖️</span><span class="kyukyu-text">公　休</span></div>`;
+    const kText = (kyukyuLabel && kyukyuLabel !== '公休') ? kyukyuLabel : '公　休';
+    return `<div class="kyukyu-card"><span class="kyukyu-icon">🏖️</span><span class="kyukyu-text">${kText}</span></div>`;
   }
   const s = SETTINGS;
   // すべて勤務開始時刻（shukkinTime）を基準にオフセット計算
@@ -2137,7 +2150,7 @@ function _calBuildCellsHTML(monthDate) {
         if (KYUKYU_NG_OVERRIDES[dateKey0]) {
           dateBadge = ` <span class="cal-cell-ng-icon">❌</span>`;
         }
-        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">公休</div>`;
+        bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">${sched.kyukyuLabel || '公休'}</div>`;
       } else if (sched.yobi) {
         bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-yobi">予備</div>`;
       } else if (sched.rinji) {
@@ -2367,7 +2380,7 @@ function _printBuildDayCellHTML(date, isAdjacent) {
       if (KYUKYU_NG_OVERRIDES[dateKey0]) {
         dateBadge = ` <span class="cal-cell-ng-icon">❌</span>`;
       }
-      bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">公休</div>`;
+      bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-kyukyu">${sched.kyukyuLabel || '公休'}</div>`;
     } else if (sched.yobi) {
       bodyHtml = `<div class="cal-cell-dia${diaOv}">B${sched.dia}</div><div class="cal-cell-tag cal-tag-yobi">予備</div>`;
     } else if (sched.rinji) {
@@ -2610,7 +2623,7 @@ function _xlsxBuildRows(startDate, endDate) {
     const sched = getSchedule(cur);
 
     if (sched.kyukyu || sched.yobi) {
-      const label = sched.special || (sched.yobi ? '予備' : '公休');
+      const label = sched.special || (sched.yobi ? '予備' : (sched.kyukyuLabel || '公休'));
       rows.push([sched.dia, label, new Date(cur), '', new Date(cur), '', 'off', true]);
     } else if (sched.shifts) {
       const subject = sched.rinji
@@ -2721,7 +2734,7 @@ function openCalDayCard(dateKey, keepOrigin) {
         title="タップでダイヤ番号を変更">${diaLabel}${isDiaOverride ? ' ✎' : ''}</button>
       <span class="dia-row-side dia-row-side-right">${sched.kyukyu ? `<button id="kyukyu-ng-btn" class="kyukyu-ng-btn${KYUKYU_NG_OVERRIDES[dateKey] ? ' on' : ''}" onclick="event.preventDefault(); event.stopPropagation(); toggleKyukyuNg('${dateKey}'); return false;" title="休出できない日（予定あり）">❌</button>` : ''}</span>
     </div>
-    ${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji, sched.special, getSchedule(addDays(date, -1)), getSchedule(addDays(date, 1)), sched.rinjiLabel)}
+    ${buildShiftCard(sched.shifts, sched.kyukyu, sched.yobi, sched.rinji, sched.special, getSchedule(addDays(date, -1)), getSchedule(addDays(date, 1)), sched.rinjiLabel, sched.kyukyuLabel)}
     <button class="cal-day-card-close" onclick="closeCalDayCard()">閉じる</button>
   `;
   document.getElementById('cal-day-card-overlay').classList.remove('hidden');
@@ -2788,7 +2801,7 @@ function renderIchiran() {
 
   function previewHtml(d) {
     if (d.type === '公休') {
-      return `<span class="pv-kyukyu">公休</span>`;
+      return `<span class="pv-kyukyu">${d.label || '公休'}</span>`;
     }
     if (d.type === '予備') {
       return `<span class="pv-yobi">予備</span>`;
@@ -2796,7 +2809,7 @@ function renderIchiran() {
     // 各ダイヤが次に回ってくる日の曜日でプレビュー表示
     const previewDayType = getDayTypeForDia(d.dia);
     const src = previewDayType === '土曜' ? d.doy : previewDayType === '日祝' ? d.nch : d.hei;
-    if (!src || src.type === '公休') return '<span class="pv-kyukyu">公休</span>';
+    if (!src || src.type === '公休') return `<span class="pv-kyukyu">${(src && src.label) || '公休'}</span>`;
 
     // 中間ダイヤ：前半・後半両方表示
     if (d.type === '中間' && src.start2) {
@@ -2809,7 +2822,7 @@ function renderIchiran() {
 
   function timeGridHtml(sd, isSecond) {
     if (!sd) return '<div class="ich-dow-kyukyu">公　休</div>';
-    if (sd.type === '公休') return '<div class="ich-dow-kyukyu">公　休</div>';
+    if (sd.type === '公休') return `<div class="ich-dow-kyukyu">${sd.label || '公　休'}</div>`;
     if (sd.yobi) return '<div class="ich-dow-yobi">予　備</div>';
     const st  = isSecond ? sd.start2   : sd.start;
     const tk  = isSecond ? sd.taikin2  : sd.taikin;
@@ -2886,7 +2899,7 @@ function renderIchiran() {
       </div>`;
     }
     const inner = (!sd || sd.type === '公休')
-      ? '<div class="ich-dow-kyukyu">公　休</div>'
+      ? `<div class="ich-dow-kyukyu">${(sd && sd.label) || '公　休'}</div>`
       : timeGridHtml(sd, false);
     return `<div class="ich-dow-block ${cls}${nextCls}">
       <div class="ich-dow-header"><span class="ich-dow-header-label">${label}</span>${todayMark}</div>
@@ -3574,12 +3587,12 @@ function _refreshMasterFields() {
   if (!entry) { area.innerHTML = '<div class="master-no-data">ダイヤが見つかりません</div>'; return; }
 
   // 公休・予備の場合
-  if (entry.type === '公休') { area.innerHTML = '<div class="master-no-data">🏖️ 公休ダイヤ（編集不可）</div>'; return; }
+  if (entry.type === '公休') { area.innerHTML = `<div class="master-no-data">🏖️ ${entry.label || '公休'}ダイヤ（編集不可）</div>`; return; }
   if (entry.type === '予備') { area.innerHTML = '<div class="master-no-data">📋 予備ダイヤ（編集不可）</div>'; return; }
 
   const row = entry[_mDow];
   if (!row) { area.innerHTML = '<div class="master-no-data">データなし</div>'; return; }
-  if (row.type === '公休') { area.innerHTML = '<div class="master-no-data">🏖️ この曜日は公休（編集不可）</div>'; return; }
+  if (row.type === '公休') { area.innerHTML = `<div class="master-no-data">🏖️ この曜日は${row.label || '公休'}（編集不可）</div>`; return; }
   if (row.yobi) { area.innerHTML = '<div class="master-no-data">📋 この曜日は予備（編集不可）</div>'; return; }
 
   // 初期値を _mEdits に読み込む
@@ -5373,7 +5386,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260823-007';
+const APP_VERSION = '20260826-001';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
