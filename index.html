@@ -1351,7 +1351,8 @@
     padding: 0.5mm 1.5mm !important;
   }
   #print-calendar-area .cal-cell-dia {
-    font-size: 16pt !important;
+    font-size: 14pt !important;
+    font-weight: 600 !important;
     color: #000 !important;
     margin: 0.5mm 0 1.4mm !important;
     line-height: 1.15 !important;
@@ -5386,7 +5387,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260828-004';
+const APP_VERSION = '20260828-006';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
