@@ -2262,7 +2262,7 @@ function renderCalendarTab() {
       .cal-cell-date { font-size:clamp(12px, 4vw, 16px); font-weight:700; color:#666; display:flex; align-items:center; justify-content:space-between; flex-wrap:nowrap; gap:2px; overflow:hidden; }
       .cal-cell-type-badge { font-size:clamp(7px, 2.2vw, 9px); font-weight:700; padding:clamp(0px,0.3vw,1px) clamp(2px,1vw,4px); border-radius:99px; white-space:nowrap; }
       .cal-cell-ng-icon { font-size:10px; vertical-align:middle; }
-      .cal-cell-dia { font-size:clamp(12px, 4vw, 16px); font-weight:750; color:#2d7a50; margin-top:clamp(0px, 0.3vw, 1px); margin-bottom:clamp(1px, 1.3vw, 5px); text-align:center; line-height:1.1; }
+      .cal-cell-dia { font-size:clamp(12px, 4vw, 16px); font-weight:650; color:#2d7a50; margin-top:clamp(0px, 0.3vw, 1px); margin-bottom:clamp(1px, 1.3vw, 5px); text-align:center; line-height:1.1; }
       .cal-cell-time { font-size:clamp(8px, 2.7vw, 11px); color:#555; line-height:1.25; }
       .cal-cell-time-tk { text-align:right; margin-top:1px; }
       .cal-cell-time-row { font-size:clamp(7.5px, 2.5vw, 10px); color:#555; text-align:left; line-height:1.25; letter-spacing:-0.3px; white-space:nowrap; font-variant-numeric:tabular-nums; }
@@ -5387,7 +5387,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260829-006';
+const APP_VERSION = '20260829-007';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
