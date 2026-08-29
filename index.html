@@ -2248,7 +2248,7 @@ function renderCalendarTab() {
       .cal-dow-label.nch { color:#cc3333; }
       .cal-slider-viewport { overflow:hidden; position:relative; }
       .cal-slider-track { display:flex; align-items:flex-start; gap:20px; will-change:transform; }
-      .cal-panel { flex:0 0 auto; box-sizing:border-box; padding:0 0 24px; display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:90px; gap:2px; }
+      .cal-panel { flex:0 0 auto; box-sizing:border-box; padding:0 0 24px; display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:clamp(78px, 24vw, 90px); gap:2px; }
       .cal-cell { border-radius:9px; background:#ffffff; min-height:0; height:100%; overflow:hidden; box-sizing:border-box; padding:4px 3px; position:relative; border:1px solid rgba(100,180,140,0.28); border-bottom:3px solid rgba(70,135,98,0.42); box-shadow:0 5px 0 rgba(80,140,105,0.28), 0 7px 16px rgba(50,100,75,0.16), inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -1px 2px rgba(80,140,105,0.10); transition: transform 0.18s ease, box-shadow 0.18s ease; }
       .cal-cell.cal-cell-pressed { transform: translateY(4px) scale(0.97); box-shadow: inset 0 3px 6px rgba(50,90,70,0.32), inset 0 1px 3px rgba(0,0,0,0.16); border-bottom-width: 1px; transition: transform 0.05s ease, box-shadow 0.05s ease; }
       .cal-cell-empty { background:transparent; box-shadow:none; border:none; }
@@ -2259,10 +2259,10 @@ function renderCalendarTab() {
         0%, 100% { border-color:#2d7a50; border-bottom-color:#2d7a50; box-shadow:0 5px 0 rgba(80,140,105,0.28), 0 7px 16px rgba(50,100,75,0.16), inset 0 0 0 1.5px #2d7a50; }
         50% { border-color:#4fcf90; border-bottom-color:#4fcf90; box-shadow:0 5px 0 rgba(80,140,105,0.28), 0 7px 16px rgba(50,100,75,0.16), inset 0 0 0 1.5px #4fcf90, 0 0 7px 1px rgba(79,207,144,0.5); }
       }
-      .cal-cell-date { font-size:16px; font-weight:700; color:#666; display:flex; align-items:center; justify-content:space-between; }
+      .cal-cell-date { font-size:clamp(12px, 4vw, 16px); font-weight:700; color:#666; display:flex; align-items:center; justify-content:space-between; }
       .cal-cell-type-badge { font-size:9px; font-weight:700; padding:1px 4px; border-radius:99px; }
       .cal-cell-ng-icon { font-size:10px; vertical-align:middle; }
-      .cal-cell-dia { font-size:16px; font-weight:750; color:#2d7a50; margin-top:1px; margin-bottom:5px; text-align:center; line-height:1.1; }
+      .cal-cell-dia { font-size:clamp(12px, 4vw, 16px); font-weight:750; color:#2d7a50; margin-top:clamp(0px, 0.3vw, 1px); margin-bottom:clamp(1px, 1.3vw, 5px); text-align:center; line-height:1.1; }
       .cal-cell-time { font-size:clamp(8px, 2.7vw, 11px); color:#555; line-height:1.25; }
       .cal-cell-time-tk { text-align:right; margin-top:1px; }
       .cal-cell-time-row { font-size:clamp(7.5px, 2.5vw, 10px); color:#555; text-align:left; line-height:1.25; letter-spacing:-0.3px; white-space:nowrap; font-variant-numeric:tabular-nums; }
@@ -5387,7 +5387,7 @@ function installPWA() {
 <script>
 // ── PWA: Service Worker 登録 ──
 // ※バージョン日付は古い値を引き継がず、必ず編集する「当日」の日付に変更すること。日付が変わったら連番(NNN)は001にリセット。同日内の複数回編集は連番のみ加算。
-const APP_VERSION = '20260829-003';
+const APP_VERSION = '20260829-004';
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then(reg => {
